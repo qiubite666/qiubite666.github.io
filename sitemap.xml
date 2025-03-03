@@ -101,6 +101,41 @@
 
   
   <url>
+    <loc>https://qiubite.fun/tags/DeepSeek%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2/</loc>
+    <lastmod>2025-03-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://qiubite.fun/tags/ollama/</loc>
+    <lastmod>2025-03-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://qiubite.fun/tags/Cherry-Studio/</loc>
+    <lastmod>2025-03-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://qiubite.fun/tags/LLM%E4%BA%A4%E4%BA%92%E5%B9%B3%E5%8F%B0/</loc>
+    <lastmod>2025-03-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://qiubite.fun/tags/Page-Assist/</loc>
+    <lastmod>2025-03-03</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
     <loc>https://qiubite.fun/tags/acme/</loc>
     <lastmod>2025-03-03</lastmod>
     <changefreq>weekly</changefreq>
@@ -164,41 +199,6 @@
   </url>
   
   <url>
-    <loc>https://qiubite.fun/tags/DeepSeek%E6%9C%AC%E5%9C%B0%E9%83%A8%E7%BD%B2/</loc>
-    <lastmod>2025-03-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://qiubite.fun/tags/ollama/</loc>
-    <lastmod>2025-03-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://qiubite.fun/tags/Cherry-Studio/</loc>
-    <lastmod>2025-03-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://qiubite.fun/tags/LLM%E4%BA%A4%E4%BA%92%E5%B9%B3%E5%8F%B0/</loc>
-    <lastmod>2025-03-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://qiubite.fun/tags/Page-Assist/</loc>
-    <lastmod>2025-03-03</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://qiubite.fun/tags/LNMP%E7%8E%AF%E5%A2%83/</loc>
     <lastmod>2025-03-03</lastmod>
     <changefreq>weekly</changefreq>
@@ -222,14 +222,14 @@
 
   
   <url>
-    <loc>https://qiubite.fun/categories/%E8%BF%90%E7%BB%B4/</loc>
+    <loc>https://qiubite.fun/categories/AIGC/</loc>
     <lastmod>2025-03-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
-    <loc>https://qiubite.fun/categories/AIGC/</loc>
+    <loc>https://qiubite.fun/categories/%E8%BF%90%E7%BB%B4/</loc>
     <lastmod>2025-03-03</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
