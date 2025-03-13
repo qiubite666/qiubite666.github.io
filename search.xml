@@ -1,203 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
-    <url>/posts/9b071109.html</url>
-    <content><![CDATA[<p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
-<p>本文将详细介绍如何基于DeepSeek R1+Ollama+Cherry Studio+Page Assist实现本地化部署，帮助您轻松搭建并使用DeepSeek服务。通过Web UI界面，您可以直接与模型进行交互式对话；同时，借助功能强大的交互平台架构，打造属于自己的专属AI聊天室变得轻而易举。</p>
-<h2 id="一、基础环境搭建"><a href="#一、基础环境搭建" class="headerlink" title="一、基础环境搭建"></a>一、基础环境搭建</h2><ol>
-<li><h3 id="什么是Ollama"><a href="#什么是Ollama" class="headerlink" title="什么是Ollama"></a>什么是Ollama</h3></li>
-</ol>
-<p>​	Ollama 是一个可以在本地轻松部署开源大语言模型（LLM）的工具框架，它允许开发者在本地环境中方便地运行和测试不同的语言模型，如 DeepSeek、Llama等。</p>
-<p>​	官网地址：<a href="https://ollama.com/">https://ollama.com/</a></p>
-<p>​	github地址：<a href="https://github.com/ollama/ollama">https://github.com/ollama/ollama</a></p>
-<ol start="2">
-<li><h3 id="安装Ollama"><a href="#安装Ollama" class="headerlink" title="安装Ollama"></a>安装Ollama</h3></li>
-</ol>
-<ul>
-<li><p>访问<a href="https://ollama.com/download">Ollama官网</a>下载对应操作系统的安装包（Windows&#x2F;macOS&#x2F;Linux），完成一键安装‌</p>
-<p>我这里以windows为例：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zjil1y-1.png" alt="image-20250228214909456"></p>
-<p>  下载完成后进行安装：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zmm92z-1.png" alt="image-20250228215430924"></p>
+    <title>ssl证书自动续期工具——acme</title>
+    <url>/posts/e691384c.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
+<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
+<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+
 </li>
-<li><p>安装验证</p>
-<p>安装完成后，在powershell中输入ollama -v，如果显示版本号即安装成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zp2wi8-1.png" alt="image-20250228215845649"></p>
+<li><p>注意换成自己的邮箱号</p>
 </li>
-</ul>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
+
 <ol start="3">
-<li><h3 id="选择模型"><a href="#选择模型" class="headerlink" title="选择模型"></a>选择模型</h3></li>
+<li>设置自动升级</li>
 </ol>
-<p>各型号特性与硬件需求如下：</p>
-<table>
-<thead>
-<tr>
-<th>型号</th>
-<th>CPU</th>
-<th>内存</th>
-<th>显卡（显存要求）</th>
-<th>存储</th>
-<th>适用场景</th>
-<th>成本参考</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>‌1.5B‌</td>
-<td>4核（Intel i5&#x2F;Ryzen 5）</td>
-<td>≥8GB</td>
-<td>核显或低端独显（≥4GB）</td>
-<td>≥20GB SSD</td>
-<td>简单文本生成、轻量开发</td>
-<td>个人级（2k-5k）</td>
-</tr>
-<tr>
-<td>‌7B‌</td>
-<td>8核（i7&#x2F;Ryzen 7）</td>
-<td>≥16GB</td>
-<td>中端独显（RTX 3060，≥8GB）</td>
-<td>≥50GB NVMe</td>
-<td>代码生成、数据分析</td>
-<td>入门级（5k-1.5w）</td>
-</tr>
-<tr>
-<td>‌8B‌</td>
-<td>8核（i7&#x2F;Ryzen 7）</td>
-<td>≥16GB</td>
-<td>中高端独显（RTX 4060，≥10GB）</td>
-<td>≥50GB NVMe</td>
-<td>逻辑推理、轻量高精度任务</td>
-<td>进阶级（1w-3w）</td>
-</tr>
-<tr>
-<td>‌14B‌</td>
-<td>12核（i9&#x2F;Ryzen 9）</td>
-<td>≥32GB</td>
-<td>高端独显（RTX 4090，≥16GB）</td>
-<td>≥100GB NVMe</td>
-<td>复杂任务（合同分析、长文本）</td>
-<td>企业级（3w-8w）</td>
-</tr>
-<tr>
-<td>‌32B‌</td>
-<td>16核（服务器级）</td>
-<td>≥64GB</td>
-<td>专业卡（A100 40GB）</td>
-<td>≥200GB NVMe</td>
-<td>多模态处理、专业领域咨询</td>
-<td>高性能级（8w-15w）</td>
-</tr>
-<tr>
-<td>‌70B‌</td>
-<td>32核（双路Xeon&#x2F;EPYC）</td>
-<td>≥128GB</td>
-<td>多卡集群（2x A100&#x2F;H100）</td>
-<td>≥500GB NVMe</td>
-<td>科研级推理、大规模生成</td>
-<td>科研级（15w-50w）</td>
-</tr>
-<tr>
-<td>‌671B‌</td>
-<td>多节点服务器</td>
-<td>≥512GB ECC</td>
-<td>分布式GPU集群（8x H100）</td>
-<td>≥1TB NVMe</td>
-<td>超大规模训练、AGI探索</td>
-<td>顶尖级（50w+）</td>
-</tr>
-</tbody></table>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
+
 <ol start="4">
-<li><h3 id="下载模型"><a href="#下载模型" class="headerlink" title="下载模型"></a>下载模型</h3></li>
+<li>选择服务商</li>
 </ol>
-<p>根据选择好的模型进行拉取，详情可见ollama官网Models中的<a href="https://ollama.com/library/deepseek-r1">deepseek-r1</a>，命令如下：</p>
-<p><strong>DeepSeek-R1-Distill-Qwen-1.5B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:1.5b</span><br></pre></td></tr></table></figure>
+<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
 
-<p><strong>DeepSeek-R1-Distill-Qwen-7B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:7b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Llama-8B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:8b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Qwen-14B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:14b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Qwen-32B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:32b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Llama-70B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:70b</span><br></pre></td></tr></table></figure>
+<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
 
 
 
-<p>​	若出现success，则拉取完成，会自动启用该模型。如下图：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12ja0hy-1.png" alt="image-20250228233009280"></p>
-<ol start="5">
-<li><h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3></li>
+<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
+<ol>
+<li>创建API秘钥</li>
 </ol>
-<p>​	博主的配置是4080ti显卡，32G内存，i7 8086k CPU，使用的是deepseek-r1:14b，思考速度大约15s左右，CPU使用率80%左右，内存使用率40%，GPU 使用率54%，显存使用率92%。ollama全部加载在GPU中。可供各位小伙伴选择模型时参考。</p>
-<p>CPU使用率：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1ziuyn-1.png" alt="image-20250228233855506"></p>
-<p>GPU使用率：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yf0a0-1.png" alt="image-20250228235552545"></p>
-<p>ollama完全使用GPU：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yyjbb-1.png" alt="image-20250228235643561"></p>
-<p>在升级至DeepSeek-R1:32B这类专业级模型时，需配置显存更高且专业的显卡，由于模型参数量达320亿级别，显存不足会导致用户界面响应会出现明显卡顿，系统将自动调用大量系统内存进行补偿，单次任务处理时长普遍超过200秒。</p>
-<p>各个版本占用的空间如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/51smj-1.png" alt="image-20250301000848810"></p>
-<h2 id="二、打造专属DeepSeek"><a href="#二、打造专属DeepSeek" class="headerlink" title="二、打造专属DeepSeek"></a>二、打造专属DeepSeek</h2><ol>
-<li><h3 id="安装Cherry-Studio"><a href="#安装Cherry-Studio" class="headerlink" title="安装Cherry Studio"></a>安装Cherry Studio</h3></li>
-</ol>
-<p>​	前往<a href="https://cherry-ai.com/">Cherry Studio 官方网站</a>，根据你的操作系统下载安装。</p>
+<p>会得到SecretId和SecretKey</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+
+
 <ol start="2">
-<li><h3 id="配置Cherry-Studio"><a href="#配置Cherry-Studio" class="headerlink" title="配置Cherry Studio"></a>配置Cherry Studio</h3></li>
+<li>将秘钥格式化导入环境变量</li>
 </ol>
-<p>​	打开 Cherry Studio，在设置中找到模型服务</p>
-<ul>
-<li>从模型列表中的Ollama选择与你本地部署的 DeepSeek-R1 模型版本对应的选项</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/i6msp-1.png" alt="image-20250301003054702"></p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/j8vq7-1.png" alt="image-20250301003232975"></p>
-<ul>
-<li><p>默认模型中选择本地部署对应的模型</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/m60qk-1.png" alt="image-20250301003723515"></p>
-</li>
-<li><p>目前新版的Cherry Studio已支持网络搜索，在网络搜索中可以注册Tavily并设置api秘钥，注册账号可以用github或google</p>
-</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/nub35-1.png" alt="image-20250301004004172"></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+
+
+
 <ol start="3">
-<li><h3 id="使用Cherry-Studio"><a href="#使用Cherry-Studio" class="headerlink" title="使用Cherry Studio"></a>使用Cherry Studio</h3></li>
+<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
 </ol>
-<p>​	配置到这里就可以开始使用专属自己的DeepSeek了，如需使用网络搜索，可在助手页面点开“开启网络搜索”。智能体内也有一些预设的提示词可供食用。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/v7lke-1.png" alt="image-20250301005242312"></p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/vkryc-1.png" alt="image-20250301005303173"></p>
-<h2 id="三、配置使用Web-UI"><a href="#三、配置使用Web-UI" class="headerlink" title="三、配置使用Web UI"></a>三、配置使用Web UI</h2><ol>
-<li><h3 id="Page-Assist是什么"><a href="#Page-Assist是什么" class="headerlink" title="Page Assist是什么"></a>Page Assist是什么</h3></li>
-</ol>
-<p>​	Page Assist 是一款开源浏览器扩展程序，主要用于提升用户在网页浏览过程中与本地 AI 模型的交互效率，提供类似 ChatGPT 的 Web UI 界面，且支持用户与本地运行的 AI 模型（如 Ollama、Gemini Nano、DeepSeek 等）进行多轮对话‌。</p>
-<ol start="2">
-<li><h3 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a><strong>安装与配置</strong></h3></li>
-</ol>
-<p>Github 官网：<a href="https://github.com/n4ze3m/page-assist">https://github.com/n4ze3m/page-assist</a></p>
-<p>首先打开Chrome浏览器，进入应用商店，搜索<a href="https://chromewebstore.google.com/detail/jfgfiigpkhlkbnfnbobbkinehhfdhndo?utm_source=item-share-cp">Page Assist</a>，点击添加至Chrome：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1q260d-1.png" alt="image-20250301010423793"></p>
-<p>添加后在浏览器右上角的扩展程序图标中打开它即可看到Web UI界面了：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1qr26r-1.png" alt="image-20250301010539620"></p>
-<p>点击右上角设置，可以修改语音识别语言和界面显示语言：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1rvrkk-1.png" alt="image-20250301010730076"></p>
-<p>选择好本地搭建好的模型后即开始使用，并且可以开启搜索网络。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1t4goy-1.png" alt="image-20250301010939030"></p>
+<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完毕后，证书颁发成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
+<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
+<p>将证书文件复制到nginx配置的ssl证书目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
 ]]></content>
       <categories>
-        <category>AIGC</category>
+        <category>运维</category>
       </categories>
       <tags>
-        <tag>DeepSeek本地部署</tag>
-        <tag>ollama</tag>
-        <tag>Cherry Studio</tag>
-        <tag>LLM交互平台</tag>
-        <tag>Page Assist</tag>
+        <tag>acme</tag>
+        <tag>免费证书</tag>
+        <tag>自动化申请证书</tag>
       </tags>
   </entry>
   <entry>
@@ -569,83 +447,6 @@
       </tags>
   </entry>
   <entry>
-    <title>ssl证书自动续期工具——acme</title>
-    <url>/posts/e691384c.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
-<h2 id="下载acme-sh到你的-home-目录下"><a href="#下载acme-sh到你的-home-目录下" class="headerlink" title="下载acme.sh到你的 home 目录下"></a>下载acme.sh到你的 <strong>home</strong> 目录下</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
-<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>注意换成自己的邮箱号</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>设置自动升级</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>选择服务商</li>
-</ol>
-<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
-
-<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/03/12o4kes-1.png" alt="image-20250117003138813"></p>
-<ol>
-<li>创建API秘钥</li>
-</ol>
-<p>会得到SecretId和SecretKey</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>将秘钥格式化导入环境变量</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="3">
-<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
-</ol>
-<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
-
-<p>命令执行完毕后，证书颁发成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12nllaa-1.png" alt="image-20250117004249981"></p>
-<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
-<p>将证书文件复制到nginx配置的ssl证书目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>acme</tag>
-        <tag>免费证书</tag>
-        <tag>自动化申请证书</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>手动搭建LNMP环境</title>
     <url>/posts/9d5ca845.html</url>
     <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
@@ -842,6 +643,206 @@
       <tags>
         <tag>WordPress常见问题</tag>
         <tag>WordPress域名</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
+    <url>/posts/9b071109.html</url>
+    <content><![CDATA[<p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
+<p>本文将详细介绍如何基于DeepSeek R1+Ollama+Cherry Studio+Page Assist实现本地化部署，帮助您轻松搭建并使用DeepSeek服务。通过Web UI界面，您可以直接与模型进行交互式对话；同时，借助功能强大的交互平台架构，打造属于自己的专属AI聊天室变得轻而易举。</p>
+<h2 id="一、基础环境搭建"><a href="#一、基础环境搭建" class="headerlink" title="一、基础环境搭建"></a>一、基础环境搭建</h2><ol>
+<li><h3 id="什么是Ollama"><a href="#什么是Ollama" class="headerlink" title="什么是Ollama"></a>什么是Ollama</h3></li>
+</ol>
+<p>​	Ollama 是一个可以在本地轻松部署开源大语言模型（LLM）的工具框架，它允许开发者在本地环境中方便地运行和测试不同的语言模型，如 DeepSeek、Llama等。</p>
+<p>​	官网地址：<a href="https://ollama.com/">https://ollama.com/</a></p>
+<p>​	github地址：<a href="https://github.com/ollama/ollama">https://github.com/ollama/ollama</a></p>
+<ol start="2">
+<li><h3 id="安装Ollama"><a href="#安装Ollama" class="headerlink" title="安装Ollama"></a>安装Ollama</h3></li>
+</ol>
+<ul>
+<li><p>访问<a href="https://ollama.com/download">Ollama官网</a>下载对应操作系统的安装包（Windows&#x2F;macOS&#x2F;Linux），完成一键安装‌</p>
+<p>我这里以windows为例：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zjil1y-1.png" alt="image-20250228214909456"></p>
+<p>  下载完成后进行安装：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zmm92z-1.png" alt="image-20250228215430924"></p>
+</li>
+<li><p>安装验证</p>
+<p>安装完成后，在powershell中输入ollama -v，如果显示版本号即安装成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zp2wi8-1.png" alt="image-20250228215845649"></p>
+</li>
+</ul>
+<ol start="3">
+<li><h3 id="选择模型"><a href="#选择模型" class="headerlink" title="选择模型"></a>选择模型</h3></li>
+</ol>
+<p>各型号特性与硬件需求如下：</p>
+<table>
+<thead>
+<tr>
+<th>型号</th>
+<th>CPU</th>
+<th>内存</th>
+<th>显卡（显存要求）</th>
+<th>存储</th>
+<th>适用场景</th>
+<th>成本参考</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>‌1.5B‌</td>
+<td>4核（Intel i5&#x2F;Ryzen 5）</td>
+<td>≥8GB</td>
+<td>核显或低端独显（≥4GB）</td>
+<td>≥20GB SSD</td>
+<td>简单文本生成、轻量开发</td>
+<td>个人级（2k-5k）</td>
+</tr>
+<tr>
+<td>‌7B‌</td>
+<td>8核（i7&#x2F;Ryzen 7）</td>
+<td>≥16GB</td>
+<td>中端独显（RTX 3060，≥8GB）</td>
+<td>≥50GB NVMe</td>
+<td>代码生成、数据分析</td>
+<td>入门级（5k-1.5w）</td>
+</tr>
+<tr>
+<td>‌8B‌</td>
+<td>8核（i7&#x2F;Ryzen 7）</td>
+<td>≥16GB</td>
+<td>中高端独显（RTX 4060，≥10GB）</td>
+<td>≥50GB NVMe</td>
+<td>逻辑推理、轻量高精度任务</td>
+<td>进阶级（1w-3w）</td>
+</tr>
+<tr>
+<td>‌14B‌</td>
+<td>12核（i9&#x2F;Ryzen 9）</td>
+<td>≥32GB</td>
+<td>高端独显（RTX 4090，≥16GB）</td>
+<td>≥100GB NVMe</td>
+<td>复杂任务（合同分析、长文本）</td>
+<td>企业级（3w-8w）</td>
+</tr>
+<tr>
+<td>‌32B‌</td>
+<td>16核（服务器级）</td>
+<td>≥64GB</td>
+<td>专业卡（A100 40GB）</td>
+<td>≥200GB NVMe</td>
+<td>多模态处理、专业领域咨询</td>
+<td>高性能级（8w-15w）</td>
+</tr>
+<tr>
+<td>‌70B‌</td>
+<td>32核（双路Xeon&#x2F;EPYC）</td>
+<td>≥128GB</td>
+<td>多卡集群（2x A100&#x2F;H100）</td>
+<td>≥500GB NVMe</td>
+<td>科研级推理、大规模生成</td>
+<td>科研级（15w-50w）</td>
+</tr>
+<tr>
+<td>‌671B‌</td>
+<td>多节点服务器</td>
+<td>≥512GB ECC</td>
+<td>分布式GPU集群（8x H100）</td>
+<td>≥1TB NVMe</td>
+<td>超大规模训练、AGI探索</td>
+<td>顶尖级（50w+）</td>
+</tr>
+</tbody></table>
+<ol start="4">
+<li><h3 id="下载模型"><a href="#下载模型" class="headerlink" title="下载模型"></a>下载模型</h3></li>
+</ol>
+<p>根据选择好的模型进行拉取，详情可见ollama官网Models中的<a href="https://ollama.com/library/deepseek-r1">deepseek-r1</a>，命令如下：</p>
+<p><strong>DeepSeek-R1-Distill-Qwen-1.5B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:1.5b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-7B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:7b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Llama-8B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:8b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-14B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:14b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-32B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:32b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Llama-70B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:70b</span><br></pre></td></tr></table></figure>
+
+
+
+<p>​	若出现success，则拉取完成，会自动启用该模型。如下图：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12ja0hy-1.png" alt="image-20250228233009280"></p>
+<ol start="5">
+<li><h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3></li>
+</ol>
+<p>​	博主的配置是4080ti显卡，32G内存，i7 8086k CPU，使用的是deepseek-r1:14b，思考速度大约15s左右，CPU使用率80%左右，内存使用率40%，GPU 使用率54%，显存使用率92%。ollama全部加载在GPU中。可供各位小伙伴选择模型时参考。</p>
+<p>CPU使用率：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1ziuyn-1.png" alt="image-20250228233855506"></p>
+<p>GPU使用率：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yf0a0-1.png" alt="image-20250228235552545"></p>
+<p>ollama完全使用GPU：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yyjbb-1.png" alt="image-20250228235643561"></p>
+<p>在升级至DeepSeek-R1:32B这类专业级模型时，需配置显存更高且专业的显卡，由于模型参数量达320亿级别，显存不足会导致用户界面响应会出现明显卡顿，系统将自动调用大量系统内存进行补偿，单次任务处理时长普遍超过200秒。</p>
+<p>各个版本占用的空间如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/51smj-1.png" alt="image-20250301000848810"></p>
+<h2 id="二、打造专属DeepSeek"><a href="#二、打造专属DeepSeek" class="headerlink" title="二、打造专属DeepSeek"></a>二、打造专属DeepSeek</h2><ol>
+<li><h3 id="安装Cherry-Studio"><a href="#安装Cherry-Studio" class="headerlink" title="安装Cherry Studio"></a>安装Cherry Studio</h3></li>
+</ol>
+<p>​	前往<a href="https://cherry-ai.com/">Cherry Studio 官方网站</a>，根据你的操作系统下载安装。</p>
+<ol start="2">
+<li><h3 id="配置Cherry-Studio"><a href="#配置Cherry-Studio" class="headerlink" title="配置Cherry Studio"></a>配置Cherry Studio</h3></li>
+</ol>
+<p>​	打开 Cherry Studio，在设置中找到模型服务</p>
+<ul>
+<li>从模型列表中的Ollama选择与你本地部署的 DeepSeek-R1 模型版本对应的选项</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/i6msp-1.png" alt="image-20250301003054702"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/j8vq7-1.png" alt="image-20250301003232975"></p>
+<ul>
+<li><p>默认模型中选择本地部署对应的模型</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/m60qk-1.png" alt="image-20250301003723515"></p>
+</li>
+<li><p>目前新版的Cherry Studio已支持网络搜索，在网络搜索中可以注册Tavily并设置api秘钥，注册账号可以用github或google</p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/nub35-1.png" alt="image-20250301004004172"></p>
+<ol start="3">
+<li><h3 id="使用Cherry-Studio"><a href="#使用Cherry-Studio" class="headerlink" title="使用Cherry Studio"></a>使用Cherry Studio</h3></li>
+</ol>
+<p>​	配置到这里就可以开始使用专属自己的DeepSeek了，如需使用网络搜索，可在助手页面点开“开启网络搜索”。智能体内也有一些预设的提示词可供食用。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/v7lke-1.png" alt="image-20250301005242312"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/vkryc-1.png" alt="image-20250301005303173"></p>
+<h2 id="三、配置使用Web-UI"><a href="#三、配置使用Web-UI" class="headerlink" title="三、配置使用Web UI"></a>三、配置使用Web UI</h2><ol>
+<li><h3 id="Page-Assist是什么"><a href="#Page-Assist是什么" class="headerlink" title="Page Assist是什么"></a>Page Assist是什么</h3></li>
+</ol>
+<p>​	Page Assist 是一款开源浏览器扩展程序，主要用于提升用户在网页浏览过程中与本地 AI 模型的交互效率，提供类似 ChatGPT 的 Web UI 界面，且支持用户与本地运行的 AI 模型（如 Ollama、Gemini Nano、DeepSeek 等）进行多轮对话‌。</p>
+<ol start="2">
+<li><h3 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a><strong>安装与配置</strong></h3></li>
+</ol>
+<p>Github 官网：<a href="https://github.com/n4ze3m/page-assist">https://github.com/n4ze3m/page-assist</a></p>
+<p>首先打开Chrome浏览器，进入应用商店，搜索<a href="https://chromewebstore.google.com/detail/jfgfiigpkhlkbnfnbobbkinehhfdhndo?utm_source=item-share-cp">Page Assist</a>，点击添加至Chrome：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1q260d-1.png" alt="image-20250301010423793"></p>
+<p>添加后在浏览器右上角的扩展程序图标中打开它即可看到Web UI界面了：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1qr26r-1.png" alt="image-20250301010539620"></p>
+<p>点击右上角设置，可以修改语音识别语言和界面显示语言：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1rvrkk-1.png" alt="image-20250301010730076"></p>
+<p>选择好本地搭建好的模型后即开始使用，并且可以开启搜索网络。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1t4goy-1.png" alt="image-20250301010939030"></p>
+]]></content>
+      <categories>
+        <category>AIGC</category>
+      </categories>
+      <tags>
+        <tag>DeepSeek本地部署</tag>
+        <tag>ollama</tag>
+        <tag>Cherry Studio</tag>
+        <tag>LLM交互平台</tag>
+        <tag>Page Assist</tag>
       </tags>
   </entry>
 </search>
