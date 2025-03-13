@@ -201,80 +201,239 @@
       </tags>
   </entry>
   <entry>
-    <title>ssl证书自动续期工具——acme</title>
-    <url>/posts/e691384c.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
-<h2 id="下载acme-sh到你的-home-目录下"><a href="#下载acme-sh到你的-home-目录下" class="headerlink" title="下载acme.sh到你的 home 目录下"></a>下载acme.sh到你的 <strong>home</strong> 目录下</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
-<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>注意换成自己的邮箱号</p>
-</li>
+    <title>tmux实用教程——批量操作神器</title>
+    <url>/posts/3799e173.html</url>
+    <content><![CDATA[<h2 id="一、Tmux-简介"><a href="#一、Tmux-简介" class="headerlink" title="一、Tmux 简介"></a>一、Tmux 简介</h2><p>‌<strong>Tmux</strong>‌ 是一款 ‌<strong>终端复用器</strong>‌（Terminal Multiplexer），允许用户在单个终端窗口中同时管理多个终端会话、窗口和窗格。它的核心功能包括：</p>
+<ul>
+<li>‌<strong>会话管理</strong>‌：保持长时间运行的进程（如 SSH 连接），断网后仍可恢复。</li>
+<li>‌<strong>窗口和窗格</strong>‌：将终端分割为多个窗格（Pane）或窗口（Window），提升多任务效率。</li>
+</ul>
+<p>对比传统终端，Tmux 解决了长任务依赖终端存活的问题，且提升多任务操作效率。特别是在cp或者mv文件期间，一旦我们的远程连接工具所在的工作电脑出现断网或断电的情况那么传输就会因此中断。</p>
+<h2 id="二、核心概念"><a href="#二、核心概念" class="headerlink" title="二、核心概念"></a>二、核心概念</h2><ol>
+<li><h3 id="Session（会话）"><a href="#Session（会话）" class="headerlink" title="Session（会话）"></a>Session（会话）</h3></li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
-
+<ul>
+<li><p><strong>定义</strong>‌：顶层管理单位，代表一个独立的工作环境（如一个开发项目）。</p>
+</li>
+<li><p><strong>作用‌</strong>：隔离不同任务，长期保存工作进度。</p>
+</li>
+<li><p><strong>示例</strong>‌：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">tmux new -s dev_project  # 创建名为 &quot;dev_project&quot; 的会话</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol start="2">
+<li><h3 id="Window（窗口）"><a href="#Window（窗口）" class="headerlink" title="Window（窗口）"></a>Window（窗口）</h3></li>
+</ol>
+<ul>
+<li>‌<strong>定义</strong>‌：会话中的二级单位，类似浏览器标签页，用于分隔同一任务的不同阶段。</li>
+<li>‌<strong>作用</strong>‌：管理相关但独立的操作流（如代码编辑、服务器监控）。</li>
+<li>‌<strong>示例</strong>‌：<ul>
+<li>Window1：前端开发</li>
+<li>Window2：后端调试</li>
+</ul>
+</li>
+</ul>
 <ol start="3">
-<li>设置自动升级</li>
+<li><h3 id="Pane（窗格）"><a href="#Pane（窗格）" class="headerlink" title="Pane（窗格）"></a>Pane（窗格）</h3></li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
-
+<ul>
+<li><p>‌<strong>定义</strong>‌：窗口内分割出的子区域，支持并行操作。</p>
+</li>
+<li><p>‌<strong>作用</strong>‌：在单一窗口中同时执行多个命令（如左侧写代码，右侧运行测试）。</p>
+</li>
+<li><p>‌<strong>示例</strong>‌：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Prefix + %   # 垂直分屏 </span><br><span class="line">Prefix + &quot;   # 水平分屏</span><br></pre></td></tr></table></figure></li>
+</ul>
 <ol start="4">
-<li>选择服务商</li>
+<li><h3 id="层级关系"><a href="#层级关系" class="headerlink" title="层级关系"></a>层级关系</h3></li>
 </ol>
-<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
-
-<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/03/12o4kes-1.png" alt="image-20250117003138813"></p>
-<ol>
-<li>创建API秘钥</li>
+<p>​	Session → Window → Pane</p>
+<ul>
+<li>‌<strong>比喻</strong>‌：<ul>
+<li>Session &#x3D; 整个项目</li>
+<li>Window &#x3D; 项目的不同阶段（开发、测试）</li>
+<li>Pane &#x3D; 阶段内的具体操作界面</li>
+</ul>
+</li>
+</ul>
+<h2 id="三、安装-Tmux"><a href="#三、安装-Tmux" class="headerlink" title="三、安装 Tmux"></a>三、安装 Tmux</h2><ol>
+<li><h3 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a><strong>Linux</strong></h3></li>
 </ol>
-<p>会得到SecretId和SecretKey</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
-
-
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Ubuntu/Debian</span></span><br><span class="line">sudo apt update &amp;&amp; sudo apt install tmux</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">CentOS/RHEL</span></span><br><span class="line">sudo yum install tmux    # 或 sudo dnf install tmux（新版本）</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Arch Linux</span></span><br><span class="line">sudo pacman -S tmux</span><br><span class="line"></span><br></pre></td></tr></table></figure>
 
 <ol start="2">
-<li>将秘钥格式化导入环境变量</li>
+<li><h3 id="MacOS"><a href="#MacOS" class="headerlink" title="MacOS"></a><strong>MacOS</strong></h3></li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">使用 Homebrew</span></span><br><span class="line">brew install tmux</span><br></pre></td></tr></table></figure>
 
 
 
+<h2 id="四、Tmux基本操作与快捷键"><a href="#四、Tmux基本操作与快捷键" class="headerlink" title="四、Tmux基本操作与快捷键"></a>四、Tmux基本操作与快捷键</h2><p>Tmux 大部分操作需先按 <strong>前缀键</strong>（默认 Ctrl+b），再按功能键。以下所有的前缀键都简称为<strong>Prefix</strong>。</p>
+<ol>
+<li><h3 id="会话（Session）操作"><a href="#会话（Session）操作" class="headerlink" title="会话（Session）操作"></a>会话（Session）操作</h3></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>命令&#x2F;快捷键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>新建会话</td>
+<td><code>tmux new -s &lt;会话名&gt;</code> 或 <code>tmux new</code></td>
+<td>创建指定名称的会话或创建默认会话名</td>
+</tr>
+<tr>
+<td>分离当前会话</td>
+<td><code>Prefix + d</code></td>
+<td>退出 Tmux，会话后台运行</td>
+</tr>
+<tr>
+<td>列出会话</td>
+<td><code>tmux ls</code> 或 <code>Prefix + s</code></td>
+<td>查看所有会话</td>
+</tr>
+<tr>
+<td>恢复会话</td>
+<td><code>tmux attach -t &lt;会话名&gt;</code></td>
+<td>重新接入指定会话</td>
+</tr>
+<tr>
+<td>关闭会话</td>
+<td><code>tmux kill-session -t &lt;会话名&gt;</code></td>
+<td>终止指定会话</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li><h3 id="窗口（Window）操作"><a href="#窗口（Window）操作" class="headerlink" title="窗口（Window）操作"></a>窗口（Window）操作</h3></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>快捷键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>新建窗口</td>
+<td><code>Prefix + c</code></td>
+<td>创建新窗口（编号从 0 开始）</td>
+</tr>
+<tr>
+<td>切换窗口</td>
+<td><code>Prefix + 0~9</code></td>
+<td>按编号切换窗口</td>
+</tr>
+<tr>
+<td>重命名窗口</td>
+<td><code>Prefix + ,</code></td>
+<td>自定义窗口名称（如”API调试”）</td>
+</tr>
+<tr>
+<td>关闭窗口</td>
+<td><code>Prefix + &amp;</code></td>
+<td>关闭当前窗口（需确认）</td>
+</tr>
+<tr>
+<td>窗口列表</td>
+<td><code>Prefix + w</code></td>
+<td>可视化选择窗口</td>
+</tr>
+</tbody></table>
 <ol start="3">
-<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+<li><h3 id="窗格（Pane）操作"><a href="#窗格（Pane）操作" class="headerlink" title="窗格（Pane）操作"></a>窗格（Pane）操作</h3></li>
 </ol>
-<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>快捷键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>垂直分割</td>
+<td><code>Prefix + %</code></td>
+<td>左右分屏（| 状）</td>
+</tr>
+<tr>
+<td>水平分割</td>
+<td><code>Prefix + &quot;</code></td>
+<td>上下分屏（— 状）</td>
+</tr>
+<tr>
+<td>切换焦点</td>
+<td><code>Prefix + 方向键</code></td>
+<td>按方向移动焦点</td>
+</tr>
+<tr>
+<td>关闭窗格</td>
+<td><code>Prefix + x</code></td>
+<td>关闭当前窗格（需确认）</td>
+</tr>
+<tr>
+<td>调整大小</td>
+<td><code>Prefix + Ctrl+方向键</code></td>
+<td>按住方向键精细调整</td>
+</tr>
+<tr>
+<td>全屏显示</td>
+<td><code>Prefix + z</code></td>
+<td>临时放大当前窗格</td>
+</tr>
+</tbody></table>
+<h2 id="五、实用技巧"><a href="#五、实用技巧" class="headerlink" title="五、实用技巧"></a>五、实用技巧</h2><ol>
+<li><h3 id="同步操作多个窗"><a href="#同步操作多个窗" class="headerlink" title="同步操作多个窗"></a>同步操作多个窗</h3></li>
+</ol>
+<ul>
+<li><code>Ctrl + b</code> → <code>:</code> → 输入 <code>setw synchronize-panes</code> → <code>Enter</code> （再次输入取消）</li>
+</ul>
+<ol start="2">
+<li><h3 id="复制模式"><a href="#复制模式" class="headerlink" title="复制模式"></a>复制模式</h3></li>
+</ol>
+<ul>
+<li><code>Ctrl + b</code> → <code>[</code>：进入复制模式，选择文本后按 <code>Enter</code> 复制。</li>
+<li><code>Ctrl + b</code> → <code>]</code>：粘贴已复制内容。</li>
+</ul>
+<ol start="3">
+<li><h3 id="快速跳转"><a href="#快速跳转" class="headerlink" title="快速跳转"></a>快速跳转</h3></li>
+</ol>
+<ul>
+<li><code>Ctrl + b</code> → <code>q</code>：显示窗格编号，按数字键快速跳转。</li>
+</ul>
+<ol start="4">
+<li><h3 id="重新加载配置"><a href="#重新加载配置" class="headerlink" title="重新加载配置"></a>重新加载配置</h3></li>
+</ol>
+<ul>
+<li><code>Ctrl + b</code> → <code>:</code> → 输入 <code>source-file ~/.tmux.conf</code> → <code>Enter</code></li>
+</ul>
+<h2 id="六、自定义配置"><a href="#六、自定义配置" class="headerlink" title="六、自定义配置"></a>六、自定义配置</h2><p>编辑 <code>~/.tmux.conf</code> 可自定义快捷键和功能，例如：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动鼠标控制</span></span><br><span class="line">set -g mouse on</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;C-s R&quot;</span> 重载 tmux 配置</span></span><br><span class="line">bind R source-file ~/.tmux.conf \; display-message &quot;Tmux Config reloaded...&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置 Prefix+y 同步控制所有窗口</span></span><br><span class="line">bind y setw synchronize-panes</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">窗口重命名</span></span><br><span class="line">set -w -g allow-rename on</span><br><span class="line">set -w -g automatic-rename on</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">窗口操作默认按键绑定</span></span><br><span class="line">set -w -g mode-keys vi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">终端颜色</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">此颜色应当与所使用终端配置一致，当前为 Alacritty</span></span><br><span class="line">set -g default-terminal &quot;xterm-256color&quot;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">-a: append</span></span><br><span class="line">set -ga terminal-overrides &quot;,xterm-256color:Tc:clipboard&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">防止自动关闭 Session</span></span><br><span class="line">set -g destroy-unattached off</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">颜色</span></span><br><span class="line">set -g status-bg default</span><br><span class="line">set -g status-fg white</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">刷新时间</span></span><br><span class="line">set -g status-interval 1</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">对齐方式</span></span><br><span class="line">set -g status-justify centre</span><br></pre></td></tr></table></figure>
 
-<p>命令执行完毕后，证书颁发成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12nllaa-1.png" alt="image-20250117004249981"></p>
-<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
-<p>将证书文件复制到nginx配置的ssl证书目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="七、脚本分享"><a href="#七、脚本分享" class="headerlink" title="七、脚本分享"></a>七、脚本分享</h2><p>分享一个tmux批量ssh服务器的脚本，前提是已经将公钥加到对应的服务器上可以直接ssh登录。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">文件名: tmux-multissh.sh</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">用途：自动创建 Tmux 会话并连接多台主机</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">参数：./tmux-multissh.sh [-l 用户名] [-p 端口] [-n 会话名称] &lt;主机列表文件&gt;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">示例：./tmux-multissh.sh -l ops -p 22 -n docker hosts.txt</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查参数</span></span><br><span class="line">if [ $# -lt 1 ]; then</span><br><span class="line">    tmux</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">配置变量</span></span><br><span class="line">SESSION_NAME=&quot;multi_ssh&quot; # 会话名称（默认 multi_ssh）</span><br><span class="line">LAYOUT=&quot;tiled&quot;                  # 布局方式 (tiled, even-horizontal, even-vertical)</span><br><span class="line">SSH_OPTIONS=&quot;-o ConnectTimeout=5 -o StrictHostKeyChecking=no&quot; # SSH 连接选项</span><br><span class="line">PORT=&quot;22&quot;</span><br><span class="line">PANES_PER_WINDOW=4  # 每个窗口最大面板数</span><br><span class="line">USER=&quot;ops&quot;</span><br><span class="line"></span><br><span class="line">while getopts &quot;:l:p:n:&quot; opt</span><br><span class="line">do</span><br><span class="line">    case $opt in</span><br><span class="line">        l)USER=$OPTARG;;                  # 指定SSH 用户名</span><br><span class="line">        p)PORT=$OPTARG;;                  # 指定SSH 端口</span><br><span class="line">        n)SESSION_NAME=$OPTARG;;          # 指定会话名称</span><br><span class="line">        :) echo &quot;错误: 选项 -$OPTARG 需要参数&quot; &gt;&amp;2; exit 1 ;;</span><br><span class="line">        \?) echo &quot;无效选项: -$OPTARG&quot; &gt;&amp;2</span><br><span class="line">            echo &quot;用法: $0 [-l 用户名] [-p 端口] [-n 会话名称] &lt;主机列表文件&gt;&quot; &gt;&amp;2</span><br><span class="line">            exit 1 ;;</span><br><span class="line">    esac</span><br><span class="line">done</span><br><span class="line">HOST_FILE=`echo $* | awk &#x27;&#123;print $NF&#125;&#x27;`              # 主机列表文件路径</span><br><span class="line">shift $((OPTIND -1))              # 移除已解析选项</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查必要工具</span></span><br><span class="line">command -v tmux &gt;/dev/null 2&gt;&amp;1 || &#123; echo &quot;错误: 请先安装 tmux&quot;; exit 1; &#125;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">读取主机列表</span></span><br><span class="line">if [ ! -f &quot;$HOST_FILE&quot; ]; then</span><br><span class="line">    echo &quot;错误: 主机文件 $HOST_FILE 不存在&quot;</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查是否已有同名会话</span></span><br><span class="line">if tmux has-session -t &quot;$SESSION_NAME&quot; 2&gt;/dev/null; then</span><br><span class="line">    echo &quot;错误: 会话 $SESSION_NAME 已存在，请先关闭或使用不同名称&quot;</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">readarray -t HOSTS &lt; &lt;(grep -v &#x27;^[[:space:]]*#&#x27; &quot;$HOST_FILE&quot; | grep -v &#x27;^[[:space:]]*$&#x27;)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">创建新会话（第一个窗口）</span></span><br><span class="line">tmux new-session -d -s &quot;$SESSION_NAME&quot; -n &quot;SSH-Panel-0&quot;</span><br><span class="line">tmux send-keys -t &quot;$SESSION_NAME:0&quot; &quot;ssh $&#123;SSH_OPTIONS&#125; -p $PORT $USER@$(head -n 1 &quot;$HOST_FILE&quot;)&quot; C-m</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查主机列表是否为空</span></span><br><span class="line">HOSTS_COUNT=$&#123;#HOSTS[@]&#125;</span><br><span class="line">[ $HOSTS_COUNT -eq 0 ] &amp;&amp; &#123; echo &quot;错误: 主机列表为空&quot;; exit 1; &#125;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">为剩余主机创建连接面板</span></span><br><span class="line">for ((i=1; i&lt;HOSTS_COUNT; i++)); do</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">计算窗口编号（每PANES_PER_WINDOW个主机一个窗口）</span></span><br><span class="line">  window=$((i / PANES_PER_WINDOW))</span><br><span class="line">  pane=$((i % PANES_PER_WINDOW))</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">创建新窗口（当需要时）</span></span><br><span class="line">  if [ $pane -eq 0 ]; then</span><br><span class="line">    tmux new-window -t &quot;$SESSION_NAME:$window&quot; -n &quot;SSH-Panel-$window&quot;</span><br><span class="line">  else</span><br><span class="line">    tmux split-window -t &quot;$SESSION_NAME:$window&quot; -h</span><br><span class="line">  fi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">发送SSH连接命令并调整布局</span></span><br><span class="line">  tmux send-keys -t &quot;$SESSION_NAME:$window.$pane&quot; \</span><br><span class="line">    &quot;ssh $&#123;SSH_OPTIONS&#125; -p $PORT $USER@$&#123;HOSTS[$i]&#125;&quot; C-m</span><br><span class="line">  tmux select-layout -t &quot;$SESSION_NAME:$window&quot; &quot;$LAYOUT&quot;</span><br><span class="line">done</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置初始窗口和焦点</span></span><br><span class="line">tmux select-window -t &quot;$SESSION_NAME:0&quot;</span><br><span class="line">tmux select-pane -t 0</span><br><span class="line">tmux setw -t &quot;$SESSION_NAME&quot; synchronize-panes off</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">用户交互</span></span><br><span class="line">read -p &quot;是否立即附加到会话？[Y/n] &quot; -n 1 -r</span><br><span class="line">echo</span><br><span class="line">if [[ $REPLY =~ ^[Nn]$ ]]; then</span><br><span class="line">  echo &quot;会话已在后台运行，附加命令: tmux attach -t $SESSION_NAME&quot;</span><br><span class="line">else</span><br><span class="line">  tmux attach -t &quot;$SESSION_NAME&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
 
 
 
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以做一个简单别名，更方便执行。将下文写入到</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">写入自定义别名</span></span><br><span class="line">vim .bashrc      </span><br><span class="line"></span><br><span class="line">alias tmuxa=&#x27;./tmux-multissh.sh&#x27;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出后重新加载配置文件</span></span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
 
+
+
+<p>这样就可以更方便的同时ssh到多台服务器，例如：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/13/vocqry-1.png" alt="image-20250313191539703"></p>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>acme</tag>
-        <tag>免费证书</tag>
-        <tag>自动化申请证书</tag>
+        <tag>tmux</tag>
+        <tag>批量操作工具</tag>
+        <tag>tmux快捷键</tag>
       </tags>
   </entry>
   <entry>
@@ -290,7 +449,7 @@
 <li>WordPress：博客平台，本文以 WordPress 6.6.1 为例。</li>
 </ul>
 <h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux-实例"><a href="#步骤1：登录-Linux-实例" class="headerlink" title="步骤1：登录 Linux 实例"></a>步骤1：登录 Linux 实例</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="/wordpress/%E6%89%8B%E5%8A%A8%E6%90%AD%E5%BB%BA%20LNMP%20%E7%8E%AF%E5%A2%83">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
+<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="https://www.qiubite.fun/posts/9d5ca845.html">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
 <h3 id="步骤3：配置数据库"><a href="#步骤3：配置数据库" class="headerlink" title="步骤3：配置数据库"></a>步骤3：配置数据库</h3><ol>
 <li>执行以下命令，进入 MariaDB。</li>
 </ol>
@@ -407,6 +566,83 @@
         <tag>PHP</tag>
         <tag>Linux</tag>
         <tag>wordpress</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ssl证书自动续期工具——acme</title>
+    <url>/posts/e691384c.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
+<h2 id="下载acme-sh到你的-home-目录下"><a href="#下载acme-sh到你的-home-目录下" class="headerlink" title="下载acme.sh到你的 home 目录下"></a>下载acme.sh到你的 <strong>home</strong> 目录下</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
+<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>注意换成自己的邮箱号</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置自动升级</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>选择服务商</li>
+</ol>
+<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
+
+<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/03/12o4kes-1.png" alt="image-20250117003138813"></p>
+<ol>
+<li>创建API秘钥</li>
+</ol>
+<p>会得到SecretId和SecretKey</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>将秘钥格式化导入环境变量</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+</ol>
+<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完毕后，证书颁发成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12nllaa-1.png" alt="image-20250117004249981"></p>
+<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
+<p>将证书文件复制到nginx配置的ssl证书目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>acme</tag>
+        <tag>免费证书</tag>
+        <tag>自动化申请证书</tag>
       </tags>
   </entry>
   <entry>
