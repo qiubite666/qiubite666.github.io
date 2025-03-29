@@ -208,36 +208,36 @@
 <blockquote>
 <p>BIOS&#x2F;UEFI → GRUB → 内核 → systemd → 目标状态 → 用户登录</p>
 </blockquote>
-<h3 id="BIOS-UEFI-初始化"><a href="#BIOS-UEFI-初始化" class="headerlink" title="BIOS&#x2F;UEFI 初始化"></a>BIOS&#x2F;UEFI 初始化</h3><ol>
-<li><h4 id="硬件自检（POST）"><a href="#硬件自检（POST）" class="headerlink" title="硬件自检（POST）"></a>硬件自检（POST）</h4></li>
+<h2 id="BIOS-UEFI-初始化"><a href="#BIOS-UEFI-初始化" class="headerlink" title="BIOS&#x2F;UEFI 初始化"></a>BIOS&#x2F;UEFI 初始化</h2><ol>
+<li><h3 id="硬件自检（POST）"><a href="#硬件自检（POST）" class="headerlink" title="硬件自检（POST）"></a>硬件自检（POST）</h3></li>
 </ol>
 <p>计算机加电后，BIOS&#x2F;UEFI 首先执行硬件自检（Power-On Self Test），检测 CPU、内存、存储设备等核心硬件状态‌</p>
 <ol start="2">
-<li><h4 id="‌选择启动设备"><a href="#‌选择启动设备" class="headerlink" title="‌选择启动设备"></a>‌选择启动设备</h4></li>
+<li><h3 id="‌选择启动设备"><a href="#‌选择启动设备" class="headerlink" title="‌选择启动设备"></a>‌选择启动设备</h3></li>
 </ol>
 <p>根据 BIOS&#x2F;UEFI 配置的启动顺序（如硬盘、USB、网络等），加载目标设备的引导扇区代码（如 MBR 或 UEFI 分区）‌</p>
-<h3 id="GRUB-引导加载程序"><a href="#GRUB-引导加载程序" class="headerlink" title="GRUB 引导加载程序"></a>GRUB 引导加载程序</h3><ol>
-<li><h4 id="加载-GRUB-菜单"><a href="#加载-GRUB-菜单" class="headerlink" title="加载 GRUB 菜单"></a>加载 GRUB 菜单</h4></li>
+<h2 id="GRUB-引导加载程序"><a href="#GRUB-引导加载程序" class="headerlink" title="GRUB 引导加载程序"></a>GRUB 引导加载程序</h2><ol>
+<li><h3 id="加载-GRUB-菜单"><a href="#加载-GRUB-菜单" class="headerlink" title="加载 GRUB 菜单"></a>加载 GRUB 菜单</h3></li>
 </ol>
 <p>BIOS&#x2F;UEFI 将控制权移交至 GRUB（Grand Unified Bootloader），读取 <code>/boot/grub/grub.cfg</code> 配置文件并显示可引导的操作系统选项菜单‌</p>
 <ol start="2">
-<li><h4 id="‌内核与-initrd-加载"><a href="#‌内核与-initrd-加载" class="headerlink" title="‌内核与 initrd 加载"></a>‌内核与 initrd 加载</h4></li>
+<li><h3 id="‌内核与-initrd-加载"><a href="#‌内核与-initrd-加载" class="headerlink" title="‌内核与 initrd 加载"></a>‌内核与 initrd 加载</h3></li>
 </ol>
 <p>用户选择 Debian 启动项后，GRUB 将 Linux 内核（如 <code>vmlinuz</code>）和初始内存磁盘镜像（<code>initrd.img</code>）加载至内存，启动内核执行‌</p>
-<h3 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h3><ol>
-<li><h4 id="硬件驱动加载"><a href="#硬件驱动加载" class="headerlink" title="硬件驱动加载"></a>硬件驱动加载</h4></li>
+<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><ol>
+<li><h3 id="硬件驱动加载"><a href="#硬件驱动加载" class="headerlink" title="硬件驱动加载"></a>硬件驱动加载</h3></li>
 </ol>
 <p>内核初始化硬件设备（如磁盘控制器、网络接口），并挂载根文件系统‌</p>
 <ol start="2">
-<li><h4 id="启动-systemd-进程"><a href="#启动-systemd-进程" class="headerlink" title="启动 systemd 进程"></a>启动 <code>systemd</code> 进程</h4></li>
+<li><h3 id="启动-systemd-进程"><a href="#启动-systemd-进程" class="headerlink" title="启动 systemd 进程"></a>启动 <code>systemd</code> 进程</h3></li>
 </ol>
 <p>内核调用首个用户空间进程 <code>systemd</code>（PID&#x3D;1），取代传统的 SysV init 作为初始化系统‌</p>
-<h3 id="用户空间初始化"><a href="#用户空间初始化" class="headerlink" title="用户空间初始化"></a>用户空间初始化</h3><ol>
-<li><h4 id="‌目标状态（Target）管理"><a href="#‌目标状态（Target）管理" class="headerlink" title="‌目标状态（Target）管理"></a>‌目标状态（Target）管理</h4></li>
+<h2 id="用户空间初始化"><a href="#用户空间初始化" class="headerlink" title="用户空间初始化"></a>用户空间初始化</h2><ol>
+<li><h3 id="‌目标状态（Target）管理"><a href="#‌目标状态（Target）管理" class="headerlink" title="‌目标状态（Target）管理"></a>‌目标状态（Target）管理</h3></li>
 </ol>
 <p><code>systemd</code> 根据默认目标（如 <code>multi-user.target</code> 或 <code>graphical.target</code>）激活基础服务（如网络、日志、定时任务）‌</p>
 <ol start="2">
-<li><h4 id="‌运行级别兼容"><a href="#‌运行级别兼容" class="headerlink" title="‌运行级别兼容"></a>‌运行级别兼容</h4></li>
+<li><h3 id="‌运行级别兼容"><a href="#‌运行级别兼容" class="headerlink" title="‌运行级别兼容"></a>‌运行级别兼容</h3></li>
 </ol>
 <ul>
 <li>级别 0 → <code>poweroff.target</code>（关机）</li>
@@ -245,12 +245,12 @@
 <li>级别 2-5 → <code>multi-user.target</code>（多用户模式）</li>
 <li>级别 6 → <code>reboot.target</code>（重启）‌</li>
 </ul>
-<h3 id="用户登录"><a href="#用户登录" class="headerlink" title="用户登录"></a>用户登录</h3><ol>
-<li><h4 id="显示管理器启动‌"><a href="#显示管理器启动‌" class="headerlink" title="显示管理器启动‌"></a>显示管理器启动‌</h4></li>
+<h2 id="用户登录"><a href="#用户登录" class="headerlink" title="用户登录"></a>用户登录</h2><ol>
+<li><h3 id="显示管理器启动‌"><a href="#显示管理器启动‌" class="headerlink" title="显示管理器启动‌"></a>显示管理器启动‌</h3></li>
 </ol>
 <p>若目标为图形界面（<code>graphical.target</code>），<code>systemd</code> 启动显示管理器（如 GDM），进入登录界面‌</p>
 <ol start="2">
-<li><h4 id="‌Shell-或桌面环境加载"><a href="#‌Shell-或桌面环境加载" class="headerlink" title="‌Shell 或桌面环境加载"></a>‌Shell 或桌面环境加载</h4></li>
+<li><h3 id="‌Shell-或桌面环境加载"><a href="#‌Shell-或桌面环境加载" class="headerlink" title="‌Shell 或桌面环境加载"></a>‌Shell 或桌面环境加载</h3></li>
 </ol>
 <p>用户认证通过后，启动桌面环境（如 GNOME）或命令行 Shell‌</p>
 ]]></content>
@@ -261,415 +261,6 @@
         <tag>Linux</tag>
         <tag>BIOS</tag>
         <tag>GRUB</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ssl证书自动续期工具——acme</title>
-    <url>/posts/e691384c.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
-<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
-<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>注意换成自己的邮箱号</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>设置自动升级</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>选择服务商</li>
-</ol>
-<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
-
-<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
-<ol>
-<li>创建API秘钥</li>
-</ol>
-<p>会得到SecretId和SecretKey</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>将秘钥格式化导入环境变量</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="3">
-<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
-</ol>
-<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
-
-<p>命令执行完毕后，证书颁发成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
-<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
-<p>将证书文件复制到nginx配置的ssl证书目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>acme</tag>
-        <tag>免费证书</tag>
-        <tag>自动化申请证书</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>手动搭建LNMP环境</title>
-    <url>/posts/9d5ca845.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
-<ul>
-<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
-<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
-<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
-<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
-</ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
-<li>确认源文件正常，执行以下命令。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令，安装 nginx。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
-
-<ol start="8">
-<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
-
-<p>显示如下，则说明 Nginx 安装配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
-<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
-<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
-<ol start="4">
-<li>执行以下命令，退出 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
-
-<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
-<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，验证 PHP 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
-<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
-<ol>
-<li>执行以下命令，创建测试文件。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则说明环境配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>LNMP环境</tag>
-        <tag>Nginx</tag>
-        <tag>MySQL</tag>
-        <tag>PHP</tag>
-        <tag>wordpress</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>手动搭建 WordPress 个人站点(Linux)</title>
-    <url>/posts/c171e9f0.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 WordPress 个人站点组成版本及说明如下：</p>
-<ul>
-<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
-<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
-<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
-<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
-<li>WordPress：博客平台，本文以 WordPress 6.6.1 为例。</li>
-</ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux-实例"><a href="#步骤1：登录-Linux-实例" class="headerlink" title="步骤1：登录 Linux 实例"></a>步骤1：登录 Linux 实例</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="https://www.qiubite.fun/posts/9d5ca845.html">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
-<h3 id="步骤3：配置数据库"><a href="#步骤3：配置数据库" class="headerlink" title="步骤3：配置数据库"></a>步骤3：配置数据库</h3><ol>
-<li>执行以下命令，进入 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，创建 MariaDB 数据库。例如 “wordpress”。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE wordpress;</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>执行以下命令，创建一个新用户。例如 “user”，登录密码为 <code>123456</code>。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">create user &#x27;user&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>执行以下命令，赋予用户对 “wordpress” 数据库的全部权限。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON wordpress.* TO &#x27;user&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li>执行以下命令，设置 root 账户密码。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD(&#x27;输入您的密码&#x27;);</span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li>执行以下命令，使所有配置生效。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
-
-<ol start="7">
-<li>执行以下命令，退出 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure>
-
-<h3 id="步骤4：安装和配置-WordPress"><a href="#步骤4：安装和配置-WordPress" class="headerlink" title="步骤4：安装和配置 WordPress"></a>步骤4：安装和配置 WordPress</h3><h4 id="下载-WordPress"><a href="#下载-WordPress" class="headerlink" title="下载 WordPress"></a>下载 WordPress</h4><ol>
-<li>执行以下命令，删除网站根目录下用于测试 PHP-Nginx 配置的<code>index.php</code>文件。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>依次执行以下命令，进入<code>/usr/share/nginx/html/</code>目录，并下载与解压 WordPress。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html</span><br><span class="line"></span><br><span class="line">wget https://cn.wordpress.org/wordpress-6.6.1-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line">tar zxvf wordpress-6.6.1-zh_CN.tar.gz</span><br></pre></td></tr></table></figure>
-
-
-
-<p>WordPress可以放到自定义的目录，修改时需要同步修改nginx配置文件中root 描述的目录。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fr07r-1.png" alt="image-20240907200548425"></p>
-<h4 id="修改-WordPress-配置文件"><a href="#修改-WordPress-配置文件" class="headerlink" title="修改 WordPress 配置文件"></a>修改 WordPress 配置文件</h4><ol>
-<li>依次执行以下命令，进入 WordPress 安装目录，将<code>wp-config-sample.php</code>文件复制到<code>wp-config.php</code>文件中，并将原先的示例配置文件保留作为备份。</li>
-</ol>
-<figure class="highlight shellsession"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html/wordpress</span><br><span class="line">cp wp-config-sample.php wp-config.php</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，打开并编辑新创建的配置文件。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>按 <strong>i</strong> 切换至编辑模式，找到文件中 MySQL 的部分，并将相关配置信息修改为配置 WordPress 数据库 中的内容。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> // ** Database settings - You can get this info from your web host ** //</span><br><span class="line">/** The name of the database for WordPress */</span><br><span class="line">define( &#x27;DB_NAME&#x27;, &#x27;wordpress&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database username */</span><br><span class="line">define( &#x27;DB_USER&#x27;, &#x27;user&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database password */</span><br><span class="line">define( &#x27;DB_PASSWORD&#x27;, &#x27;123456&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database hostname */</span><br><span class="line">define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>修改完成后，按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件返回。</li>
-</ol>
-<h3 id="步骤5：验证-WordPress-安装"><a href="#步骤5：验证-WordPress-安装" class="headerlink" title="步骤5：验证 WordPress 安装"></a>步骤5：验证 WordPress 安装</h3><ol>
-<li>在浏览器地址栏输入<code>http://域名或公网 IP/wordpress 文件夹</code>，例如：</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://192.xxx.xxx.xx/wordpress  </span><br><span class="line">或</span><br><span class="line">http://xxx.com/wordpress</span><br></pre></td></tr></table></figure>
-
-<p>转至 WordPress 安装页，开始配置 WordPress。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fqy0a-1.png" alt="配置WP1"></p>
-<ol start="2">
-<li>根据 WordPress 安装向导提示输入以下安装信息，单击<strong>安装 WordPress</strong>，完成安装。</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>所需信息</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>站点标题</td>
-<td>WordPress 网站名称。</td>
-</tr>
-<tr>
-<td>用户名</td>
-<td>WordPress 管理员名称。出于安全考虑，建议设置一个不同于 admin 的名称。因为与默认用户名称 admin 相比，该名称更难破解。</td>
-</tr>
-<tr>
-<td>密码</td>
-<td>可以使用默认的密码或者自定义密码。请勿重复使用现有密码，并确保将密码保存在安全的位置。</td>
-</tr>
-<tr>
-<td>您的电子邮件</td>
-<td>用于接收通知的电子邮件地址。</td>
-</tr>
-</tbody></table>
-<ol start="3">
-<li>输入在安装WordPress时设置的<strong>用户名</strong>和<strong>密码</strong>，然后单击<strong>登录</strong></li>
-</ol>
-<p>成功进入您个人的WordPress网站。</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>Nginx</tag>
-        <tag>MySQL</tag>
-        <tag>PHP</tag>
-        <tag>wordpress</tag>
-        <tag>手动搭建 WordPress</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>解析WordPress网站域名与常见问题</title>
-    <url>/posts/4c6ec737.html</url>
-    <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
-<ol>
-<li><h3 id="注册域名。"><a href="#注册域名。" class="headerlink" title="注册域名。"></a>注册域名。</h3></li>
-</ol>
-<p><a href="https://www.alibabacloud.com/help/zh/dws/user-guide/register-a-domain-name-on-alibaba-cloud#task-1830383">阿里云域名注册流程</a></p>
-<p><a href="https://cloud.tencent.com/document/product/242/9595">腾讯云域名注册流程</a></p>
-<p><a href="https://support.huaweicloud.com/usermanual-domain/domain_ug_310004.html">华为云域名注册流程</a></p>
-<ol start="2">
-<li><h3 id="备案域名。"><a href="#备案域名。" class="headerlink" title="备案域名。"></a>备案域名。</h3><p>如果您的域名指向的网站托管在中国内地节点服务器，则需要到对应云平台上进行ICP备案，时长按照备案地处理速度，一般在1-30个工作日。如果不备案可能会导致域名无法访问。</p>
-</li>
-<li><h3 id="解析域名。将域名指向实例公网IP。"><a href="#解析域名。将域名指向实例公网IP。" class="headerlink" title="解析域名。将域名指向实例公网IP。"></a>解析域名。将域名指向实例公网IP。</h3><p>域名解析是使用域名访问您的网站的必备环节。请在托管的云平台上进行解析，具体参考各云平台的文档，如需IPV6的访问请添加AAAA解析。</p>
-</li>
-</ol>
-<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"><a href="#一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录" class="headerlink" title="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"></a>一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录</h3><p>该问题可能是因为WordPress配置文件主题或插件的权限不足，您可以参考以下步骤解决。</p>
-<ol>
-<li><p>登录搭建WordPress的服务器</p>
-</li>
-<li><p>运行以下命令，打开WordPress配置文件（wp-config.php文件位置请根据实际服务器上自定义的位置进行更换）</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /usr/share/nginx/html/wordpress/wp-config.php</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>按<code>i</code>键进入编辑模式。</p>
-</li>
-<li><p>在最下方，添加如下代码。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">define(&quot;FS_METHOD&quot;,&quot;direct&quot;);</span><br><span class="line">define(&quot;FS_CHMOD_DIR&quot;, 0777);</span><br><span class="line">define(&quot;FS_CHMOD_FILE&quot;, 0777);</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li><p>按<code>Esc</code>键，输入<code>:wq</code>后按<code>Enter</code>键，保存退出配置文件。</p>
-</li>
-<li><p>返回WordPress仪表盘，刷新页面，可解决需要FTP登录凭证的问题。</p>
-<p>如果仍存在无法创建目录的问题，需再次返回登录，运行以下命令，将网站根目录的权限用户更新为Nginx对应的用户，本示例环境中为<code>www-data</code>用户。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chown -R www-data /usr/share/nginx/html/wordpress</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"><a href="#二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库" class="headerlink" title="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"></a>二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库</h3><p>操作步骤如下：</p>
-<ol>
-<li><p>登录数据库，root密码具体看配置数据库时修改的数据。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql -u root -p</span><br></pre></td></tr></table></figure>
-
-</li>
-<li><p>查寻并修改数据库</p>
-<blockquote>
-<p>本示例将域名<code>www.example1.com</code>改为<a href="http://www.example2.com./">www.example2.com。</a></p>
-</blockquote>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; use wordpress;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; select * from wp_options where option_value like &#x27;%www.example1.com&#x27;;</span><br><span class="line"></span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">| option_id | option_name | option_value              | autoload |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">|         2 | siteurl     | https://www.example1.com  | on       |</span><br><span class="line">|         3 | home        | https://www.example1.com  | on       |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">2 rows in set (0.046 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; update wp_options set option_value=replace(option_value, &#x27;https://www.example2.com&#x27;, &#x27;https://www.example2.com&#x27;) where option_name = &#x27;home&#x27; OR option_name = &#x27;siteurl&#x27;;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; exit;</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>成功为WordPress网站设置新域名。</p>
-</li>
-</ol>
-<h3 id="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"><a href="#三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法" class="headerlink" title="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"></a>三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法</h3><p>在使用wordPress的时候，可能会遇到“您关注的链接已过期”或The link you followed has expired” 错误，一般从WordPress管理后台上传WordPress主题或插件到您的网站时，通常会发生此错误。WordPress有一个设置参数，可以控制从WordPress管理后台上传的文件的大小。</p>
-<ol>
-<li><p>登录服务器，查看配置文件位置</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ps -ef|grep php</span><br><span class="line"></span><br><span class="line">www-data 2754144 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">www-data 2754145 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">ops      2756021 2745748  0 17:22 pts/0    00:00:00 grep php</span><br><span class="line">root     3454264       1  0 Sep06 ?        00:00:40 php-fpm: master process (/etc/php/8.2/fpm/php-fpm.conf)</span><br><span class="line"></span><br><span class="line">可以确认配置文件在/etc/php/8.2/fpm/ 目录 修改该目录下的php.ini文件</span><br><span class="line">提前备份文件</span><br><span class="line">sudo cp /etc/php/8.2/fpm/php.ini /etc/php/8.2/fpm/php.ini.bak</span><br><span class="line">sudo vim /etc/php/8.2/fpm/php.ini</span><br><span class="line"></span><br><span class="line">打开文件后修改下面三行参数，保存并退出</span><br><span class="line"></span><br><span class="line">upload_max_filesize = 64M</span><br><span class="line">post_max_size = 64M</span><br><span class="line">max_execution_time = 300</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>服务重新加载配置文件</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl reload php8.2-fpm.service</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>修复完成验证</p>
-<p>可以再次上传测试，限制调整为可以上传单个文件的最大大小为64M，最大执行时间为300秒。</p>
-</li>
-</ol>
-<h3 id="四、Nginx伪静态规则"><a href="#四、Nginx伪静态规则" class="headerlink" title="四、Nginx伪静态规则"></a>四、Nginx伪静态规则</h3><p>若在发布文章出现“此响应不是合法的JSON响应”，则需要检查nginx伪静态规则是否配置，具体配置如下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">        try_files $uri $uri/ /index.php?$args;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>如nginx无配置，在location &#x2F;加入该配置即可。</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>WordPress常见问题</tag>
-        <tag>WordPress域名</tag>
       </tags>
   </entry>
   <entry>
@@ -906,6 +497,415 @@
         <tag>tmux</tag>
         <tag>批量操作工具</tag>
         <tag>tmux快捷键</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>手动搭建 WordPress 个人站点(Linux)</title>
+    <url>/posts/c171e9f0.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 WordPress 个人站点组成版本及说明如下：</p>
+<ul>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+<li>WordPress：博客平台，本文以 WordPress 6.6.1 为例。</li>
+</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux-实例"><a href="#步骤1：登录-Linux-实例" class="headerlink" title="步骤1：登录 Linux 实例"></a>步骤1：登录 Linux 实例</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="https://www.qiubite.fun/posts/9d5ca845.html">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
+<h3 id="步骤3：配置数据库"><a href="#步骤3：配置数据库" class="headerlink" title="步骤3：配置数据库"></a>步骤3：配置数据库</h3><ol>
+<li>执行以下命令，进入 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，创建 MariaDB 数据库。例如 “wordpress”。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE wordpress;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，创建一个新用户。例如 “user”，登录密码为 <code>123456</code>。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">create user &#x27;user&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>执行以下命令，赋予用户对 “wordpress” 数据库的全部权限。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON wordpress.* TO &#x27;user&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，设置 root 账户密码。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD(&#x27;输入您的密码&#x27;);</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>执行以下命令，使所有配置生效。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<ol start="7">
+<li>执行以下命令，退出 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装和配置-WordPress"><a href="#步骤4：安装和配置-WordPress" class="headerlink" title="步骤4：安装和配置 WordPress"></a>步骤4：安装和配置 WordPress</h3><h4 id="下载-WordPress"><a href="#下载-WordPress" class="headerlink" title="下载 WordPress"></a>下载 WordPress</h4><ol>
+<li>执行以下命令，删除网站根目录下用于测试 PHP-Nginx 配置的<code>index.php</code>文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>依次执行以下命令，进入<code>/usr/share/nginx/html/</code>目录，并下载与解压 WordPress。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html</span><br><span class="line"></span><br><span class="line">wget https://cn.wordpress.org/wordpress-6.6.1-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line">tar zxvf wordpress-6.6.1-zh_CN.tar.gz</span><br></pre></td></tr></table></figure>
+
+
+
+<p>WordPress可以放到自定义的目录，修改时需要同步修改nginx配置文件中root 描述的目录。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fr07r-1.png" alt="image-20240907200548425"></p>
+<h4 id="修改-WordPress-配置文件"><a href="#修改-WordPress-配置文件" class="headerlink" title="修改 WordPress 配置文件"></a>修改 WordPress 配置文件</h4><ol>
+<li>依次执行以下命令，进入 WordPress 安装目录，将<code>wp-config-sample.php</code>文件复制到<code>wp-config.php</code>文件中，并将原先的示例配置文件保留作为备份。</li>
+</ol>
+<figure class="highlight shellsession"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html/wordpress</span><br><span class="line">cp wp-config-sample.php wp-config.php</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，打开并编辑新创建的配置文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>按 <strong>i</strong> 切换至编辑模式，找到文件中 MySQL 的部分，并将相关配置信息修改为配置 WordPress 数据库 中的内容。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> // ** Database settings - You can get this info from your web host ** //</span><br><span class="line">/** The name of the database for WordPress */</span><br><span class="line">define( &#x27;DB_NAME&#x27;, &#x27;wordpress&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database username */</span><br><span class="line">define( &#x27;DB_USER&#x27;, &#x27;user&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database password */</span><br><span class="line">define( &#x27;DB_PASSWORD&#x27;, &#x27;123456&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database hostname */</span><br><span class="line">define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>修改完成后，按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件返回。</li>
+</ol>
+<h3 id="步骤5：验证-WordPress-安装"><a href="#步骤5：验证-WordPress-安装" class="headerlink" title="步骤5：验证 WordPress 安装"></a>步骤5：验证 WordPress 安装</h3><ol>
+<li>在浏览器地址栏输入<code>http://域名或公网 IP/wordpress 文件夹</code>，例如：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://192.xxx.xxx.xx/wordpress  </span><br><span class="line">或</span><br><span class="line">http://xxx.com/wordpress</span><br></pre></td></tr></table></figure>
+
+<p>转至 WordPress 安装页，开始配置 WordPress。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fqy0a-1.png" alt="配置WP1"></p>
+<ol start="2">
+<li>根据 WordPress 安装向导提示输入以下安装信息，单击<strong>安装 WordPress</strong>，完成安装。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>所需信息</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>站点标题</td>
+<td>WordPress 网站名称。</td>
+</tr>
+<tr>
+<td>用户名</td>
+<td>WordPress 管理员名称。出于安全考虑，建议设置一个不同于 admin 的名称。因为与默认用户名称 admin 相比，该名称更难破解。</td>
+</tr>
+<tr>
+<td>密码</td>
+<td>可以使用默认的密码或者自定义密码。请勿重复使用现有密码，并确保将密码保存在安全的位置。</td>
+</tr>
+<tr>
+<td>您的电子邮件</td>
+<td>用于接收通知的电子邮件地址。</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li>输入在安装WordPress时设置的<strong>用户名</strong>和<strong>密码</strong>，然后单击<strong>登录</strong></li>
+</ol>
+<p>成功进入您个人的WordPress网站。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>手动搭建 WordPress</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>手动搭建LNMP环境</title>
+    <url>/posts/9d5ca845.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
+<ul>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
+<li>确认源文件正常，执行以下命令。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令，安装 nginx。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
+
+<p>显示如下，则说明 Nginx 安装配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
+<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
+<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
+<ol start="4">
+<li>执行以下命令，退出 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
+<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，验证 PHP 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
+<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
+<ol>
+<li>执行以下命令，创建测试文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则说明环境配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+        <tag>LNMP环境</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ssl证书自动续期工具——acme</title>
+    <url>/posts/e691384c.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
+<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
+<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>注意换成自己的邮箱号</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置自动升级</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>选择服务商</li>
+</ol>
+<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
+
+<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
+<ol>
+<li>创建API秘钥</li>
+</ol>
+<p>会得到SecretId和SecretKey</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>将秘钥格式化导入环境变量</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+</ol>
+<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完毕后，证书颁发成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
+<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
+<p>将证书文件复制到nginx配置的ssl证书目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>acme</tag>
+        <tag>免费证书</tag>
+        <tag>自动化申请证书</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>解析WordPress网站域名与常见问题</title>
+    <url>/posts/4c6ec737.html</url>
+    <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
+<ol>
+<li><h3 id="注册域名。"><a href="#注册域名。" class="headerlink" title="注册域名。"></a>注册域名。</h3></li>
+</ol>
+<p><a href="https://www.alibabacloud.com/help/zh/dws/user-guide/register-a-domain-name-on-alibaba-cloud#task-1830383">阿里云域名注册流程</a></p>
+<p><a href="https://cloud.tencent.com/document/product/242/9595">腾讯云域名注册流程</a></p>
+<p><a href="https://support.huaweicloud.com/usermanual-domain/domain_ug_310004.html">华为云域名注册流程</a></p>
+<ol start="2">
+<li><h3 id="备案域名。"><a href="#备案域名。" class="headerlink" title="备案域名。"></a>备案域名。</h3><p>如果您的域名指向的网站托管在中国内地节点服务器，则需要到对应云平台上进行ICP备案，时长按照备案地处理速度，一般在1-30个工作日。如果不备案可能会导致域名无法访问。</p>
+</li>
+<li><h3 id="解析域名。将域名指向实例公网IP。"><a href="#解析域名。将域名指向实例公网IP。" class="headerlink" title="解析域名。将域名指向实例公网IP。"></a>解析域名。将域名指向实例公网IP。</h3><p>域名解析是使用域名访问您的网站的必备环节。请在托管的云平台上进行解析，具体参考各云平台的文档，如需IPV6的访问请添加AAAA解析。</p>
+</li>
+</ol>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"><a href="#一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录" class="headerlink" title="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"></a>一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录</h3><p>该问题可能是因为WordPress配置文件主题或插件的权限不足，您可以参考以下步骤解决。</p>
+<ol>
+<li><p>登录搭建WordPress的服务器</p>
+</li>
+<li><p>运行以下命令，打开WordPress配置文件（wp-config.php文件位置请根据实际服务器上自定义的位置进行更换）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /usr/share/nginx/html/wordpress/wp-config.php</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>按<code>i</code>键进入编辑模式。</p>
+</li>
+<li><p>在最下方，添加如下代码。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">define(&quot;FS_METHOD&quot;,&quot;direct&quot;);</span><br><span class="line">define(&quot;FS_CHMOD_DIR&quot;, 0777);</span><br><span class="line">define(&quot;FS_CHMOD_FILE&quot;, 0777);</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li><p>按<code>Esc</code>键，输入<code>:wq</code>后按<code>Enter</code>键，保存退出配置文件。</p>
+</li>
+<li><p>返回WordPress仪表盘，刷新页面，可解决需要FTP登录凭证的问题。</p>
+<p>如果仍存在无法创建目录的问题，需再次返回登录，运行以下命令，将网站根目录的权限用户更新为Nginx对应的用户，本示例环境中为<code>www-data</code>用户。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chown -R www-data /usr/share/nginx/html/wordpress</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"><a href="#二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库" class="headerlink" title="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"></a>二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库</h3><p>操作步骤如下：</p>
+<ol>
+<li><p>登录数据库，root密码具体看配置数据库时修改的数据。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql -u root -p</span><br></pre></td></tr></table></figure>
+
+</li>
+<li><p>查寻并修改数据库</p>
+<blockquote>
+<p>本示例将域名<code>www.example1.com</code>改为<a href="http://www.example2.com./">www.example2.com。</a></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; use wordpress;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; select * from wp_options where option_value like &#x27;%www.example1.com&#x27;;</span><br><span class="line"></span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">| option_id | option_name | option_value              | autoload |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">|         2 | siteurl     | https://www.example1.com  | on       |</span><br><span class="line">|         3 | home        | https://www.example1.com  | on       |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">2 rows in set (0.046 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; update wp_options set option_value=replace(option_value, &#x27;https://www.example2.com&#x27;, &#x27;https://www.example2.com&#x27;) where option_name = &#x27;home&#x27; OR option_name = &#x27;siteurl&#x27;;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; exit;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>成功为WordPress网站设置新域名。</p>
+</li>
+</ol>
+<h3 id="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"><a href="#三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法" class="headerlink" title="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"></a>三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法</h3><p>在使用wordPress的时候，可能会遇到“您关注的链接已过期”或The link you followed has expired” 错误，一般从WordPress管理后台上传WordPress主题或插件到您的网站时，通常会发生此错误。WordPress有一个设置参数，可以控制从WordPress管理后台上传的文件的大小。</p>
+<ol>
+<li><p>登录服务器，查看配置文件位置</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ps -ef|grep php</span><br><span class="line"></span><br><span class="line">www-data 2754144 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">www-data 2754145 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">ops      2756021 2745748  0 17:22 pts/0    00:00:00 grep php</span><br><span class="line">root     3454264       1  0 Sep06 ?        00:00:40 php-fpm: master process (/etc/php/8.2/fpm/php-fpm.conf)</span><br><span class="line"></span><br><span class="line">可以确认配置文件在/etc/php/8.2/fpm/ 目录 修改该目录下的php.ini文件</span><br><span class="line">提前备份文件</span><br><span class="line">sudo cp /etc/php/8.2/fpm/php.ini /etc/php/8.2/fpm/php.ini.bak</span><br><span class="line">sudo vim /etc/php/8.2/fpm/php.ini</span><br><span class="line"></span><br><span class="line">打开文件后修改下面三行参数，保存并退出</span><br><span class="line"></span><br><span class="line">upload_max_filesize = 64M</span><br><span class="line">post_max_size = 64M</span><br><span class="line">max_execution_time = 300</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>服务重新加载配置文件</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl reload php8.2-fpm.service</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修复完成验证</p>
+<p>可以再次上传测试，限制调整为可以上传单个文件的最大大小为64M，最大执行时间为300秒。</p>
+</li>
+</ol>
+<h3 id="四、Nginx伪静态规则"><a href="#四、Nginx伪静态规则" class="headerlink" title="四、Nginx伪静态规则"></a>四、Nginx伪静态规则</h3><p>若在发布文章出现“此响应不是合法的JSON响应”，则需要检查nginx伪静态规则是否配置，具体配置如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">        try_files $uri $uri/ /index.php?$args;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>如nginx无配置，在location &#x2F;加入该配置即可。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>WordPress常见问题</tag>
+        <tag>WordPress域名</tag>
       </tags>
   </entry>
 </search>
