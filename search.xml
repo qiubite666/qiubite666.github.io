@@ -250,7 +250,7 @@
 </ol>
 <p>若目标为图形界面（<code>graphical.target</code>），<code>systemd</code> 启动显示管理器（如 GDM），进入登录界面‌</p>
 <ol start="2">
-<li><h3 id="‌Shell-或桌面环境加载"><a href="#‌Shell-或桌面环境加载" class="headerlink" title="‌Shell 或桌面环境加载"></a>‌Shell 或桌面环境加载</h3></li>
+<li><h3 id="‌Shell或桌面环境加载"><a href="#‌Shell或桌面环境加载" class="headerlink" title="‌Shell或桌面环境加载"></a>‌Shell或桌面环境加载</h3></li>
 </ol>
 <p>用户认证通过后，启动桌面环境（如 GNOME）或命令行 Shell‌</p>
 ]]></content>
@@ -261,6 +261,155 @@
         <tag>Linux</tag>
         <tag>BIOS</tag>
         <tag>GRUB</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ssl证书自动续期工具——acme</title>
+    <url>/posts/e691384c.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
+<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
+<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>注意换成自己的邮箱号</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置自动升级</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>选择服务商</li>
+</ol>
+<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
+
+<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
+<ol>
+<li>创建API秘钥</li>
+</ol>
+<p>会得到SecretId和SecretKey</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>将秘钥格式化导入环境变量</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+</ol>
+<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完毕后，证书颁发成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
+<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
+<p>将证书文件复制到nginx配置的ssl证书目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>acme</tag>
+        <tag>免费证书</tag>
+        <tag>自动化申请证书</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux初始化以及系统性能调优</title>
+    <url>/posts/b4a62efd.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
+<p>本文主要以debian为例针对CPU、硬盘、内核等操作系统参数进行优化。</p>
+<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><h3 id="关闭cpu节能"><a href="#关闭cpu节能" class="headerlink" title="关闭cpu节能"></a>关闭cpu节能</h3><p>随着CPU的发展，Intel出现了EIST技术，它可以动态的调整CPU的频率。当CPU使用率地下或者接近0时候,能降低CPU频率并且降压，从而降低功耗和发热。当检测到CPU使用率增高，它会马上回到原始工作频率，但是你必须考虑CPU被唤醒的时间，并且确保它会再次100％运行。这一系列的过程通常被称为“C-states”或“C-modes”,它是从C0开始的。</p>
+<p>关闭CPU节能方式如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;intel_idle.max_cstate=0 intel_pstate=disable processor.max_cstate=1&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出，更新grub</span></span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>intel_idle.max_cstate&#x3D;0</li>
+</ul>
+<p>这个参数用于 Intel 平台，指定禁用 intel_idle 驱动，让系统退回使用通用的 acpi_idle 驱动。这样 acpi_idle 驱动会遵循 processor.max_cstate 参数的设置，从而限制 CPU 只能使用浅层 C-state（C1）。</p>
+<ul>
+<li>intel_pstate&#x3D;disable</li>
+</ul>
+<p>禁用Intel处理器的动态频率调节驱动（P-state），改用传统ACPI <code>cpufreq</code>驱动管理CPU频率‌。</p>
+<ul>
+<li>processor.max_cstate&#x3D;1</li>
+</ul>
+<p>限制Intel处理器的空闲状态最大为C1，禁止进入更深层节能状态（如C2&#x2F;C3），减少唤醒延迟‌。与设置为processor.max_cstate&#x3D;0等效</p>
+<h2 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h2><h3 id="网络接口命名规则"><a href="#网络接口命名规则" class="headerlink" title="网络接口命名规则"></a>网络接口命名规则</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;net.ifnames=0 biosdevname=0&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>net.ifnames&#x3D;0</li>
+</ul>
+<p>禁用可预测的网络接口命名（如<code>ens33</code>），恢复传统命名方式（如<code>eth0</code>）‌。</p>
+<ul>
+<li>biosdevname&#x3D;0</li>
+</ul>
+<p>关闭基于BIOS设备名的网络接口命名规则（如<code>em1</code>），需与<code>net.ifnames=0</code>配合生效‌。</p>
+<h3 id="网络优化配置"><a href="#网络优化配置" class="headerlink" title="网络优化配置"></a>网络优化配置</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看当前队列</span></span><br><span class="line">ethtool -l eth0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置队列数量</span></span><br><span class="line">sudo ethtool -L eth0 combined 8</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="硬盘"><a href="#硬盘" class="headerlink" title="硬盘"></a>硬盘</h2><h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">NVME设置调度策略为none</span></span><br><span class="line">echo none | sudo tee /sys/block/nvme0n1/queue/scheduler</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">机械硬盘设置调度策略为deadline</span></span><br><span class="line">echo deadline | sudo tee /sys/block/sda/queue/scheduler</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>mq-deadline</li>
+</ul>
+<p><code>mq-deadline</code> 调度程序将排队的 I&#x2F;O 请求分为读取或写入批处理，然后调度它们以增加逻辑块寻址 (LBA) 顺序执行。默认情况下，读取批处理的优先级高于写入批处理，因为应用程序更有可能阻止读 I&#x2F;O 操作。在 <code>mq-deadline</code> 批处理后，它会检查写操作在处理器时间耗尽的时间，并根据情况调度下一个读取或写入批处理。</p>
+<p>这个调度程序适用于大多数用例，特别是那些写入操作是异步的。</p>
+<ul>
+<li>none</li>
+</ul>
+<p>所有进程的io请求都进入<a href="https://so.csdn.net/so/search?q=FIFO&spm=1001.2101.3001.7020">FIFO</a>队列，完全按照队列的顺序进行io的读取，适合于ssd，因为io请求饥饿以及每次请求都需要寻道，ssd不存在传统hdd的寻道时间。</p>
+<h3 id="文件系统优化"><a href="#文件系统优化" class="headerlink" title="文件系统优化"></a>文件系统优化</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/fstab 添加挂载参数</span></span><br><span class="line">noatime,nodiratime</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>noatime: 不更新文件的最后访问时间，减少磁盘 I&#x2F;O。</li>
+<li>nodiratime: 不更新目录的访问时间，进一步减少磁盘 I&#x2F;O。</li>
+</ul>
+<p>参考链接：</p>
+<ol>
+<li><a href="https://www.cnblogs.com/kanie/p/15252921.html">mq-deadline调度器原理及源码分析</a></li>
+<li><a href="https://documentation.suse.com/zh-cn/sled/15-SP5/html/SLED-all/cha-tuning-io.html">微调 I&#x2F;O 性能</a></li>
+<li><a href="https://www.phoronix.com/review/linux-56-nvme/2">Linux 5.6 I&#x2F;O Scheduler Benchmarks: None, Kyber, BFQ, MQ-Deadline</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>GRUB</tag>
+        <tag>初始化</tag>
+        <tag>性能调优</tag>
       </tags>
   </entry>
   <entry>
@@ -741,84 +890,6 @@
         <tag>PHP</tag>
         <tag>wordpress</tag>
         <tag>LNMP环境</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ssl证书自动续期工具——acme</title>
-    <url>/posts/e691384c.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
-<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
-<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>注意换成自己的邮箱号</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>设置自动升级</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>选择服务商</li>
-</ol>
-<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
-
-<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
-<ol>
-<li>创建API秘钥</li>
-</ol>
-<p>会得到SecretId和SecretKey</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>将秘钥格式化导入环境变量</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="3">
-<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
-</ol>
-<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
-
-<p>命令执行完毕后，证书颁发成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
-<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
-<p>将证书文件复制到nginx配置的ssl证书目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>acme</tag>
-        <tag>免费证书</tag>
-        <tag>自动化申请证书</tag>
       </tags>
   </entry>
   <entry>
