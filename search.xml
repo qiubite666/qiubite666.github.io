@@ -1,6 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>Linux初始化以及系统性能调优</title>
+    <url>/posts/b4a62efd.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
+<p>本文主要以debian为例针对CPU、硬盘、内核等操作系统参数进行优化。</p>
+<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><h3 id="关闭cpu节能"><a href="#关闭cpu节能" class="headerlink" title="关闭cpu节能"></a>关闭cpu节能</h3><p>随着CPU的发展，Intel出现了EIST技术，它可以动态的调整CPU的频率。当CPU使用率地下或者接近0时候,能降低CPU频率并且降压，从而降低功耗和发热。当检测到CPU使用率增高，它会马上回到原始工作频率，但是你必须考虑CPU被唤醒的时间，并且确保它会再次100％运行。这一系列的过程通常被称为“C-states”或“C-modes”,它是从C0开始的。</p>
+<p>关闭CPU节能方式如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;intel_idle.max_cstate=0 intel_pstate=disable processor.max_cstate=1&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出，更新grub</span></span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>intel_idle.max_cstate&#x3D;0</li>
+</ul>
+<p>这个参数用于 Intel 平台，指定禁用 intel_idle 驱动，让系统退回使用通用的 acpi_idle 驱动。这样 acpi_idle 驱动会遵循 processor.max_cstate 参数的设置，从而限制 CPU 只能使用浅层 C-state（C1）。</p>
+<ul>
+<li>intel_pstate&#x3D;disable</li>
+</ul>
+<p>禁用Intel处理器的动态频率调节驱动（P-state），改用传统ACPI <code>cpufreq</code>驱动管理CPU频率‌。</p>
+<ul>
+<li>processor.max_cstate&#x3D;1</li>
+</ul>
+<p>限制Intel处理器的空闲状态最大为C1，禁止进入更深层节能状态（如C2&#x2F;C3），减少唤醒延迟‌。与设置为processor.max_cstate&#x3D;0等效</p>
+<h2 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h2><h3 id="网络接口命名规则"><a href="#网络接口命名规则" class="headerlink" title="网络接口命名规则"></a>网络接口命名规则</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;net.ifnames=0 biosdevname=0&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>net.ifnames&#x3D;0</li>
+</ul>
+<p>禁用可预测的网络接口命名（如<code>ens33</code>），恢复传统命名方式（如<code>eth0</code>）‌。</p>
+<ul>
+<li>biosdevname&#x3D;0</li>
+</ul>
+<p>关闭基于BIOS设备名的网络接口命名规则（如<code>em1</code>），需与<code>net.ifnames=0</code>配合生效‌。</p>
+<h3 id="网络优化配置"><a href="#网络优化配置" class="headerlink" title="网络优化配置"></a>网络优化配置</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看当前队列</span></span><br><span class="line">ethtool -l eth0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置队列数量</span></span><br><span class="line">sudo ethtool -L eth0 combined 8</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="硬盘"><a href="#硬盘" class="headerlink" title="硬盘"></a>硬盘</h2><h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">NVME设置调度策略为none</span></span><br><span class="line">echo none | sudo tee /sys/block/nvme0n1/queue/scheduler</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">机械硬盘设置调度策略为deadline</span></span><br><span class="line">echo deadline | sudo tee /sys/block/sda/queue/scheduler</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>mq-deadline</li>
+</ul>
+<p><code>mq-deadline</code> 调度程序将排队的 I&#x2F;O 请求分为读取或写入批处理，然后调度它们以增加逻辑块寻址 (LBA) 顺序执行。默认情况下，读取批处理的优先级高于写入批处理，因为应用程序更有可能阻止读 I&#x2F;O 操作。在 <code>mq-deadline</code> 批处理后，它会检查写操作在处理器时间耗尽的时间，并根据情况调度下一个读取或写入批处理。</p>
+<p>这个调度程序适用于大多数用例，特别是那些写入操作是异步的。</p>
+<ul>
+<li>none</li>
+</ul>
+<p>所有进程的io请求都进入<a href="https://so.csdn.net/so/search?q=FIFO&spm=1001.2101.3001.7020">FIFO</a>队列，完全按照队列的顺序进行io的读取，适合于ssd，因为io请求饥饿以及每次请求都需要寻道，ssd不存在传统hdd的寻道时间。</p>
+<h3 id="文件系统优化"><a href="#文件系统优化" class="headerlink" title="文件系统优化"></a>文件系统优化</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/fstab 添加挂载参数</span></span><br><span class="line">noatime,nodiratime</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>noatime: 不更新文件的最后访问时间，减少磁盘 I&#x2F;O。</li>
+<li>nodiratime: 不更新目录的访问时间，进一步减少磁盘 I&#x2F;O。</li>
+</ul>
+<p>参考链接：</p>
+<ol>
+<li><a href="https://www.cnblogs.com/kanie/p/15252921.html">mq-deadline调度器原理及源码分析</a></li>
+<li><a href="https://documentation.suse.com/zh-cn/sled/15-SP5/html/SLED-all/cha-tuning-io.html">微调 I&#x2F;O 性能</a></li>
+<li><a href="https://www.phoronix.com/review/linux-56-nvme/2">Linux 5.6 I&#x2F;O Scheduler Benchmarks: None, Kyber, BFQ, MQ-Deadline</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>初始化</tag>
+        <tag>GRUB</tag>
+        <tag>性能调优</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
     <url>/posts/9b071109.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
@@ -201,137 +272,158 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux启动流程</title>
-    <url>/posts/ae574090.html</url>
-    <content><![CDATA[<p>系统的启动流程可分为以下几个关键阶段，综合硬件初始化、引导加载、内核加载及用户空间初始化等过程。</p>
-<p>‌流程图简化：</p>
+    <title>Prometheus+Grafana+Alertmanager部署</title>
+    <url>/posts/c03992dd.html</url>
+    <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
+<h3 id="Pushgateway"><a href="#Pushgateway" class="headerlink" title="Pushgateway"></a><strong>Pushgateway</strong></h3><p><strong>Pushgateway</strong> 是 Prometheus 生态系统中的一个工具，专门用来处理短期任务或批处理作业的指标。这些短期任务通常是无法直接通过 Prometheus 的 pull 模型抓取的，因此 Pushgateway 可以接收来自这些任务的指标数据并将其保存在 Prometheus 可抓取的形式中。<br>主要功能：</p>
+<ul>
+<li>允许临时的、短期任务将其指标推送到 Pushgateway。</li>
+<li>支持长期运行的指标的暴露，适合批处理任务的场景。</li>
+</ul>
+<h3 id="Node-Exporter"><a href="#Node-Exporter" class="headerlink" title="Node Exporter"></a><strong>Node Exporter</strong></h3><p><strong>Node Exporter</strong> 是 Prometheus 生态系统中用于收集 Linux&#x2F;Unix 系统层面指标的组件。它暴露系统硬件和操作系统的运行状况，例如：</p>
+<ul>
+<li>CPU 使用率</li>
+<li>内存使用情况</li>
+<li>磁盘 I&#x2F;O</li>
+<li>网络流量</li>
+</ul>
+<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a><strong>Grafana</strong></h3><p><strong>Grafana</strong> 是一个开源的数据可视化工具，能够与 Prometheus 等数据源集成。它通过直观的图表、仪表盘（dashboard）展示时间序列数据，方便用户监控系统性能和运行状态。<br>主要功能：</p>
+<ul>
+<li>支持多种数据源（包括 Prometheus、Elasticsearch、MySQL 等）</li>
+<li>自定义仪表盘和报警</li>
+<li>提供丰富的插件以扩展功能</li>
+</ul>
+<h3 id="Alertmanager"><a href="#Alertmanager" class="headerlink" title="Alertmanager"></a><strong>Alertmanager</strong></h3><p><strong>Alertmanager</strong> 是 Prometheus 的报警管理组件，用于处理来自 Prometheus 服务器的报警。它能够根据预定义的规则分组、路由、抑制和消除报警。Alertmanager 可以将报警发送到各种通知渠道，如邮件、Slack、PagerDuty 等。<br>主要功能：</p>
+<ul>
+<li>灵活的报警管理和路由规则</li>
+<li>报警抑制与分组</li>
+<li>支持多种通知方式</li>
+</ul>
+<p>这些组件结合在一起，形成一个强大的监控系统，Prometheus 负责收集和存储数据，Pushgateway 用于处理无法直接拉取的任务，Node Exporter 提供系统层面的指标，Grafana 实现数据的可视化，Alertmanager 管理报警。</p>
+<h2 id="实例环境与下载"><a href="#实例环境与下载" class="headerlink" title="实例环境与下载"></a>实例环境与下载</h2><h3 id="实例环境"><a href="#实例环境" class="headerlink" title="实例环境"></a>实例环境</h3><p>本文搭建的环境软件组成版本及说明如下：</p>
+<ul>
+<li><p>Linux：Linux 操作系统，本文以 debian 12.6 为例。</p>
+</li>
+<li><p>prometheus：本文以  prometheus 3.4.0 为例。</p>
+</li>
+<li><p>pushgateway：本文以 pushgateway 1.11.1 为例。</p>
+</li>
+<li><p>node-exporter：本文以 node-exporter 1.9.1 为例。</p>
+</li>
+<li><p>Grafana：本文以 Grafana 12.0.0 为例。</p>
+</li>
+<li><p>Alertmanager：本文以 Alertmanager 0.28.1 为例。</p>
+</li>
+</ul>
+<h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p>部分软件有国内加速下载请根据需求选择下载方式，下载地址如下：</p>
 <blockquote>
-<p>BIOS&#x2F;UEFI → GRUB → 内核 → systemd → 目标状态 → 用户登录</p>
+<p>prometheus以及相关套件可见官网：<a href="https://prometheus.io/download/">https://prometheus.io/download/</a></p>
+<p>下载地址：</p>
+<p>prometheus：<a href="https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz">https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</a></p>
+<p>Alertmanager：<a href="https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz">https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</a></p>
+<p>node-exporter：<a href="https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz">https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</a></p>
+<p>pushgateway：<a href="https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz">https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</a></p>
+<p>Grafana：</p>
+<p>​	华为源：<a href="https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb">https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</a></p>
 </blockquote>
-<h2 id="BIOS-UEFI-初始化"><a href="#BIOS-UEFI-初始化" class="headerlink" title="BIOS&#x2F;UEFI 初始化"></a>BIOS&#x2F;UEFI 初始化</h2><ol>
-<li><h3 id="硬件自检（POST）"><a href="#硬件自检（POST）" class="headerlink" title="硬件自检（POST）"></a>硬件自检（POST）</h3></li>
-</ol>
-<p>计算机加电后，BIOS&#x2F;UEFI 首先执行硬件自检（Power-On Self Test），检测 CPU、内存、存储设备等核心硬件状态‌</p>
-<ol start="2">
-<li><h3 id="‌选择启动设备"><a href="#‌选择启动设备" class="headerlink" title="‌选择启动设备"></a>‌选择启动设备</h3></li>
-</ol>
-<p>根据 BIOS&#x2F;UEFI 配置的启动顺序（如硬盘、USB、网络等），加载目标设备的引导扇区代码（如 MBR 或 UEFI 分区）‌</p>
-<h2 id="GRUB-引导加载程序"><a href="#GRUB-引导加载程序" class="headerlink" title="GRUB 引导加载程序"></a>GRUB 引导加载程序</h2><ol>
-<li><h3 id="加载-GRUB-菜单"><a href="#加载-GRUB-菜单" class="headerlink" title="加载 GRUB 菜单"></a>加载 GRUB 菜单</h3></li>
-</ol>
-<p>BIOS&#x2F;UEFI 将控制权移交至 GRUB（Grand Unified Bootloader），读取 <code>/boot/grub/grub.cfg</code> 配置文件并显示可引导的操作系统选项菜单‌</p>
-<ol start="2">
-<li><h3 id="‌内核与-initrd-加载"><a href="#‌内核与-initrd-加载" class="headerlink" title="‌内核与 initrd 加载"></a>‌内核与 initrd 加载</h3></li>
-</ol>
-<p>用户选择 Debian 启动项后，GRUB 将 Linux 内核（如 <code>vmlinuz</code>）和初始内存磁盘镜像（<code>initrd.img</code>）加载至内存，启动内核执行‌</p>
-<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><ol>
-<li><h3 id="硬件驱动加载"><a href="#硬件驱动加载" class="headerlink" title="硬件驱动加载"></a>硬件驱动加载</h3></li>
-</ol>
-<p>内核初始化硬件设备（如磁盘控制器、网络接口），并挂载根文件系统‌</p>
-<ol start="2">
-<li><h3 id="启动-systemd-进程"><a href="#启动-systemd-进程" class="headerlink" title="启动 systemd 进程"></a>启动 <code>systemd</code> 进程</h3></li>
-</ol>
-<p>内核调用首个用户空间进程 <code>systemd</code>（PID&#x3D;1），取代传统的 SysV init 作为初始化系统‌</p>
-<h2 id="用户空间初始化"><a href="#用户空间初始化" class="headerlink" title="用户空间初始化"></a>用户空间初始化</h2><ol>
-<li><h3 id="‌目标状态（Target）管理"><a href="#‌目标状态（Target）管理" class="headerlink" title="‌目标状态（Target）管理"></a>‌目标状态（Target）管理</h3></li>
-</ol>
-<p><code>systemd</code> 根据默认目标（如 <code>multi-user.target</code> 或 <code>graphical.target</code>）激活基础服务（如网络、日志、定时任务）‌</p>
-<ol start="2">
-<li><h3 id="‌运行级别兼容"><a href="#‌运行级别兼容" class="headerlink" title="‌运行级别兼容"></a>‌运行级别兼容</h3></li>
-</ol>
-<ul>
-<li>级别 0 → <code>poweroff.target</code>（关机）</li>
-<li>级别 1 → <code>rescue.target</code>（单用户维护模式）</li>
-<li>级别 2-5 → <code>multi-user.target</code>（多用户模式）</li>
-<li>级别 6 → <code>reboot.target</code>（重启）‌</li>
+<blockquote>
+<p>注意：由于各软件会升级迭代，请根据实际情况调整下载地址</p>
+</blockquote>
+<p>进入服务器，执行如下命令下载并解压：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt</span><br><span class="line">mkdir prometheus_env</span><br><span class="line">cd prometheus_env</span><br><span class="line">wget https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line">wget https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line">tar -zxvf prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y adduser libfontconfig1 musl</span><br><span class="line">sudo dpkg -i grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//修改文件名去掉版本号</span><br><span class="line">cd /opt/prometheus_env</span><br><span class="line">for i in `ls -l|awk &#x27;&#123;print $9&#125;&#x27;`;do new_name=$(echo &quot;$i&quot; | awk -F &#x27;-&#x27; &#x27;&#123;print $1&#125;&#x27;);mv &quot;$i&quot; &quot;$new_name&quot;;done</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="服务配置"><a href="#服务配置" class="headerlink" title="服务配置"></a>服务配置</h2><h3 id="修改prometheus-yml-配置文件"><a href="#修改prometheus-yml-配置文件" class="headerlink" title="修改prometheus.yml 配置文件"></a>修改prometheus.yml 配置文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/prometheus</span><br><span class="line">vi prometheus.yml</span><br></pre></td></tr></table></figure>
+
+<p>内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># my global config</span><br><span class="line">global:</span><br><span class="line">  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.</span><br><span class="line">  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.</span><br><span class="line">  # scrape_timeout is set to the global default (10s).</span><br><span class="line"></span><br><span class="line"># Alertmanager configuration</span><br><span class="line">alerting:</span><br><span class="line">  alertmanagers:</span><br><span class="line">    - static_configs:</span><br><span class="line">        - targets:</span><br><span class="line">           - 127.0.0.1:9093</span><br><span class="line"></span><br><span class="line"># Load rules once and periodically evaluate them according to the global &#x27;evaluation_interval&#x27;.</span><br><span class="line">rule_files:</span><br><span class="line">   - &quot;alarm_rules.yml&quot;</span><br><span class="line"></span><br><span class="line"># A scrape configuration containing exactly one endpoint to scrape:</span><br><span class="line"># Here it&#x27;s Prometheus itself.</span><br><span class="line">scrape_configs:</span><br><span class="line">  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br><span class="line">  - job_name: &quot;prometheus&quot;</span><br><span class="line"></span><br><span class="line">    # metrics_path defaults to &#x27;/metrics&#x27;</span><br><span class="line">    # scheme defaults to &#x27;http&#x27;.</span><br><span class="line"></span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&quot;localhost:9090&quot;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;prometheus&#x27;</span><br><span class="line">  - job_name: &#x27;linux&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9100&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;localhost&#x27;</span><br><span class="line">  - job_name: &#x27;pushgateway&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9091&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;pushgateway&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="配置解析："><a href="#配置解析：" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="全局配置（global）："><a href="#全局配置（global）：" class="headerlink" title="全局配置（global）："></a><strong>全局配置（global）</strong>：</h5><ul>
+<li><code>scrape_interval</code> 和 <code>evaluation_interval</code> 设置为 15 秒，意味着每 15 秒抓取一次指标数据并评估报警规则。</li>
 </ul>
-<h2 id="用户登录"><a href="#用户登录" class="headerlink" title="用户登录"></a>用户登录</h2><ol>
-<li><h3 id="显示管理器启动‌"><a href="#显示管理器启动‌" class="headerlink" title="显示管理器启动‌"></a>显示管理器启动‌</h3></li>
-</ol>
-<p>若目标为图形界面（<code>graphical.target</code>），<code>systemd</code> 启动显示管理器（如 GDM），进入登录界面‌</p>
-<ol start="2">
-<li><h3 id="‌Shell或桌面环境加载"><a href="#‌Shell或桌面环境加载" class="headerlink" title="‌Shell或桌面环境加载"></a>‌Shell或桌面环境加载</h3></li>
-</ol>
-<p>用户认证通过后，启动桌面环境（如 GNOME）或命令行 Shell‌</p>
+<h5 id="报警管理（alerting）："><a href="#报警管理（alerting）：" class="headerlink" title="报警管理（alerting）："></a><strong>报警管理（alerting）</strong>：</h5><ul>
+<li>配置 Alertmanager 的地址（<code>127.0.0.1:9093</code>），确保 Alertmanager 正在该地址上运行。</li>
+</ul>
+<h5 id="规则文件（rule-files）："><a href="#规则文件（rule-files）：" class="headerlink" title="规则文件（rule_files）："></a><strong>规则文件（rule_files）</strong>：</h5><ul>
+<li>指向 alarm_rules.yml，请确保该文件存在且格式正确。</li>
+</ul>
+<h5 id="抓取配置（scrape-configs）："><a href="#抓取配置（scrape-configs）：" class="headerlink" title="抓取配置（scrape_configs）："></a><strong>抓取配置（scrape_configs）</strong>：</h5><ul>
+<li><strong>Prometheus 本身</strong>：抓取自身的指标，目标为 <code>127.0.0.1:9090</code>。</li>
+<li><strong>Linux 监控</strong>：通过 Node Exporter 抓取本地系统指标，目标为 <code>127.0.0.1:9100</code>。</li>
+<li><strong>Pushgateway</strong>：监控 Pushgateway 的指标，目标为 <code>127.0.0.1:9091</code>。</li>
+</ul>
+<p>根据需要调整 <code>scrape_interval</code> 和 <code>evaluation_interval</code>，如果你希望更频繁地抓取数据，可以将其缩短。如果有多个实例，可以考虑使用服务发现机制。</p>
+<h3 id="新增alarm-rules-yml-文件"><a href="#新增alarm-rules-yml-文件" class="headerlink" title="新增alarm_rules.yml 文件"></a>新增alarm_rules.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim alarm_rules.yml</span><br><span class="line"></span><br><span class="line">groups:</span><br><span class="line">- name: node</span><br><span class="line">  rules:</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: up&#123;&#125; == 0 </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 挂了&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: 100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes) &gt; 40     </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 内存大于50%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: (1 - avg(rate(node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;[2m])) by (instance)) * 100 &gt; 70  </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; CPU使用率大于70%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;        </span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: max((node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;) *100/(node_filesystem_avail_bytes &#123;fstype=~&quot;ext.?|xfs&quot;&#125;+(node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;)))by(instance) &gt; 80  </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 分区使用率大于80%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="修改alertmanager-yml-文件"><a href="#修改alertmanager-yml-文件" class="headerlink" title="修改alertmanager.yml 文件"></a>修改alertmanager.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/alertmanager</span><br><span class="line">vim alertmanager.yml </span><br></pre></td></tr></table></figure>
+
+<p>内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">global:</span><br><span class="line">  resolve_timeout: 5m</span><br><span class="line">  smtp_smarthost: &#x27;smtp.163.com:25&#x27; # 定义163邮箱服务器端</span><br><span class="line">  smtp_from: &#x27;yourmail@163.com&#x27;  #来自哪个邮箱发的</span><br><span class="line">  smtp_auth_username: &#x27;yourmail@163.com&#x27; #邮箱验证</span><br><span class="line">  smtp_auth_password: &#x27;1111aaaa&#x27;   # 邮箱授权码，不是登录密码</span><br><span class="line">  smtp_require_tls: true   # 是否启用tls</span><br><span class="line">route:</span><br><span class="line">  group_by: [&#x27;alertname&#x27;]</span><br><span class="line">  group_wait: 10s</span><br><span class="line">  group_interval: 10s</span><br><span class="line">  repeat_interval: 3m</span><br><span class="line">  receiver: &#x27;email&#x27;</span><br><span class="line">receivers:</span><br><span class="line">  - name: &#x27;email&#x27;</span><br><span class="line">    email_configs:</span><br><span class="line">      - to: &#x27;yourmail@qq.com&#x27;</span><br><span class="line">#inhibit_rules:</span><br><span class="line">#  - source_match:</span><br><span class="line">#      severity: &#x27;critical&#x27;</span><br><span class="line">#    target_match:</span><br><span class="line">#      severity: &#x27;warning&#x27;</span><br><span class="line">#    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置解析：-1"><a href="#配置解析：-1" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="global"><a href="#global" class="headerlink" title="global"></a>global</h5><ul>
+<li><strong>resolve_timeout</strong>: 设置告警的解决时间，5分钟内未解决则会被视为已解决。</li>
+<li><strong>smtp_smarthost</strong>: 定义 SMTP 服务器的地址和端口。</li>
+<li><strong>smtp_from</strong>: 指定发送邮件时显示的发件人邮箱地址。</li>
+<li><strong>smtp_auth_username</strong>: SMTP 认证的用户名，一般是完整的邮箱地址。</li>
+<li><strong>smtp_auth_password</strong>: 邮箱的授权码，而不是登录密码，需要在邮箱设置中生成。</li>
+<li><strong>smtp_require_tls</strong>: 是否要求使用 TLS 进行加密传输。</li>
+</ul>
+<h5 id="route"><a href="#route" class="headerlink" title="route"></a>route</h5><ul>
+<li><strong>group_by</strong>: 定义在同一组内如何聚合告警，这里按 <code>alertname</code> 聚合。</li>
+<li><strong>group_wait</strong>: 在发送组告警前的等待时间，10秒。</li>
+<li><strong>group_interval</strong>: 组内告警发送的最小间隔，10秒。</li>
+<li><strong>repeat_interval</strong>: 如果告警没有解决，重复发送告警的最小时间间隔，这里设置为 3 分钟。</li>
+<li><strong>receiver</strong>: 指定告警的接收者，这里是 <code>mail</code>。</li>
+</ul>
+<h5 id="receivers"><a href="#receivers" class="headerlink" title="receivers"></a>receivers</h5><ul>
+<li><strong>name</strong>: 定义接收者的名称，这里为 <code>mail</code>，与 <code>route</code> 中的接收者一致。</li>
+<li>email_configs:邮件发送的配置。<ul>
+<li><strong>to</strong>: 接收邮件的地址，可以列出多个邮箱地址，使用换行分隔。</li>
+</ul>
+</li>
+</ul>
+<h3 id="修改defaults-ini文件"><a href="#修改defaults-ini文件" class="headerlink" title="修改defaults.ini文件"></a>修改defaults.ini文件</h3><p>修改grafana的defaults.ini文件将界面可以匿名访问</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/grafana/grafana.ini</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">################################### Anonymous Auth ######################</span></span></span><br><span class="line">[auth.anonymous]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="built_in">enable</span> anonymous access</span></span><br><span class="line">enabled = true</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="新增systemd的service"><a href="#新增systemd的service" class="headerlink" title="新增systemd的service"></a>新增systemd的service</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
+
+<h4 id="pushgateway-service文件"><a href="#pushgateway-service文件" class="headerlink" title="pushgateway.service文件"></a>pushgateway.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Push Gateway</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/pushgateway/pushgateway</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="node-exporter-service文件"><a href="#node-exporter-service文件" class="headerlink" title="node_exporter.service文件"></a>node_exporter.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Node Exporter</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/node_exporter/node_exporter</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="prometheus-service文件"><a href="#prometheus-service文件" class="headerlink" title="prometheus.service文件"></a>prometheus.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus</span><br><span class="line">Documentation=https://prometheus.io/</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Type设置为notify时，服务会不断重启</span></span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/home/ops/prometheus/prometheus \</span><br><span class="line">--config.file=/home/ops/prometheus/prometheus.yml \</span><br><span class="line">--web.read-timeout=5m  \</span><br><span class="line">--web.max-connections=10 \</span><br><span class="line">--query.max-concurrency=20 \</span><br><span class="line">--storage.tsdb.path=/home/ops/prometheus/data \</span><br><span class="line">--storage.tsdb.retention.time=30d \</span><br><span class="line">--query.timeout=2m</span><br><span class="line">Restart=on-failure</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<h4 id="alertmanager-service文件"><a href="#alertmanager-service文件" class="headerlink" title="alertmanager.service文件"></a>alertmanager.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus alertmanager</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/alertmanager/alertmanager \</span><br><span class="line">--storage.path=/opt/prometheus_env/alertmanager/data \</span><br><span class="line">--config.file=/opt/prometheus_env/alertmanager/alertmanager.yml</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">重载配置：</span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">开启服务：</span><br><span class="line">systemctl start pushgateway</span><br><span class="line">systemctl start node_exporter</span><br><span class="line">systemctl start prometheus</span><br><span class="line">systemctl start grafana</span><br><span class="line">systemctl start alertmanager</span><br><span class="line"></span><br><span class="line">设置开机启动：</span><br><span class="line">systemctl enable pushgateway</span><br><span class="line">systemctl enable node_exporter</span><br><span class="line">systemctl enable prometheus</span><br><span class="line">systemctl enable grafana</span><br><span class="line">systemctl enable alertmanager</span><br><span class="line"></span><br><span class="line">查看服务状态:</span><br><span class="line">systemctl status pushgateway</span><br></pre></td></tr></table></figure>
+
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
-        <tag>BIOS</tag>
-        <tag>GRUB</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux初始化以及系统性能调优</title>
-    <url>/posts/b4a62efd.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
-<p>本文主要以debian为例针对CPU、硬盘、内核等操作系统参数进行优化。</p>
-<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><h3 id="关闭cpu节能"><a href="#关闭cpu节能" class="headerlink" title="关闭cpu节能"></a>关闭cpu节能</h3><p>随着CPU的发展，Intel出现了EIST技术，它可以动态的调整CPU的频率。当CPU使用率地下或者接近0时候,能降低CPU频率并且降压，从而降低功耗和发热。当检测到CPU使用率增高，它会马上回到原始工作频率，但是你必须考虑CPU被唤醒的时间，并且确保它会再次100％运行。这一系列的过程通常被称为“C-states”或“C-modes”,它是从C0开始的。</p>
-<p>关闭CPU节能方式如下：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;intel_idle.max_cstate=0 intel_pstate=disable processor.max_cstate=1&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出，更新grub</span></span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>intel_idle.max_cstate&#x3D;0</li>
-</ul>
-<p>这个参数用于 Intel 平台，指定禁用 intel_idle 驱动，让系统退回使用通用的 acpi_idle 驱动。这样 acpi_idle 驱动会遵循 processor.max_cstate 参数的设置，从而限制 CPU 只能使用浅层 C-state（C1）。</p>
-<ul>
-<li>intel_pstate&#x3D;disable</li>
-</ul>
-<p>禁用Intel处理器的动态频率调节驱动（P-state），改用传统ACPI <code>cpufreq</code>驱动管理CPU频率‌。</p>
-<ul>
-<li>processor.max_cstate&#x3D;1</li>
-</ul>
-<p>限制Intel处理器的空闲状态最大为C1，禁止进入更深层节能状态（如C2&#x2F;C3），减少唤醒延迟‌。与设置为processor.max_cstate&#x3D;0等效</p>
-<h2 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h2><h3 id="网络接口命名规则"><a href="#网络接口命名规则" class="headerlink" title="网络接口命名规则"></a>网络接口命名规则</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;net.ifnames=0 biosdevname=0&quot;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>net.ifnames&#x3D;0</li>
-</ul>
-<p>禁用可预测的网络接口命名（如<code>ens33</code>），恢复传统命名方式（如<code>eth0</code>）‌。</p>
-<ul>
-<li>biosdevname&#x3D;0</li>
-</ul>
-<p>关闭基于BIOS设备名的网络接口命名规则（如<code>em1</code>），需与<code>net.ifnames=0</code>配合生效‌。</p>
-<h3 id="网络优化配置"><a href="#网络优化配置" class="headerlink" title="网络优化配置"></a>网络优化配置</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看当前队列</span></span><br><span class="line">ethtool -l eth0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置队列数量</span></span><br><span class="line">sudo ethtool -L eth0 combined 8</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="硬盘"><a href="#硬盘" class="headerlink" title="硬盘"></a>硬盘</h2><h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">NVME设置调度策略为none</span></span><br><span class="line">echo none | sudo tee /sys/block/nvme0n1/queue/scheduler</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">机械硬盘设置调度策略为deadline</span></span><br><span class="line">echo deadline | sudo tee /sys/block/sda/queue/scheduler</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<ul>
-<li>mq-deadline</li>
-</ul>
-<p><code>mq-deadline</code> 调度程序将排队的 I&#x2F;O 请求分为读取或写入批处理，然后调度它们以增加逻辑块寻址 (LBA) 顺序执行。默认情况下，读取批处理的优先级高于写入批处理，因为应用程序更有可能阻止读 I&#x2F;O 操作。在 <code>mq-deadline</code> 批处理后，它会检查写操作在处理器时间耗尽的时间，并根据情况调度下一个读取或写入批处理。</p>
-<p>这个调度程序适用于大多数用例，特别是那些写入操作是异步的。</p>
-<ul>
-<li>none</li>
-</ul>
-<p>所有进程的io请求都进入<a href="https://so.csdn.net/so/search?q=FIFO&spm=1001.2101.3001.7020">FIFO</a>队列，完全按照队列的顺序进行io的读取，适合于ssd，因为io请求饥饿以及每次请求都需要寻道，ssd不存在传统hdd的寻道时间。</p>
-<h3 id="文件系统优化"><a href="#文件系统优化" class="headerlink" title="文件系统优化"></a>文件系统优化</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/fstab 添加挂载参数</span></span><br><span class="line">noatime,nodiratime</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>noatime: 不更新文件的最后访问时间，减少磁盘 I&#x2F;O。</li>
-<li>nodiratime: 不更新目录的访问时间，进一步减少磁盘 I&#x2F;O。</li>
-</ul>
-<p>参考链接：</p>
-<ol>
-<li><a href="https://www.cnblogs.com/kanie/p/15252921.html">mq-deadline调度器原理及源码分析</a></li>
-<li><a href="https://documentation.suse.com/zh-cn/sled/15-SP5/html/SLED-all/cha-tuning-io.html">微调 I&#x2F;O 性能</a></li>
-<li><a href="https://www.phoronix.com/review/linux-56-nvme/2">Linux 5.6 I&#x2F;O Scheduler Benchmarks: None, Kyber, BFQ, MQ-Deadline</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>GRUB</tag>
-        <tag>初始化</tag>
-        <tag>性能调优</tag>
+        <tag>Prometheus</tag>
+        <tag>Grafana</tag>
+        <tag>Alertmanager</tag>
+        <tag>监控部署</tag>
+        <tag>Prometheus部署</tag>
       </tags>
   </entry>
   <entry>
@@ -649,6 +741,69 @@
       </tags>
   </entry>
   <entry>
+    <title>Linux启动流程</title>
+    <url>/posts/ae574090.html</url>
+    <content><![CDATA[<p>系统的启动流程可分为以下几个关键阶段，综合硬件初始化、引导加载、内核加载及用户空间初始化等过程。</p>
+<p>‌流程图简化：</p>
+<blockquote>
+<p>BIOS&#x2F;UEFI → GRUB → 内核 → systemd → 目标状态 → 用户登录</p>
+</blockquote>
+<h2 id="BIOS-UEFI-初始化"><a href="#BIOS-UEFI-初始化" class="headerlink" title="BIOS&#x2F;UEFI 初始化"></a>BIOS&#x2F;UEFI 初始化</h2><ol>
+<li><h3 id="硬件自检（POST）"><a href="#硬件自检（POST）" class="headerlink" title="硬件自检（POST）"></a>硬件自检（POST）</h3></li>
+</ol>
+<p>计算机加电后，BIOS&#x2F;UEFI 首先执行硬件自检（Power-On Self Test），检测 CPU、内存、存储设备等核心硬件状态‌</p>
+<ol start="2">
+<li><h3 id="‌选择启动设备"><a href="#‌选择启动设备" class="headerlink" title="‌选择启动设备"></a>‌选择启动设备</h3></li>
+</ol>
+<p>根据 BIOS&#x2F;UEFI 配置的启动顺序（如硬盘、USB、网络等），加载目标设备的引导扇区代码（如 MBR 或 UEFI 分区）‌</p>
+<h2 id="GRUB-引导加载程序"><a href="#GRUB-引导加载程序" class="headerlink" title="GRUB 引导加载程序"></a>GRUB 引导加载程序</h2><ol>
+<li><h3 id="加载-GRUB-菜单"><a href="#加载-GRUB-菜单" class="headerlink" title="加载 GRUB 菜单"></a>加载 GRUB 菜单</h3></li>
+</ol>
+<p>BIOS&#x2F;UEFI 将控制权移交至 GRUB（Grand Unified Bootloader），读取 <code>/boot/grub/grub.cfg</code> 配置文件并显示可引导的操作系统选项菜单‌</p>
+<ol start="2">
+<li><h3 id="‌内核与-initrd-加载"><a href="#‌内核与-initrd-加载" class="headerlink" title="‌内核与 initrd 加载"></a>‌内核与 initrd 加载</h3></li>
+</ol>
+<p>用户选择 Debian 启动项后，GRUB 将 Linux 内核（如 <code>vmlinuz</code>）和初始内存磁盘镜像（<code>initrd.img</code>）加载至内存，启动内核执行‌</p>
+<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><ol>
+<li><h3 id="硬件驱动加载"><a href="#硬件驱动加载" class="headerlink" title="硬件驱动加载"></a>硬件驱动加载</h3></li>
+</ol>
+<p>内核初始化硬件设备（如磁盘控制器、网络接口），并挂载根文件系统‌</p>
+<ol start="2">
+<li><h3 id="启动-systemd-进程"><a href="#启动-systemd-进程" class="headerlink" title="启动 systemd 进程"></a>启动 <code>systemd</code> 进程</h3></li>
+</ol>
+<p>内核调用首个用户空间进程 <code>systemd</code>（PID&#x3D;1），取代传统的 SysV init 作为初始化系统‌</p>
+<h2 id="用户空间初始化"><a href="#用户空间初始化" class="headerlink" title="用户空间初始化"></a>用户空间初始化</h2><ol>
+<li><h3 id="‌目标状态（Target）管理"><a href="#‌目标状态（Target）管理" class="headerlink" title="‌目标状态（Target）管理"></a>‌目标状态（Target）管理</h3></li>
+</ol>
+<p><code>systemd</code> 根据默认目标（如 <code>multi-user.target</code> 或 <code>graphical.target</code>）激活基础服务（如网络、日志、定时任务）‌</p>
+<ol start="2">
+<li><h3 id="‌运行级别兼容"><a href="#‌运行级别兼容" class="headerlink" title="‌运行级别兼容"></a>‌运行级别兼容</h3></li>
+</ol>
+<ul>
+<li>级别 0 → <code>poweroff.target</code>（关机）</li>
+<li>级别 1 → <code>rescue.target</code>（单用户维护模式）</li>
+<li>级别 2-5 → <code>multi-user.target</code>（多用户模式）</li>
+<li>级别 6 → <code>reboot.target</code>（重启）‌</li>
+</ul>
+<h2 id="用户登录"><a href="#用户登录" class="headerlink" title="用户登录"></a>用户登录</h2><ol>
+<li><h3 id="显示管理器启动‌"><a href="#显示管理器启动‌" class="headerlink" title="显示管理器启动‌"></a>显示管理器启动‌</h3></li>
+</ol>
+<p>若目标为图形界面（<code>graphical.target</code>），<code>systemd</code> 启动显示管理器（如 GDM），进入登录界面‌</p>
+<ol start="2">
+<li><h3 id="‌Shell或桌面环境加载"><a href="#‌Shell或桌面环境加载" class="headerlink" title="‌Shell或桌面环境加载"></a>‌Shell或桌面环境加载</h3></li>
+</ol>
+<p>用户认证通过后，启动桌面环境（如 GNOME）或命令行 Shell‌</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>GRUB</tag>
+        <tag>BIOS</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>手动搭建 WordPress 个人站点(Linux)</title>
     <url>/posts/c171e9f0.html</url>
     <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
@@ -781,118 +936,6 @@
       </tags>
   </entry>
   <entry>
-    <title>手动搭建LNMP环境</title>
-    <url>/posts/9d5ca845.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
-<ul>
-<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
-<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
-<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
-<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
-</ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
-<li>确认源文件正常，执行以下命令。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令，安装 nginx。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
-
-<ol start="8">
-<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
-
-<p>显示如下，则说明 Nginx 安装配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
-<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
-<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
-<ol start="4">
-<li>执行以下命令，退出 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
-
-<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
-<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，验证 PHP 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
-<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
-<ol>
-<li>执行以下命令，创建测试文件。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则说明环境配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>Nginx</tag>
-        <tag>MySQL</tag>
-        <tag>PHP</tag>
-        <tag>wordpress</tag>
-        <tag>LNMP环境</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Twikoo评论系统搭建配置教程</title>
     <url>/posts/5eb7adfe.html</url>
     <content><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>之前博客用过WordPress，但是动态博客用起来有些太重了，并且很多功能也用不到，所以重新搭建了hexo框架的静态博客。评论系统首先使用的是Giscus，但是需要登录github账号进行评论，对于一些没有技术基础的用户易用性较差，所以选择本地化搭建一套免费的，易用性强的评论静态网站评论系统。本文使用hexo静态博客系统 Butterfly 5.4版本主题下使用Twikoo评论系统。</p>
@@ -1008,161 +1051,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Prometheus+Grafana+Alertmanager部署</title>
-    <url>/posts/c03992dd.html</url>
-    <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
-<h3 id="Pushgateway"><a href="#Pushgateway" class="headerlink" title="Pushgateway"></a><strong>Pushgateway</strong></h3><p><strong>Pushgateway</strong> 是 Prometheus 生态系统中的一个工具，专门用来处理短期任务或批处理作业的指标。这些短期任务通常是无法直接通过 Prometheus 的 pull 模型抓取的，因此 Pushgateway 可以接收来自这些任务的指标数据并将其保存在 Prometheus 可抓取的形式中。<br>主要功能：</p>
-<ul>
-<li>允许临时的、短期任务将其指标推送到 Pushgateway。</li>
-<li>支持长期运行的指标的暴露，适合批处理任务的场景。</li>
-</ul>
-<h3 id="Node-Exporter"><a href="#Node-Exporter" class="headerlink" title="Node Exporter"></a><strong>Node Exporter</strong></h3><p><strong>Node Exporter</strong> 是 Prometheus 生态系统中用于收集 Linux&#x2F;Unix 系统层面指标的组件。它暴露系统硬件和操作系统的运行状况，例如：</p>
-<ul>
-<li>CPU 使用率</li>
-<li>内存使用情况</li>
-<li>磁盘 I&#x2F;O</li>
-<li>网络流量</li>
-</ul>
-<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a><strong>Grafana</strong></h3><p><strong>Grafana</strong> 是一个开源的数据可视化工具，能够与 Prometheus 等数据源集成。它通过直观的图表、仪表盘（dashboard）展示时间序列数据，方便用户监控系统性能和运行状态。<br>主要功能：</p>
-<ul>
-<li>支持多种数据源（包括 Prometheus、Elasticsearch、MySQL 等）</li>
-<li>自定义仪表盘和报警</li>
-<li>提供丰富的插件以扩展功能</li>
-</ul>
-<h3 id="Alertmanager"><a href="#Alertmanager" class="headerlink" title="Alertmanager"></a><strong>Alertmanager</strong></h3><p><strong>Alertmanager</strong> 是 Prometheus 的报警管理组件，用于处理来自 Prometheus 服务器的报警。它能够根据预定义的规则分组、路由、抑制和消除报警。Alertmanager 可以将报警发送到各种通知渠道，如邮件、Slack、PagerDuty 等。<br>主要功能：</p>
-<ul>
-<li>灵活的报警管理和路由规则</li>
-<li>报警抑制与分组</li>
-<li>支持多种通知方式</li>
-</ul>
-<p>这些组件结合在一起，形成一个强大的监控系统，Prometheus 负责收集和存储数据，Pushgateway 用于处理无法直接拉取的任务，Node Exporter 提供系统层面的指标，Grafana 实现数据的可视化，Alertmanager 管理报警。</p>
-<h2 id="实例环境与下载"><a href="#实例环境与下载" class="headerlink" title="实例环境与下载"></a>实例环境与下载</h2><h3 id="实例环境"><a href="#实例环境" class="headerlink" title="实例环境"></a>实例环境</h3><p>本文搭建的环境软件组成版本及说明如下：</p>
-<ul>
-<li><p>Linux：Linux 操作系统，本文以 debian 12.6 为例。</p>
-</li>
-<li><p>prometheus：本文以  prometheus 3.4.0 为例。</p>
-</li>
-<li><p>pushgateway：本文以 pushgateway 1.11.1 为例。</p>
-</li>
-<li><p>node-exporter：本文以 node-exporter 1.9.1 为例。</p>
-</li>
-<li><p>Grafana：本文以 Grafana 12.0.0 为例。</p>
-</li>
-<li><p>Alertmanager：本文以 Alertmanager 0.28.1 为例。</p>
-</li>
-</ul>
-<h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p>部分软件有国内加速下载请根据需求选择下载方式，下载地址如下：</p>
-<blockquote>
-<p>prometheus以及相关套件可见官网：<a href="https://prometheus.io/download/">https://prometheus.io/download/</a></p>
-<p>下载地址：</p>
-<p>prometheus：<a href="https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz">https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</a></p>
-<p>Alertmanager：<a href="https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz">https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</a></p>
-<p>node-exporter：<a href="https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz">https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</a></p>
-<p>pushgateway：<a href="https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz">https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</a></p>
-<p>Grafana：</p>
-<p>​	华为源：<a href="https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb">https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</a></p>
-</blockquote>
-<blockquote>
-<p>注意：由于各软件会升级迭代，请根据实际情况调整下载地址</p>
-</blockquote>
-<p>进入服务器，执行如下命令下载并解压：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt</span><br><span class="line">mkdir prometheus_env</span><br><span class="line">cd prometheus_env</span><br><span class="line">wget https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line">wget https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line">tar -zxvf prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y adduser libfontconfig1 musl</span><br><span class="line">sudo dpkg -i grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//修改文件名去掉版本号</span><br><span class="line">cd /opt/prometheus_env</span><br><span class="line">for i in `ls -l|awk &#x27;&#123;print $9&#125;&#x27;`;do new_name=$(echo &quot;$i&quot; | awk -F &#x27;-&#x27; &#x27;&#123;print $1&#125;&#x27;);mv &quot;$i&quot; &quot;$new_name&quot;;done</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="服务配置"><a href="#服务配置" class="headerlink" title="服务配置"></a>服务配置</h2><h3 id="修改prometheus-yml-配置文件"><a href="#修改prometheus-yml-配置文件" class="headerlink" title="修改prometheus.yml 配置文件"></a>修改prometheus.yml 配置文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/prometheus</span><br><span class="line">vi prometheus.yml</span><br></pre></td></tr></table></figure>
-
-<p>内容如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># my global config</span><br><span class="line">global:</span><br><span class="line">  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.</span><br><span class="line">  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.</span><br><span class="line">  # scrape_timeout is set to the global default (10s).</span><br><span class="line"></span><br><span class="line"># Alertmanager configuration</span><br><span class="line">alerting:</span><br><span class="line">  alertmanagers:</span><br><span class="line">    - static_configs:</span><br><span class="line">        - targets:</span><br><span class="line">           - 127.0.0.1:9093</span><br><span class="line"></span><br><span class="line"># Load rules once and periodically evaluate them according to the global &#x27;evaluation_interval&#x27;.</span><br><span class="line">rule_files:</span><br><span class="line">   - &quot;alarm_rules.yml&quot;</span><br><span class="line"></span><br><span class="line"># A scrape configuration containing exactly one endpoint to scrape:</span><br><span class="line"># Here it&#x27;s Prometheus itself.</span><br><span class="line">scrape_configs:</span><br><span class="line">  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br><span class="line">  - job_name: &quot;prometheus&quot;</span><br><span class="line"></span><br><span class="line">    # metrics_path defaults to &#x27;/metrics&#x27;</span><br><span class="line">    # scheme defaults to &#x27;http&#x27;.</span><br><span class="line"></span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&quot;localhost:9090&quot;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;prometheus&#x27;</span><br><span class="line">  - job_name: &#x27;linux&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9100&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;localhost&#x27;</span><br><span class="line">  - job_name: &#x27;pushgateway&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9091&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;pushgateway&#x27;</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="配置解析："><a href="#配置解析：" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="全局配置（global）："><a href="#全局配置（global）：" class="headerlink" title="全局配置（global）："></a><strong>全局配置（global）</strong>：</h5><ul>
-<li><code>scrape_interval</code> 和 <code>evaluation_interval</code> 设置为 15 秒，意味着每 15 秒抓取一次指标数据并评估报警规则。</li>
-</ul>
-<h5 id="报警管理（alerting）："><a href="#报警管理（alerting）：" class="headerlink" title="报警管理（alerting）："></a><strong>报警管理（alerting）</strong>：</h5><ul>
-<li>配置 Alertmanager 的地址（<code>127.0.0.1:9093</code>），确保 Alertmanager 正在该地址上运行。</li>
-</ul>
-<h5 id="规则文件（rule-files）："><a href="#规则文件（rule-files）：" class="headerlink" title="规则文件（rule_files）："></a><strong>规则文件（rule_files）</strong>：</h5><ul>
-<li>指向 alarm_rules.yml，请确保该文件存在且格式正确。</li>
-</ul>
-<h5 id="抓取配置（scrape-configs）："><a href="#抓取配置（scrape-configs）：" class="headerlink" title="抓取配置（scrape_configs）："></a><strong>抓取配置（scrape_configs）</strong>：</h5><ul>
-<li><strong>Prometheus 本身</strong>：抓取自身的指标，目标为 <code>127.0.0.1:9090</code>。</li>
-<li><strong>Linux 监控</strong>：通过 Node Exporter 抓取本地系统指标，目标为 <code>127.0.0.1:9100</code>。</li>
-<li><strong>Pushgateway</strong>：监控 Pushgateway 的指标，目标为 <code>127.0.0.1:9091</code>。</li>
-</ul>
-<p>根据需要调整 <code>scrape_interval</code> 和 <code>evaluation_interval</code>，如果你希望更频繁地抓取数据，可以将其缩短。如果有多个实例，可以考虑使用服务发现机制。</p>
-<h3 id="新增alarm-rules-yml-文件"><a href="#新增alarm-rules-yml-文件" class="headerlink" title="新增alarm_rules.yml 文件"></a>新增alarm_rules.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim alarm_rules.yml</span><br><span class="line"></span><br><span class="line">groups:</span><br><span class="line">- name: node</span><br><span class="line">  rules:</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: up&#123;&#125; == 0 </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 挂了&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: 100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes) &gt; 40     </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 内存大于50%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: (1 - avg(rate(node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;[2m])) by (instance)) * 100 &gt; 70  </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; CPU使用率大于70%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;        </span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: max((node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;) *100/(node_filesystem_avail_bytes &#123;fstype=~&quot;ext.?|xfs&quot;&#125;+(node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;)))by(instance) &gt; 80  </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 分区使用率大于80%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="修改alertmanager-yml-文件"><a href="#修改alertmanager-yml-文件" class="headerlink" title="修改alertmanager.yml 文件"></a>修改alertmanager.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/alertmanager</span><br><span class="line">vim alertmanager.yml </span><br></pre></td></tr></table></figure>
-
-<p>内容如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">global:</span><br><span class="line">  resolve_timeout: 5m</span><br><span class="line">  smtp_smarthost: &#x27;smtp.163.com:25&#x27; # 定义163邮箱服务器端</span><br><span class="line">  smtp_from: &#x27;yourmail@163.com&#x27;  #来自哪个邮箱发的</span><br><span class="line">  smtp_auth_username: &#x27;yourmail@163.com&#x27; #邮箱验证</span><br><span class="line">  smtp_auth_password: &#x27;1111aaaa&#x27;   # 邮箱授权码，不是登录密码</span><br><span class="line">  smtp_require_tls: true   # 是否启用tls</span><br><span class="line">route:</span><br><span class="line">  group_by: [&#x27;alertname&#x27;]</span><br><span class="line">  group_wait: 10s</span><br><span class="line">  group_interval: 10s</span><br><span class="line">  repeat_interval: 3m</span><br><span class="line">  receiver: &#x27;email&#x27;</span><br><span class="line">receivers:</span><br><span class="line">  - name: &#x27;email&#x27;</span><br><span class="line">    email_configs:</span><br><span class="line">      - to: &#x27;yourmail@qq.com&#x27;</span><br><span class="line">#inhibit_rules:</span><br><span class="line">#  - source_match:</span><br><span class="line">#      severity: &#x27;critical&#x27;</span><br><span class="line">#    target_match:</span><br><span class="line">#      severity: &#x27;warning&#x27;</span><br><span class="line">#    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]</span><br></pre></td></tr></table></figure>
-
-<h4 id="配置解析：-1"><a href="#配置解析：-1" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="global"><a href="#global" class="headerlink" title="global"></a>global</h5><ul>
-<li><strong>resolve_timeout</strong>: 设置告警的解决时间，5分钟内未解决则会被视为已解决。</li>
-<li><strong>smtp_smarthost</strong>: 定义 SMTP 服务器的地址和端口。</li>
-<li><strong>smtp_from</strong>: 指定发送邮件时显示的发件人邮箱地址。</li>
-<li><strong>smtp_auth_username</strong>: SMTP 认证的用户名，一般是完整的邮箱地址。</li>
-<li><strong>smtp_auth_password</strong>: 邮箱的授权码，而不是登录密码，需要在邮箱设置中生成。</li>
-<li><strong>smtp_require_tls</strong>: 是否要求使用 TLS 进行加密传输。</li>
-</ul>
-<h5 id="route"><a href="#route" class="headerlink" title="route"></a>route</h5><ul>
-<li><strong>group_by</strong>: 定义在同一组内如何聚合告警，这里按 <code>alertname</code> 聚合。</li>
-<li><strong>group_wait</strong>: 在发送组告警前的等待时间，10秒。</li>
-<li><strong>group_interval</strong>: 组内告警发送的最小间隔，10秒。</li>
-<li><strong>repeat_interval</strong>: 如果告警没有解决，重复发送告警的最小时间间隔，这里设置为 3 分钟。</li>
-<li><strong>receiver</strong>: 指定告警的接收者，这里是 <code>mail</code>。</li>
-</ul>
-<h5 id="receivers"><a href="#receivers" class="headerlink" title="receivers"></a>receivers</h5><ul>
-<li><strong>name</strong>: 定义接收者的名称，这里为 <code>mail</code>，与 <code>route</code> 中的接收者一致。</li>
-<li>email_configs:邮件发送的配置。<ul>
-<li><strong>to</strong>: 接收邮件的地址，可以列出多个邮箱地址，使用换行分隔。</li>
-</ul>
-</li>
-</ul>
-<h3 id="修改defaults-ini文件"><a href="#修改defaults-ini文件" class="headerlink" title="修改defaults.ini文件"></a>修改defaults.ini文件</h3><p>修改grafana的defaults.ini文件将界面可以匿名访问</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/grafana/grafana.ini</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">################################### Anonymous Auth ######################</span></span></span><br><span class="line">[auth.anonymous]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="built_in">enable</span> anonymous access</span></span><br><span class="line">enabled = true</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="新增systemd的service"><a href="#新增systemd的service" class="headerlink" title="新增systemd的service"></a>新增systemd的service</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
-
-<h4 id="pushgateway-service文件"><a href="#pushgateway-service文件" class="headerlink" title="pushgateway.service文件"></a>pushgateway.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Push Gateway</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/pushgateway/pushgateway</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="node-exporter-service文件"><a href="#node-exporter-service文件" class="headerlink" title="node_exporter.service文件"></a>node_exporter.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Node Exporter</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/node_exporter/node_exporter</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="prometheus-service文件"><a href="#prometheus-service文件" class="headerlink" title="prometheus.service文件"></a>prometheus.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus</span><br><span class="line">Documentation=https://prometheus.io/</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Type设置为notify时，服务会不断重启</span></span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/home/ops/prometheus/prometheus \</span><br><span class="line">--config.file=/home/ops/prometheus/prometheus.yml \</span><br><span class="line">--web.read-timeout=5m  \</span><br><span class="line">--web.max-connections=10 \</span><br><span class="line">--query.max-concurrency=20 \</span><br><span class="line">--storage.tsdb.path=/home/ops/prometheus/data \</span><br><span class="line">--storage.tsdb.retention.time=30d \</span><br><span class="line">--query.timeout=2m</span><br><span class="line">Restart=on-failure</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-<h4 id="alertmanager-service文件"><a href="#alertmanager-service文件" class="headerlink" title="alertmanager.service文件"></a>alertmanager.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus alertmanager</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/alertmanager/alertmanager \</span><br><span class="line">--storage.path=/opt/prometheus_env/alertmanager/data \</span><br><span class="line">--config.file=/opt/prometheus_env/alertmanager/alertmanager.yml</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">重载配置：</span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">开启服务：</span><br><span class="line">systemctl start pushgateway</span><br><span class="line">systemctl start node_exporter</span><br><span class="line">systemctl start prometheus</span><br><span class="line">systemctl start grafana</span><br><span class="line">systemctl start alertmanager</span><br><span class="line"></span><br><span class="line">设置开机启动：</span><br><span class="line">systemctl enable pushgateway</span><br><span class="line">systemctl enable node_exporter</span><br><span class="line">systemctl enable prometheus</span><br><span class="line">systemctl enable grafana</span><br><span class="line">systemctl enable alertmanager</span><br><span class="line"></span><br><span class="line">查看服务状态:</span><br><span class="line">systemctl status pushgateway</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Prometheus</tag>
-        <tag>Grafana</tag>
-        <tag>Alertmanager</tag>
-        <tag>监控部署</tag>
-        <tag>Prometheus部署</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>解析WordPress网站域名与常见问题</title>
     <url>/posts/4c6ec737.html</url>
     <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
@@ -1250,11 +1138,122 @@
       </tags>
   </entry>
   <entry>
+    <title>手动搭建LNMP环境</title>
+    <url>/posts/9d5ca845.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
+<ul>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
+<li>确认源文件正常，执行以下命令。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令，安装 nginx。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
+
+<p>显示如下，则说明 Nginx 安装配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
+<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
+<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
+<ol start="4">
+<li>执行以下命令，退出 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
+<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，验证 PHP 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
+<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
+<ol>
+<li>执行以下命令，创建测试文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则说明环境配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+        <tag>LNMP环境</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>windows 11 安装教程</title>
     <url>/posts/50cbde44.html</url>
     <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
-<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。本文以Rufus举例，操作如下图。</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10k2jw0.png" alt="image-20260112221050377"></p>
+<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
 <h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
 <li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
 </ol>
@@ -1268,55 +1267,71 @@
 <ol start="3">
 <li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
 </ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10nf1j1.png" alt="PixPin_2026-01-12_20-41-29"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10nfzsx.png" alt="PixPin_2026-01-12_20-41-45"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10ngqyv.png" alt="PixPin_2026-01-12_20-41-52"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10nhymx.png" alt="PixPin_2026-01-12_20-42-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10niz67.png" alt="PixPin_2026-01-12_20-42-30"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
 <ol start="4">
-<li><h3 id="注意，如果不需要保存数据则点击仅安装Windows"><a href="#注意，如果不需要保存数据则点击仅安装Windows" class="headerlink" title="注意，如果不需要保存数据则点击仅安装Windows"></a>注意，如果不需要保存数据则点击仅安装Windows</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10o85mm.png" alt="PixPin_2026-01-12_20-43-18"></p>
-<ol start="5">
 <li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
 </ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10oktnz.png" alt="PixPin_2026-01-12_20-44-36"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
+<ol start="5">
+<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
 <ol start="6">
 <li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
 </ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10oqo09.png" alt="PixPin_2026-01-12_20-45-04"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10oseex.png" alt="PixPin_2026-01-12_20-45-23"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10ou9w6.png" alt="PixPin_2026-01-12_20-45-33"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10ov1gl.png" alt="PixPin_2026-01-12_20-45-46"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
 <ol start="7">
 <li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
 </ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10p8ec1.png" alt="PixPin_2026-01-12_20-45-54"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
 <ol start="8">
 <li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
 </ol>
 <p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
 <p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
 <p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
 <p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pzht5.png" alt="PixPin_2026-01-12_21-15-47"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10q0alt.png" alt="PixPin_2026-01-12_21-16-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10q0yk5.png" alt="PixPin_2026-01-12_21-16-12"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10q26hy.png" alt="PixPin_2026-01-12_21-16-36"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10qbxws.png" alt="PixPin_2026-01-12_21-16-44"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
 <ol start="9">
 <li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
 </ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10qj5ab.png" alt="PixPin_2026-01-12_21-17-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10qjvi6.png" alt="PixPin_2026-01-12_21-17-22"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
+<ol start="10">
+<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
 <ol start="10">
 <li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
 </ol>
 <p>将U盘中的Win11激活器复制到桌面并解压</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10rkv3s.png" alt="PixPin_2026-01-12_21-58-59"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10rrf87.png" alt="PixPin_2026-01-12_21-59-06"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10ruigm.png" alt="PixPin_2026-01-12_21-52-05"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10rvaej.png" alt="PixPin_2026-01-12_21-52-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
 <p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
 <p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
 <p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
