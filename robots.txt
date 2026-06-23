@@ -1,0 +1,10 @@
+User-agent: *
+
+Allow: /
+Allow: /categories/
+Allow: /about/
+Allow: /tags/
+Allow: /link/
+
+Sitemap: https://www.qiubite.fun/baidusitemap.xml
+Sitemap: https://www.qiubite.fun/sitemap.xml

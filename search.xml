@@ -1,0 +1,1542 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Windows 11 重装遇到离谱问题分析排查</title>
+    <url>/posts/ebc9b05d.html</url>
+    <content><![CDATA[<h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><ol>
+<li><p><strong>重装原因</strong>：原有 Windows11系统经常蓝屏，并且也想清理下C盘。</p>
+</li>
+<li><p><strong>环境信息</strong>：华硕TUF Z370+I7 8086K+RTX 3080TI</p>
+</li>
+</ol>
+<h2 id="二、工具"><a href="#二、工具" class="headerlink" title="二、工具"></a>二、工具</h2><ul>
+<li><a href="https://next.itellyou.cn/"><strong>MSDN</strong></a> 下载的 Windows 11 ISO 镜像</li>
+<li><strong><a href="https://rufus.ie/zh/">Rufus 4.14</a></strong> 制作 USB 启动盘</li>
+<li>**<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Media Creation Tool (MCT) for Windows 11</a>**微软官方制作启动盘工具</li>
+<li>第三方PE经典老毛桃（刚发现已经被火绒认为是流氓软件）</li>
+</ul>
+<h2 id="三、安装过程"><a href="#三、安装过程" class="headerlink" title="三、安装过程"></a>三、安装过程</h2><ol>
+<li><h3 id="ISO-本地安装"><a href="#ISO-本地安装" class="headerlink" title="ISO 本地安装"></a><strong>ISO 本地安装</strong></h3></li>
+</ol>
+<ul>
+<li><p>在现有 Windows 系统中挂载 ISO，运行 <code>setup.exe</code>，选择“不保留任何内容”进行纯净安装。</p>
+</li>
+<li><p>文件复制完成，系统重启。</p>
+</li>
+<li><p>重启后显示 Windows 徽标，下方转圈动画10秒后画面消失，显示器黑屏（有背光）。</p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+<ul>
+<li>等待 30 分钟无任何响应重启还是开在这里，换U盘重装。</li>
+</ul>
+<ol start="2">
+<li><h3 id="Rufus-刻录-U-盘安装"><a href="#Rufus-刻录-U-盘安装" class="headerlink" title="Rufus 刻录 U 盘安装"></a><strong>Rufus 刻录 U 盘安装</strong></h3></li>
+</ol>
+<p>设置如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbxjh4.webp" alt="Rufus1"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbz7ji.webp" alt="Rufus2"></p>
+<hr>
+<ul>
+<li><p>使用 Rufus 4.14，分区类型 GPT，目标系统 UEFI，写入 ISO</p>
+</li>
+<li><p>BIOS 选择 UEFI USB 启动</p>
+</li>
+<li><p>同样出现徽标转圈 → 黑屏无响应，无法进入安装界面</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+</li>
+</ul>
+<p>怀疑是不是镜像或者刻录工具的问题，换个工具和镜像再试试。</p>
+<ol start="3">
+<li><h3 id="Media-Creation-Tool-制作-U-盘安装"><a href="#Media-Creation-Tool-制作-U-盘安装" class="headerlink" title="Media Creation Tool 制作 U 盘安装"></a><strong>Media Creation Tool 制作 U 盘安装</strong></h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmplno.webp" alt="安装1"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmqsoe.webp" alt="安装2"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmre0h.webp" alt="安装3"></p>
+<ul>
+<li>Media Creation Tool会自动下载Windows镜像，并且自动刻录。</li>
+<li>将制作好的U盘插入BIOS 选择 UEFI USB 启动。</li>
+<li>启动后现象与 Rufus 完全相同：转圈后黑屏。</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+<hr>
+<ol start="4">
+<li><h3 id="BIOS-启动项与模式调整"><a href="#BIOS-启动项与模式调整" class="headerlink" title="BIOS 启动项与模式调整"></a><strong>BIOS 启动项与模式调整</strong></h3></li>
+</ol>
+<ul>
+<li><p>逐一尝试不同启动项（UEFI USB、不带 UEFI 标识的 USB、硬盘 Windows Boot Manager）→ 均失败。</p>
+</li>
+<li><p>CSM 中Boot Devices Control 改为仅 UEFI → 无效。</p>
+</li>
+</ul>
+<ol start="5">
+<li><h3 id="尝试使用经典工具老毛桃PE"><a href="#尝试使用经典工具老毛桃PE" class="headerlink" title="尝试使用经典工具老毛桃PE"></a><strong>尝试使用经典工具老毛桃PE</strong></h3></li>
+</ol>
+<ul>
+<li>U盘刻录老毛桃PE→ 黑屏依旧。</li>
+</ul>
+<ol start="6">
+<li><h3 id="问题排查"><a href="#问题排查" class="headerlink" title="问题排查"></a><strong>问题排查</strong></h3></li>
+</ol>
+<p>google后在Reddit 发现一个现象很像的案例 <a href="https://www.reddit.com/r/pchelp/comments/16qw1zl/black_screen_on_my_new_build_while_installing/?show=original">Black Screen on my New Build while installing Windows 11</a>大致描述是与显示输出设备有关，根据社区的建议做了几个尝试如下：</p>
+<ul>
+<li>DisplayPort 拔插+换接口 → 还是黑屏且直接变成无背光无信号</li>
+<li>更换HDMI线材→ 还是黑屏故障相同</li>
+<li>将 HDMI 从独立显卡拔下，接到主板核显接口 → 依然黑屏</li>
+</ul>
+<p>试着这几种方法都没能解决问题，梳理了一下后面的测试方案：</p>
+<ul>
+<li><strong>显卡隔离</strong>‌：移除独立显卡，将显示输出切换至主板板载显示接口（HDMI），以排除独显故障或驱动引入的异常。</li>
+<li><strong>内存最小化测试</strong>：仅保留单条内存模组进行开机验证，必要时更换插槽交叉测试，以判断是否存在内存兼容性或硬件损坏</li>
+<li>**主板初始化恢复：**通过清除 CMOS 或恢复 BIOS 默认设置的方式，将主板恢复至出厂默认状态，排除配置问题。</li>
+</ul>
+<ol start="7">
+<li><h3 id="BIOS-重置"><a href="#BIOS-重置" class="headerlink" title="BIOS 重置"></a><strong>BIOS 重置</strong></h3></li>
+</ol>
+<ul>
+<li><p>将BIOS恢复出厂设置</p>
+</li>
+<li><p>使用 Rufus U 盘重新启动安装</p>
+</li>
+</ul>
+<p>故障解决，成功进入 Windows 安装界面，安装完成后可以正常开机。</p>
+<hr>
+<h2 id="四、推测根因"><a href="#四、推测根因" class="headerlink" title="四、推测根因"></a>四、推测根因</h2><p>UEFI&#x2F;CSM&#x2F;显卡 GOP（UEFI 显示初始化）阶段的兼容性问题</p>
+<ol>
+<li><h3 id="现象指向"><a href="#现象指向" class="headerlink" title="现象指向"></a><strong>现象指向</strong></h3></li>
+</ol>
+<p>所有安装方式失败都有一个共同点</p>
+<p>Windows Logo 出现 → 转圈 → 黑屏（显示器仍有背光或短暂无信号）</p>
+<ol start="2">
+<li><h3 id="根因分析"><a href="#根因分析" class="headerlink" title="根因分析"></a>根因分析</h3></li>
+</ol>
+<p>UEFI启动流程可以分为以下7各阶段：</p>
+<p>SEC（安全验证）-&gt;PEI（EFI前期初始化）-&gt;DXE（驱动执行环境）-&gt;BDS（启动设备选择）-&gt;TSL（操作系统加载前期）-&gt;RT（系统系统运行阶段）-&gt;AL（系统灾难恢复期或关机）</p>
+<p>各阶段表现对照分析：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>状态</th>
+<th>是否正常</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SEC</td>
+<td>CPU微码加载、缓存初始化、检查平台安全状态</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>PEI</td>
+<td>初始化CPU、芯片组和内存（RAM）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>DXE</td>
+<td>枚举并加载绝大多数硬件驱动，包括 PCIe总线驱动 和 显卡的UEFI GOP驱动。此时固件绘制出BIOS设置界面</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>BDS</td>
+<td>根据启动顺序加载指定的EFI应用程序（即 <code>bootmgfw.efi</code>，Windows引导管理器）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>TSL</td>
+<td><strong>操作系统加载器（Windows Boot Manager）运行</strong>。它加载内核、HAL和初始驱动，然后<strong>调用 <code>ExitBootServices()</code> 结束固件对硬件的控制权</strong>，将控制权交给操作系统内核。</td>
+<td>⚠️ 发生故障</td>
+</tr>
+<tr>
+<td>RT</td>
+<td>操作系统完全接管硬件，驱动正常运行，用户进入桌面或安装界面。</td>
+<td>未进入</td>
+</tr>
+<tr>
+<td>AL</td>
+<td>系统遇到致命错误重启或执行关机命令</td>
+<td>无关</td>
+</tr>
+</tbody></table>
+<p><strong>故障发生点</strong>：Windows徽标出现（由Bootloader借助UEFI GOP绘制），转圈动画结束后，固件控制权刚移交给内核，<strong>内核试图加载其内置的显示驱动（Basic Display Driver）并初始化图形界面</strong>，但此时显卡未能成功响应内核的Mode-Set（模式设置）请求，导致信号中断黑屏。</p>
+<ol start="3">
+<li><h3 id="为什么是TSL-阶段出现问题"><a href="#为什么是TSL-阶段出现问题" class="headerlink" title="为什么是TSL 阶段出现问题"></a>为什么是TSL 阶段出现问题</h3></li>
+</ol>
+<p><strong>“徽标转圈”是TSL阶段的前半段</strong>：Windows的“转圈”动画，本质上是 <code>bootmgfw.efi</code> 在 <strong>UEFI 启动服务（Boot Services）</strong> 环境下，通过调用DXE阶段安装的 <strong>GOP（图形输出协议）</strong> 来绘制的。这说明固件级的显示通道是通畅的。</p>
+<p><strong>“转圈后黑屏”是TSL阶段的分水岭</strong>：转圈结束意味着 <code>bootmgfw.efi</code> 完成了内核加载，执行 <strong><code>ExitBootServices()</code></strong>。</p>
+<ul>
+<li>在此之后，UEFI固件中的GOP驱动虽然还在内存里，但已经<strong>失去了对硬件的控制权</strong>。</li>
+<li>Windows内核接管后，会立即调用自己的 <strong>Windows Basic Display Driver（基本显示驱动）</strong>，该驱动试图重新初始化显卡硬件。</li>
+<li>如果显卡的vBIOS在UEFI模式下的**状态机（State Machine）**无法正确响应内核发起的模式切换指令就会导致显示缓冲区挂起，输出全黑但有背光（或直接无信号）</li>
+</ul>
+<ol start="4">
+<li><h3 id="为什么-BIOS-Reset-能修复？"><a href="#为什么-BIOS-Reset-能修复？" class="headerlink" title="为什么 BIOS Reset 能修复？"></a>为什么 BIOS Reset 能修复？</h3></li>
+</ol>
+<p>BIOS Reset 后之所以恢复，大概率是因为主板重新建立 UEFI 启动环境、GOP 显示初始化状态及相关 NVRAM 配置，同时将Secure Boot&#x2F;CSM 等策略恢复默认值，从而消除了异常显示初始化状态，使 Windows 安装程序能够正常完成显示接管并进入安装界面。</p>
+<p>参考链接：</p>
+<ol>
+<li><a href="https://zhuanlan.zhihu.com/p/483888207">UEFI启动流程概览</a></li>
+<li><a href="https://www.reddit.com/r/buildapc/comments/wwz8eb/trying_to_clean_install_windows_11_but_keep/?show=original">Trying to clean install windows 11 but keep getting black screen</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>windows</tag>
+        <tag>系统安装</tag>
+        <tag>BIOS</tag>
+        <tag>Secure Boot</tag>
+        <tag>UEF</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>windows 11 安装教程</title>
+    <url>/posts/50cbde44.html</url>
+    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
+<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
+<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
+<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
+</ol>
+<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
+<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
+<ol start="2">
+<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
+<ol start="3">
+<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
+<ol start="4">
+<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
+<ol start="5">
+<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
+<ol start="6">
+<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
+<ol start="7">
+<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
+<ol start="8">
+<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
+<ol start="9">
+<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
+<ol start="10">
+<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
+<ol start="10">
+<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
+</ol>
+<p>将U盘中的Win11激活器复制到桌面并解压</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
+<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>windows</tag>
+        <tag>系统安装</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
+    <url>/posts/9b071109.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
+<p>本文将详细介绍如何基于DeepSeek R1+Ollama+Cherry Studio+Page Assist实现本地化部署，帮助您轻松搭建并使用DeepSeek服务。通过Web UI界面，您可以直接与模型进行交互式对话；同时，借助功能强大的交互平台架构，打造属于自己的专属AI聊天室变得轻而易举。</p>
+<h2 id="一、基础环境搭建"><a href="#一、基础环境搭建" class="headerlink" title="一、基础环境搭建"></a>一、基础环境搭建</h2><ol>
+<li><h3 id="什么是Ollama"><a href="#什么是Ollama" class="headerlink" title="什么是Ollama"></a>什么是Ollama</h3></li>
+</ol>
+<p>​	Ollama 是一个可以在本地轻松部署开源大语言模型（LLM）的工具框架，它允许开发者在本地环境中方便地运行和测试不同的语言模型，如 DeepSeek、Llama等。</p>
+<p>​	官网地址：<a href="https://ollama.com/">https://ollama.com/</a></p>
+<p>​	github地址：<a href="https://github.com/ollama/ollama">https://github.com/ollama/ollama</a></p>
+<ol start="2">
+<li><h3 id="安装Ollama"><a href="#安装Ollama" class="headerlink" title="安装Ollama"></a>安装Ollama</h3></li>
+</ol>
+<ul>
+<li><p>访问<a href="https://ollama.com/download">Ollama官网</a>下载对应操作系统的安装包（Windows&#x2F;macOS&#x2F;Linux），完成一键安装‌</p>
+<p>我这里以windows为例：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zjil1y-1.png" alt="image-20250228214909456"></p>
+<p>  下载完成后进行安装：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zmm92z-1.png" alt="image-20250228215430924"></p>
+</li>
+<li><p>安装验证</p>
+<p>安装完成后，在powershell中输入ollama -v，如果显示版本号即安装成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zp2wi8-1.png" alt="image-20250228215845649"></p>
+</li>
+</ul>
+<ol start="3">
+<li><h3 id="选择模型"><a href="#选择模型" class="headerlink" title="选择模型"></a>选择模型</h3></li>
+</ol>
+<p>各型号特性与硬件需求如下：</p>
+<table>
+<thead>
+<tr>
+<th>型号</th>
+<th>CPU</th>
+<th>内存</th>
+<th>显卡（显存要求）</th>
+<th>存储</th>
+<th>适用场景</th>
+<th>成本参考</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>‌1.5B‌</td>
+<td>4核（Intel i5&#x2F;Ryzen 5）</td>
+<td>≥8GB</td>
+<td>核显或低端独显（≥4GB）</td>
+<td>≥20GB SSD</td>
+<td>简单文本生成、轻量开发</td>
+<td>个人级（2k-5k）</td>
+</tr>
+<tr>
+<td>‌7B‌</td>
+<td>8核（i7&#x2F;Ryzen 7）</td>
+<td>≥16GB</td>
+<td>中端独显（RTX 3060，≥8GB）</td>
+<td>≥50GB NVMe</td>
+<td>代码生成、数据分析</td>
+<td>入门级（5k-1.5w）</td>
+</tr>
+<tr>
+<td>‌8B‌</td>
+<td>8核（i7&#x2F;Ryzen 7）</td>
+<td>≥16GB</td>
+<td>中高端独显（RTX 4060，≥10GB）</td>
+<td>≥50GB NVMe</td>
+<td>逻辑推理、轻量高精度任务</td>
+<td>进阶级（1w-3w）</td>
+</tr>
+<tr>
+<td>‌14B‌</td>
+<td>12核（i9&#x2F;Ryzen 9）</td>
+<td>≥32GB</td>
+<td>高端独显（RTX 4090，≥16GB）</td>
+<td>≥100GB NVMe</td>
+<td>复杂任务（合同分析、长文本）</td>
+<td>企业级（3w-8w）</td>
+</tr>
+<tr>
+<td>‌32B‌</td>
+<td>16核（服务器级）</td>
+<td>≥64GB</td>
+<td>专业卡（A100 40GB）</td>
+<td>≥200GB NVMe</td>
+<td>多模态处理、专业领域咨询</td>
+<td>高性能级（8w-15w）</td>
+</tr>
+<tr>
+<td>‌70B‌</td>
+<td>32核（双路Xeon&#x2F;EPYC）</td>
+<td>≥128GB</td>
+<td>多卡集群（2x A100&#x2F;H100）</td>
+<td>≥500GB NVMe</td>
+<td>科研级推理、大规模生成</td>
+<td>科研级（15w-50w）</td>
+</tr>
+<tr>
+<td>‌671B‌</td>
+<td>多节点服务器</td>
+<td>≥512GB ECC</td>
+<td>分布式GPU集群（8x H100）</td>
+<td>≥1TB NVMe</td>
+<td>超大规模训练、AGI探索</td>
+<td>顶尖级（50w+）</td>
+</tr>
+</tbody></table>
+<ol start="4">
+<li><h3 id="下载模型"><a href="#下载模型" class="headerlink" title="下载模型"></a>下载模型</h3></li>
+</ol>
+<p>根据选择好的模型进行拉取，详情可见ollama官网Models中的<a href="https://ollama.com/library/deepseek-r1">deepseek-r1</a>，命令如下：</p>
+<p><strong>DeepSeek-R1-Distill-Qwen-1.5B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:1.5b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-7B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:7b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Llama-8B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:8b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-14B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:14b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-32B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:32b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Llama-70B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:70b</span><br></pre></td></tr></table></figure>
+
+
+
+<p>​	若出现success，则拉取完成，会自动启用该模型。如下图：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12ja0hy-1.png" alt="image-20250228233009280"></p>
+<ol start="5">
+<li><h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3></li>
+</ol>
+<p>​	博主的配置是4080ti显卡，32G内存，i7 8086k CPU，使用的是deepseek-r1:14b，思考速度大约15s左右，CPU使用率80%左右，内存使用率40%，GPU 使用率54%，显存使用率92%。ollama全部加载在GPU中。可供各位小伙伴选择模型时参考。</p>
+<p>CPU使用率：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1ziuyn-1.png" alt="image-20250228233855506"></p>
+<p>GPU使用率：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yf0a0-1.png" alt="image-20250228235552545"></p>
+<p>ollama完全使用GPU：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yyjbb-1.png" alt="image-20250228235643561"></p>
+<p>在升级至DeepSeek-R1:32B这类专业级模型时，需配置显存更高且专业的显卡，由于模型参数量达320亿级别，显存不足会导致用户界面响应会出现明显卡顿，系统将自动调用大量系统内存进行补偿，单次任务处理时长普遍超过200秒。</p>
+<p>各个版本占用的空间如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/51smj-1.png" alt="image-20250301000848810"></p>
+<h2 id="二、打造专属DeepSeek"><a href="#二、打造专属DeepSeek" class="headerlink" title="二、打造专属DeepSeek"></a>二、打造专属DeepSeek</h2><ol>
+<li><h3 id="安装Cherry-Studio"><a href="#安装Cherry-Studio" class="headerlink" title="安装Cherry Studio"></a>安装Cherry Studio</h3></li>
+</ol>
+<p>​	前往<a href="https://cherry-ai.com/">Cherry Studio 官方网站</a>，根据你的操作系统下载安装。</p>
+<ol start="2">
+<li><h3 id="配置Cherry-Studio"><a href="#配置Cherry-Studio" class="headerlink" title="配置Cherry Studio"></a>配置Cherry Studio</h3></li>
+</ol>
+<p>​	打开 Cherry Studio，在设置中找到模型服务</p>
+<ul>
+<li>从模型列表中的Ollama选择与你本地部署的 DeepSeek-R1 模型版本对应的选项</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/i6msp-1.png" alt="image-20250301003054702"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/j8vq7-1.png" alt="image-20250301003232975"></p>
+<ul>
+<li><p>默认模型中选择本地部署对应的模型</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/m60qk-1.png" alt="image-20250301003723515"></p>
+</li>
+<li><p>目前新版的Cherry Studio已支持网络搜索，在网络搜索中可以注册Tavily并设置api秘钥，注册账号可以用github或google</p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/nub35-1.png" alt="image-20250301004004172"></p>
+<ol start="3">
+<li><h3 id="使用Cherry-Studio"><a href="#使用Cherry-Studio" class="headerlink" title="使用Cherry Studio"></a>使用Cherry Studio</h3></li>
+</ol>
+<p>​	配置到这里就可以开始使用专属自己的DeepSeek了，如需使用网络搜索，可在助手页面点开“开启网络搜索”。智能体内也有一些预设的提示词可供食用。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/v7lke-1.png" alt="image-20250301005242312"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/vkryc-1.png" alt="image-20250301005303173"></p>
+<h2 id="三、配置使用Web-UI"><a href="#三、配置使用Web-UI" class="headerlink" title="三、配置使用Web UI"></a>三、配置使用Web UI</h2><ol>
+<li><h3 id="Page-Assist是什么"><a href="#Page-Assist是什么" class="headerlink" title="Page Assist是什么"></a>Page Assist是什么</h3></li>
+</ol>
+<p>​	Page Assist 是一款开源浏览器扩展程序，主要用于提升用户在网页浏览过程中与本地 AI 模型的交互效率，提供类似 ChatGPT 的 Web UI 界面，且支持用户与本地运行的 AI 模型（如 Ollama、Gemini Nano、DeepSeek 等）进行多轮对话‌。</p>
+<ol start="2">
+<li><h3 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a><strong>安装与配置</strong></h3></li>
+</ol>
+<p>Github 官网：<a href="https://github.com/n4ze3m/page-assist">https://github.com/n4ze3m/page-assist</a></p>
+<p>首先打开Chrome浏览器，进入应用商店，搜索<a href="https://chromewebstore.google.com/detail/jfgfiigpkhlkbnfnbobbkinehhfdhndo?utm_source=item-share-cp">Page Assist</a>，点击添加至Chrome：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1q260d-1.png" alt="image-20250301010423793"></p>
+<p>添加后在浏览器右上角的扩展程序图标中打开它即可看到Web UI界面了：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1qr26r-1.png" alt="image-20250301010539620"></p>
+<p>点击右上角设置，可以修改语音识别语言和界面显示语言：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1rvrkk-1.png" alt="image-20250301010730076"></p>
+<p>选择好本地搭建好的模型后即开始使用，并且可以开启搜索网络。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1t4goy-1.png" alt="image-20250301010939030"></p>
+]]></content>
+      <categories>
+        <category>AIGC</category>
+      </categories>
+      <tags>
+        <tag>DeepSeek本地部署</tag>
+        <tag>ollama</tag>
+        <tag>Cherry Studio</tag>
+        <tag>LLM交互平台</tag>
+        <tag>Page Assist</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux初始化以及系统性能调优</title>
+    <url>/posts/b4a62efd.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
+<p>本文主要以debian为例针对CPU、硬盘、内核等操作系统参数进行优化。</p>
+<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><h3 id="关闭cpu节能"><a href="#关闭cpu节能" class="headerlink" title="关闭cpu节能"></a>关闭cpu节能</h3><p>随着CPU的发展，Intel出现了EIST技术，它可以动态的调整CPU的频率。当CPU使用率地下或者接近0时候,能降低CPU频率并且降压，从而降低功耗和发热。当检测到CPU使用率增高，它会马上回到原始工作频率，但是你必须考虑CPU被唤醒的时间，并且确保它会再次100％运行。这一系列的过程通常被称为“C-states”或“C-modes”,它是从C0开始的。</p>
+<p>关闭CPU节能方式如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;intel_idle.max_cstate=0 intel_pstate=disable processor.max_cstate=1&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出，更新grub</span></span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>intel_idle.max_cstate&#x3D;0</li>
+</ul>
+<p>这个参数用于 Intel 平台，指定禁用 intel_idle 驱动，让系统退回使用通用的 acpi_idle 驱动。这样 acpi_idle 驱动会遵循 processor.max_cstate 参数的设置，从而限制 CPU 只能使用浅层 C-state（C1）。</p>
+<ul>
+<li>intel_pstate&#x3D;disable</li>
+</ul>
+<p>禁用Intel处理器的动态频率调节驱动（P-state），改用传统ACPI <code>cpufreq</code>驱动管理CPU频率‌。</p>
+<ul>
+<li>processor.max_cstate&#x3D;1</li>
+</ul>
+<p>限制Intel处理器的空闲状态最大为C1，禁止进入更深层节能状态（如C2&#x2F;C3），减少唤醒延迟‌。与设置为processor.max_cstate&#x3D;0等效</p>
+<h2 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h2><h3 id="网络接口命名规则"><a href="#网络接口命名规则" class="headerlink" title="网络接口命名规则"></a>网络接口命名规则</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;net.ifnames=0 biosdevname=0&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>net.ifnames&#x3D;0</li>
+</ul>
+<p>禁用可预测的网络接口命名（如<code>ens33</code>），恢复传统命名方式（如<code>eth0</code>）‌。</p>
+<ul>
+<li>biosdevname&#x3D;0</li>
+</ul>
+<p>关闭基于BIOS设备名的网络接口命名规则（如<code>em1</code>），需与<code>net.ifnames=0</code>配合生效‌。</p>
+<h3 id="网络优化配置"><a href="#网络优化配置" class="headerlink" title="网络优化配置"></a>网络优化配置</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看当前队列</span></span><br><span class="line">ethtool -l eth0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置队列数量</span></span><br><span class="line">sudo ethtool -L eth0 combined 8</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="硬盘"><a href="#硬盘" class="headerlink" title="硬盘"></a>硬盘</h2><h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">NVME设置调度策略为none</span></span><br><span class="line">echo none | sudo tee /sys/block/nvme0n1/queue/scheduler</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">机械硬盘设置调度策略为deadline</span></span><br><span class="line">echo deadline | sudo tee /sys/block/sda/queue/scheduler</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>mq-deadline</li>
+</ul>
+<p><code>mq-deadline</code> 调度程序将排队的 I&#x2F;O 请求分为读取或写入批处理，然后调度它们以增加逻辑块寻址 (LBA) 顺序执行。默认情况下，读取批处理的优先级高于写入批处理，因为应用程序更有可能阻止读 I&#x2F;O 操作。在 <code>mq-deadline</code> 批处理后，它会检查写操作在处理器时间耗尽的时间，并根据情况调度下一个读取或写入批处理。</p>
+<p>这个调度程序适用于大多数用例，特别是那些写入操作是异步的。</p>
+<ul>
+<li>none</li>
+</ul>
+<p>所有进程的io请求都进入<a href="https://so.csdn.net/so/search?q=FIFO&spm=1001.2101.3001.7020">FIFO</a>队列，完全按照队列的顺序进行io的读取，适合于ssd，因为io请求饥饿以及每次请求都需要寻道，ssd不存在传统hdd的寻道时间。</p>
+<h3 id="文件系统优化"><a href="#文件系统优化" class="headerlink" title="文件系统优化"></a>文件系统优化</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/fstab 添加挂载参数</span></span><br><span class="line">noatime,nodiratime</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>noatime: 不更新文件的最后访问时间，减少磁盘 I&#x2F;O。</li>
+<li>nodiratime: 不更新目录的访问时间，进一步减少磁盘 I&#x2F;O。</li>
+</ul>
+<p>参考链接：</p>
+<ol>
+<li><a href="https://www.cnblogs.com/kanie/p/15252921.html">mq-deadline调度器原理及源码分析</a></li>
+<li><a href="https://documentation.suse.com/zh-cn/sled/15-SP5/html/SLED-all/cha-tuning-io.html">微调 I&#x2F;O 性能</a></li>
+<li><a href="https://www.phoronix.com/review/linux-56-nvme/2">Linux 5.6 I&#x2F;O Scheduler Benchmarks: None, Kyber, BFQ, MQ-Deadline</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>初始化</tag>
+        <tag>GRUB</tag>
+        <tag>性能调优</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux启动流程</title>
+    <url>/posts/ae574090.html</url>
+    <content><![CDATA[<p>系统的启动流程可分为以下几个关键阶段，综合硬件初始化、引导加载、内核加载及用户空间初始化等过程。</p>
+<p>‌流程图简化：</p>
+<blockquote>
+<p>BIOS&#x2F;UEFI → GRUB → 内核 → systemd → 目标状态 → 用户登录</p>
+</blockquote>
+<h2 id="BIOS-UEFI-初始化"><a href="#BIOS-UEFI-初始化" class="headerlink" title="BIOS&#x2F;UEFI 初始化"></a>BIOS&#x2F;UEFI 初始化</h2><ol>
+<li><h3 id="硬件自检（POST）"><a href="#硬件自检（POST）" class="headerlink" title="硬件自检（POST）"></a>硬件自检（POST）</h3></li>
+</ol>
+<p>计算机加电后，BIOS&#x2F;UEFI 首先执行硬件自检（Power-On Self Test），检测 CPU、内存、存储设备等核心硬件状态‌</p>
+<ol start="2">
+<li><h3 id="‌选择启动设备"><a href="#‌选择启动设备" class="headerlink" title="‌选择启动设备"></a>‌选择启动设备</h3></li>
+</ol>
+<p>根据 BIOS&#x2F;UEFI 配置的启动顺序（如硬盘、USB、网络等），加载目标设备的引导扇区代码（如 MBR 或 UEFI 分区）‌</p>
+<h2 id="GRUB-引导加载程序"><a href="#GRUB-引导加载程序" class="headerlink" title="GRUB 引导加载程序"></a>GRUB 引导加载程序</h2><ol>
+<li><h3 id="加载-GRUB-菜单"><a href="#加载-GRUB-菜单" class="headerlink" title="加载 GRUB 菜单"></a>加载 GRUB 菜单</h3></li>
+</ol>
+<p>BIOS&#x2F;UEFI 将控制权移交至 GRUB（Grand Unified Bootloader），读取 <code>/boot/grub/grub.cfg</code> 配置文件并显示可引导的操作系统选项菜单‌</p>
+<ol start="2">
+<li><h3 id="‌内核与-initrd-加载"><a href="#‌内核与-initrd-加载" class="headerlink" title="‌内核与 initrd 加载"></a>‌内核与 initrd 加载</h3></li>
+</ol>
+<p>用户选择 Debian 启动项后，GRUB 将 Linux 内核（如 <code>vmlinuz</code>）和初始内存磁盘镜像（<code>initrd.img</code>）加载至内存，启动内核执行‌</p>
+<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><ol>
+<li><h3 id="硬件驱动加载"><a href="#硬件驱动加载" class="headerlink" title="硬件驱动加载"></a>硬件驱动加载</h3></li>
+</ol>
+<p>内核初始化硬件设备（如磁盘控制器、网络接口），并挂载根文件系统‌</p>
+<ol start="2">
+<li><h3 id="启动-systemd-进程"><a href="#启动-systemd-进程" class="headerlink" title="启动 systemd 进程"></a>启动 <code>systemd</code> 进程</h3></li>
+</ol>
+<p>内核调用首个用户空间进程 <code>systemd</code>（PID&#x3D;1），取代传统的 SysV init 作为初始化系统‌</p>
+<h2 id="用户空间初始化"><a href="#用户空间初始化" class="headerlink" title="用户空间初始化"></a>用户空间初始化</h2><ol>
+<li><h3 id="‌目标状态（Target）管理"><a href="#‌目标状态（Target）管理" class="headerlink" title="‌目标状态（Target）管理"></a>‌目标状态（Target）管理</h3></li>
+</ol>
+<p><code>systemd</code> 根据默认目标（如 <code>multi-user.target</code> 或 <code>graphical.target</code>）激活基础服务（如网络、日志、定时任务）‌</p>
+<ol start="2">
+<li><h3 id="‌运行级别兼容"><a href="#‌运行级别兼容" class="headerlink" title="‌运行级别兼容"></a>‌运行级别兼容</h3></li>
+</ol>
+<ul>
+<li>级别 0 → <code>poweroff.target</code>（关机）</li>
+<li>级别 1 → <code>rescue.target</code>（单用户维护模式）</li>
+<li>级别 2-5 → <code>multi-user.target</code>（多用户模式）</li>
+<li>级别 6 → <code>reboot.target</code>（重启）‌</li>
+</ul>
+<h2 id="用户登录"><a href="#用户登录" class="headerlink" title="用户登录"></a>用户登录</h2><ol>
+<li><h3 id="显示管理器启动‌"><a href="#显示管理器启动‌" class="headerlink" title="显示管理器启动‌"></a>显示管理器启动‌</h3></li>
+</ol>
+<p>若目标为图形界面（<code>graphical.target</code>），<code>systemd</code> 启动显示管理器（如 GDM），进入登录界面‌</p>
+<ol start="2">
+<li><h3 id="‌Shell或桌面环境加载"><a href="#‌Shell或桌面环境加载" class="headerlink" title="‌Shell或桌面环境加载"></a>‌Shell或桌面环境加载</h3></li>
+</ol>
+<p>用户认证通过后，启动桌面环境（如 GNOME）或命令行 Shell‌</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>BIOS</tag>
+        <tag>Linux</tag>
+        <tag>GRUB</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>手动搭建 WordPress 个人站点(Linux)</title>
+    <url>/posts/c171e9f0.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 WordPress 个人站点组成版本及说明如下：</p>
+<ul>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+<li>WordPress：博客平台，本文以 WordPress 6.6.1 为例。</li>
+</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux-实例"><a href="#步骤1：登录-Linux-实例" class="headerlink" title="步骤1：登录 Linux 实例"></a>步骤1：登录 Linux 实例</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="https://www.qiubite.fun/posts/9d5ca845.html">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
+<h3 id="步骤3：配置数据库"><a href="#步骤3：配置数据库" class="headerlink" title="步骤3：配置数据库"></a>步骤3：配置数据库</h3><ol>
+<li>执行以下命令，进入 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，创建 MariaDB 数据库。例如 “wordpress”。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE wordpress;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，创建一个新用户。例如 “user”，登录密码为 <code>123456</code>。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">create user &#x27;user&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>执行以下命令，赋予用户对 “wordpress” 数据库的全部权限。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON wordpress.* TO &#x27;user&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，设置 root 账户密码。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD(&#x27;输入您的密码&#x27;);</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>执行以下命令，使所有配置生效。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<ol start="7">
+<li>执行以下命令，退出 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装和配置-WordPress"><a href="#步骤4：安装和配置-WordPress" class="headerlink" title="步骤4：安装和配置 WordPress"></a>步骤4：安装和配置 WordPress</h3><h4 id="下载-WordPress"><a href="#下载-WordPress" class="headerlink" title="下载 WordPress"></a>下载 WordPress</h4><ol>
+<li>执行以下命令，删除网站根目录下用于测试 PHP-Nginx 配置的<code>index.php</code>文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>依次执行以下命令，进入<code>/usr/share/nginx/html/</code>目录，并下载与解压 WordPress。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html</span><br><span class="line"></span><br><span class="line">wget https://cn.wordpress.org/wordpress-6.6.1-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line">tar zxvf wordpress-6.6.1-zh_CN.tar.gz</span><br></pre></td></tr></table></figure>
+
+
+
+<p>WordPress可以放到自定义的目录，修改时需要同步修改nginx配置文件中root 描述的目录。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fr07r-1.png" alt="image-20240907200548425"></p>
+<h4 id="修改-WordPress-配置文件"><a href="#修改-WordPress-配置文件" class="headerlink" title="修改 WordPress 配置文件"></a>修改 WordPress 配置文件</h4><ol>
+<li>依次执行以下命令，进入 WordPress 安装目录，将<code>wp-config-sample.php</code>文件复制到<code>wp-config.php</code>文件中，并将原先的示例配置文件保留作为备份。</li>
+</ol>
+<figure class="highlight shellsession"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html/wordpress</span><br><span class="line">cp wp-config-sample.php wp-config.php</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，打开并编辑新创建的配置文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>按 <strong>i</strong> 切换至编辑模式，找到文件中 MySQL 的部分，并将相关配置信息修改为配置 WordPress 数据库 中的内容。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> // ** Database settings - You can get this info from your web host ** //</span><br><span class="line">/** The name of the database for WordPress */</span><br><span class="line">define( &#x27;DB_NAME&#x27;, &#x27;wordpress&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database username */</span><br><span class="line">define( &#x27;DB_USER&#x27;, &#x27;user&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database password */</span><br><span class="line">define( &#x27;DB_PASSWORD&#x27;, &#x27;123456&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database hostname */</span><br><span class="line">define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>修改完成后，按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件返回。</li>
+</ol>
+<h3 id="步骤5：验证-WordPress-安装"><a href="#步骤5：验证-WordPress-安装" class="headerlink" title="步骤5：验证 WordPress 安装"></a>步骤5：验证 WordPress 安装</h3><ol>
+<li>在浏览器地址栏输入<code>http://域名或公网 IP/wordpress 文件夹</code>，例如：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://192.xxx.xxx.xx/wordpress  </span><br><span class="line">或</span><br><span class="line">http://xxx.com/wordpress</span><br></pre></td></tr></table></figure>
+
+<p>转至 WordPress 安装页，开始配置 WordPress。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fqy0a-1.png" alt="配置WP1"></p>
+<ol start="2">
+<li>根据 WordPress 安装向导提示输入以下安装信息，单击<strong>安装 WordPress</strong>，完成安装。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>所需信息</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>站点标题</td>
+<td>WordPress 网站名称。</td>
+</tr>
+<tr>
+<td>用户名</td>
+<td>WordPress 管理员名称。出于安全考虑，建议设置一个不同于 admin 的名称。因为与默认用户名称 admin 相比，该名称更难破解。</td>
+</tr>
+<tr>
+<td>密码</td>
+<td>可以使用默认的密码或者自定义密码。请勿重复使用现有密码，并确保将密码保存在安全的位置。</td>
+</tr>
+<tr>
+<td>您的电子邮件</td>
+<td>用于接收通知的电子邮件地址。</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li>输入在安装WordPress时设置的<strong>用户名</strong>和<strong>密码</strong>，然后单击<strong>登录</strong></li>
+</ol>
+<p>成功进入您个人的WordPress网站。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>手动搭建 WordPress</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ssl证书自动续期工具——acme</title>
+    <url>/posts/e691384c.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
+<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
+<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>注意换成自己的邮箱号</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置自动升级</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>选择服务商</li>
+</ol>
+<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
+
+<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
+<ol>
+<li>创建API秘钥</li>
+</ol>
+<p>会得到SecretId和SecretKey</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>将秘钥格式化导入环境变量</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+</ol>
+<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完毕后，证书颁发成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
+<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
+<p>将证书文件复制到nginx配置的ssl证书目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>acme</tag>
+        <tag>免费证书</tag>
+        <tag>自动化申请证书</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>tmux实用教程——批量操作神器</title>
+    <url>/posts/3799e173.html</url>
+    <content><![CDATA[<h2 id="一、Tmux-简介"><a href="#一、Tmux-简介" class="headerlink" title="一、Tmux 简介"></a>一、Tmux 简介</h2><p>‌<strong>Tmux</strong>‌ 是一款 ‌<strong>终端复用器</strong>‌（Terminal Multiplexer），允许用户在单个终端窗口中同时管理多个终端会话、窗口和窗格。它的核心功能包括：</p>
+<ul>
+<li>‌<strong>会话管理</strong>‌：保持长时间运行的进程（如 SSH 连接），断网后仍可恢复。</li>
+<li>‌<strong>窗口和窗格</strong>‌：将终端分割为多个窗格（Pane）或窗口（Window），提升多任务效率。</li>
+</ul>
+<p>对比传统终端，Tmux 解决了长任务依赖终端存活的问题，且提升多任务操作效率。特别是在cp或者mv文件期间，一旦我们的远程连接工具所在的工作电脑出现断网或断电的情况那么传输就会因此中断。</p>
+<h2 id="二、核心概念"><a href="#二、核心概念" class="headerlink" title="二、核心概念"></a>二、核心概念</h2><ol>
+<li><h3 id="Session（会话）"><a href="#Session（会话）" class="headerlink" title="Session（会话）"></a>Session（会话）</h3></li>
+</ol>
+<ul>
+<li><p><strong>定义</strong>‌：顶层管理单位，代表一个独立的工作环境（如一个开发项目）。</p>
+</li>
+<li><p><strong>作用‌</strong>：隔离不同任务，长期保存工作进度。</p>
+</li>
+<li><p><strong>示例</strong>‌：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">tmux new -s dev_project  # 创建名为 &quot;dev_project&quot; 的会话</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol start="2">
+<li><h3 id="Window（窗口）"><a href="#Window（窗口）" class="headerlink" title="Window（窗口）"></a>Window（窗口）</h3></li>
+</ol>
+<ul>
+<li>‌<strong>定义</strong>‌：会话中的二级单位，类似浏览器标签页，用于分隔同一任务的不同阶段。</li>
+<li>‌<strong>作用</strong>‌：管理相关但独立的操作流（如代码编辑、服务器监控）。</li>
+<li>‌<strong>示例</strong>‌：<ul>
+<li>Window1：前端开发</li>
+<li>Window2：后端调试</li>
+</ul>
+</li>
+</ul>
+<ol start="3">
+<li><h3 id="Pane（窗格）"><a href="#Pane（窗格）" class="headerlink" title="Pane（窗格）"></a>Pane（窗格）</h3></li>
+</ol>
+<ul>
+<li><p>‌<strong>定义</strong>‌：窗口内分割出的子区域，支持并行操作。</p>
+</li>
+<li><p>‌<strong>作用</strong>‌：在单一窗口中同时执行多个命令（如左侧写代码，右侧运行测试）。</p>
+</li>
+<li><p>‌<strong>示例</strong>‌：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">Prefix + %   # 垂直分屏 </span><br><span class="line">Prefix + &quot;   # 水平分屏</span><br></pre></td></tr></table></figure></li>
+</ul>
+<ol start="4">
+<li><h3 id="层级关系"><a href="#层级关系" class="headerlink" title="层级关系"></a>层级关系</h3></li>
+</ol>
+<p>​	Session → Window → Pane</p>
+<ul>
+<li>‌<strong>比喻</strong>‌：<ul>
+<li>Session &#x3D; 整个项目</li>
+<li>Window &#x3D; 项目的不同阶段（开发、测试）</li>
+<li>Pane &#x3D; 阶段内的具体操作界面</li>
+</ul>
+</li>
+</ul>
+<h2 id="三、安装-Tmux"><a href="#三、安装-Tmux" class="headerlink" title="三、安装 Tmux"></a>三、安装 Tmux</h2><ol>
+<li><h3 id="Linux"><a href="#Linux" class="headerlink" title="Linux"></a><strong>Linux</strong></h3></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Ubuntu/Debian</span></span><br><span class="line">sudo apt update &amp;&amp; sudo apt install tmux</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">CentOS/RHEL</span></span><br><span class="line">sudo yum install tmux    # 或 sudo dnf install tmux（新版本）</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Arch Linux</span></span><br><span class="line">sudo pacman -S tmux</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li><h3 id="MacOS"><a href="#MacOS" class="headerlink" title="MacOS"></a><strong>MacOS</strong></h3></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">使用 Homebrew</span></span><br><span class="line">brew install tmux</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="四、Tmux基本操作与快捷键"><a href="#四、Tmux基本操作与快捷键" class="headerlink" title="四、Tmux基本操作与快捷键"></a>四、Tmux基本操作与快捷键</h2><p>Tmux 大部分操作需先按 <strong>前缀键</strong>（默认 Ctrl+b），再按功能键。以下所有的前缀键都简称为<strong>Prefix</strong>。</p>
+<ol>
+<li><h3 id="会话（Session）操作"><a href="#会话（Session）操作" class="headerlink" title="会话（Session）操作"></a>会话（Session）操作</h3></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>命令&#x2F;快捷键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>新建会话</td>
+<td><code>tmux new -s &lt;会话名&gt;</code> 或 <code>tmux new</code></td>
+<td>创建指定名称的会话或创建默认会话名</td>
+</tr>
+<tr>
+<td>分离当前会话</td>
+<td><code>Prefix + d</code></td>
+<td>退出 Tmux，会话后台运行</td>
+</tr>
+<tr>
+<td>列出会话</td>
+<td><code>tmux ls</code> 或 <code>Prefix + s</code></td>
+<td>查看所有会话</td>
+</tr>
+<tr>
+<td>恢复会话</td>
+<td><code>tmux attach -t &lt;会话名&gt;</code></td>
+<td>重新接入指定会话</td>
+</tr>
+<tr>
+<td>关闭会话</td>
+<td><code>tmux kill-session -t &lt;会话名&gt;</code></td>
+<td>终止指定会话</td>
+</tr>
+</tbody></table>
+<ol start="2">
+<li><h3 id="窗口（Window）操作"><a href="#窗口（Window）操作" class="headerlink" title="窗口（Window）操作"></a>窗口（Window）操作</h3></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>快捷键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>新建窗口</td>
+<td><code>Prefix + c</code></td>
+<td>创建新窗口（编号从 0 开始）</td>
+</tr>
+<tr>
+<td>切换窗口</td>
+<td><code>Prefix + 0~9</code></td>
+<td>按编号切换窗口</td>
+</tr>
+<tr>
+<td>重命名窗口</td>
+<td><code>Prefix + ,</code></td>
+<td>自定义窗口名称（如”API调试”）</td>
+</tr>
+<tr>
+<td>关闭窗口</td>
+<td><code>Prefix + &amp;</code></td>
+<td>关闭当前窗口（需确认）</td>
+</tr>
+<tr>
+<td>窗口列表</td>
+<td><code>Prefix + w</code></td>
+<td>可视化选择窗口</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li><h3 id="窗格（Pane）操作"><a href="#窗格（Pane）操作" class="headerlink" title="窗格（Pane）操作"></a>窗格（Pane）操作</h3></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>快捷键</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>垂直分割</td>
+<td><code>Prefix + %</code></td>
+<td>左右分屏（| 状）</td>
+</tr>
+<tr>
+<td>水平分割</td>
+<td><code>Prefix + &quot;</code></td>
+<td>上下分屏（— 状）</td>
+</tr>
+<tr>
+<td>切换焦点</td>
+<td><code>Prefix + 方向键</code></td>
+<td>按方向移动焦点</td>
+</tr>
+<tr>
+<td>关闭窗格</td>
+<td><code>Prefix + x</code></td>
+<td>关闭当前窗格（需确认）</td>
+</tr>
+<tr>
+<td>调整大小</td>
+<td><code>Prefix + Ctrl+方向键</code></td>
+<td>按住方向键精细调整</td>
+</tr>
+<tr>
+<td>全屏显示</td>
+<td><code>Prefix + z</code></td>
+<td>临时放大当前窗格</td>
+</tr>
+</tbody></table>
+<h2 id="五、实用技巧"><a href="#五、实用技巧" class="headerlink" title="五、实用技巧"></a>五、实用技巧</h2><ol>
+<li><h3 id="同步操作多个窗"><a href="#同步操作多个窗" class="headerlink" title="同步操作多个窗"></a>同步操作多个窗</h3></li>
+</ol>
+<ul>
+<li><code>Ctrl + b</code> → <code>:</code> → 输入 <code>setw synchronize-panes</code> → <code>Enter</code> （再次输入取消）</li>
+</ul>
+<ol start="2">
+<li><h3 id="复制模式"><a href="#复制模式" class="headerlink" title="复制模式"></a>复制模式</h3></li>
+</ol>
+<ul>
+<li><code>Ctrl + b</code> → <code>[</code>：进入复制模式，选择文本后按 <code>Enter</code> 复制。</li>
+<li><code>Ctrl + b</code> → <code>]</code>：粘贴已复制内容。</li>
+</ul>
+<ol start="3">
+<li><h3 id="快速跳转"><a href="#快速跳转" class="headerlink" title="快速跳转"></a>快速跳转</h3></li>
+</ol>
+<ul>
+<li><code>Ctrl + b</code> → <code>q</code>：显示窗格编号，按数字键快速跳转。</li>
+</ul>
+<ol start="4">
+<li><h3 id="重新加载配置"><a href="#重新加载配置" class="headerlink" title="重新加载配置"></a>重新加载配置</h3></li>
+</ol>
+<ul>
+<li><code>Ctrl + b</code> → <code>:</code> → 输入 <code>source-file ~/.tmux.conf</code> → <code>Enter</code></li>
+</ul>
+<h2 id="六、自定义配置"><a href="#六、自定义配置" class="headerlink" title="六、自定义配置"></a>六、自定义配置</h2><p>编辑 <code>~/.tmux.conf</code> 可自定义快捷键和功能，例如：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">启动鼠标控制</span></span><br><span class="line">set -g mouse on</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">&quot;C-s R&quot;</span> 重载 tmux 配置</span></span><br><span class="line">bind R source-file ~/.tmux.conf \; display-message &quot;Tmux Config reloaded...&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置 Prefix+y 同步控制所有窗口</span></span><br><span class="line">bind y setw synchronize-panes</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">窗口重命名</span></span><br><span class="line">set -w -g allow-rename on</span><br><span class="line">set -w -g automatic-rename on</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">窗口操作默认按键绑定</span></span><br><span class="line">set -w -g mode-keys vi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">终端颜色</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">此颜色应当与所使用终端配置一致，当前为 Alacritty</span></span><br><span class="line">set -g default-terminal &quot;xterm-256color&quot;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">-a: append</span></span><br><span class="line">set -ga terminal-overrides &quot;,xterm-256color:Tc:clipboard&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">防止自动关闭 Session</span></span><br><span class="line">set -g destroy-unattached off</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">颜色</span></span><br><span class="line">set -g status-bg default</span><br><span class="line">set -g status-fg white</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">刷新时间</span></span><br><span class="line">set -g status-interval 1</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">对齐方式</span></span><br><span class="line">set -g status-justify centre</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="七、脚本分享"><a href="#七、脚本分享" class="headerlink" title="七、脚本分享"></a>七、脚本分享</h2><p>分享一个tmux批量ssh服务器的脚本，前提是已经将公钥加到对应的服务器上可以直接ssh登录。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash">!/bin/bash</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">文件名: tmux-multissh.sh</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">用途：自动创建 Tmux 会话并连接多台主机</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">参数：./tmux-multissh.sh [-l 用户名] [-p 端口] [-n 会话名称] &lt;主机列表文件&gt;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">示例：./tmux-multissh.sh -l ops -p 22 -n docker hosts.txt</span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查参数</span></span><br><span class="line">if [ $# -lt 1 ]; then</span><br><span class="line">    tmux</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">配置变量</span></span><br><span class="line">SESSION_NAME=&quot;multi_ssh&quot; # 会话名称（默认 multi_ssh）</span><br><span class="line">LAYOUT=&quot;tiled&quot;                  # 布局方式 (tiled, even-horizontal, even-vertical)</span><br><span class="line">SSH_OPTIONS=&quot;-o ConnectTimeout=5 -o StrictHostKeyChecking=no&quot; # SSH 连接选项</span><br><span class="line">PORT=&quot;22&quot;</span><br><span class="line">PANES_PER_WINDOW=4  # 每个窗口最大面板数</span><br><span class="line">USER=&quot;ops&quot;</span><br><span class="line"></span><br><span class="line">while getopts &quot;:l:p:n:&quot; opt</span><br><span class="line">do</span><br><span class="line">    case $opt in</span><br><span class="line">        l)USER=$OPTARG;;                  # 指定SSH 用户名</span><br><span class="line">        p)PORT=$OPTARG;;                  # 指定SSH 端口</span><br><span class="line">        n)SESSION_NAME=$OPTARG;;          # 指定会话名称</span><br><span class="line">        :) echo &quot;错误: 选项 -$OPTARG 需要参数&quot; &gt;&amp;2; exit 1 ;;</span><br><span class="line">        \?) echo &quot;无效选项: -$OPTARG&quot; &gt;&amp;2</span><br><span class="line">            echo &quot;用法: $0 [-l 用户名] [-p 端口] [-n 会话名称] &lt;主机列表文件&gt;&quot; &gt;&amp;2</span><br><span class="line">            exit 1 ;;</span><br><span class="line">    esac</span><br><span class="line">done</span><br><span class="line">HOST_FILE=`echo $* | awk &#x27;&#123;print $NF&#125;&#x27;`              # 主机列表文件路径</span><br><span class="line">shift $((OPTIND -1))              # 移除已解析选项</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查必要工具</span></span><br><span class="line">command -v tmux &gt;/dev/null 2&gt;&amp;1 || &#123; echo &quot;错误: 请先安装 tmux&quot;; exit 1; &#125;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">读取主机列表</span></span><br><span class="line">if [ ! -f &quot;$HOST_FILE&quot; ]; then</span><br><span class="line">    echo &quot;错误: 主机文件 $HOST_FILE 不存在&quot;</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查是否已有同名会话</span></span><br><span class="line">if tmux has-session -t &quot;$SESSION_NAME&quot; 2&gt;/dev/null; then</span><br><span class="line">    echo &quot;错误: 会话 $SESSION_NAME 已存在，请先关闭或使用不同名称&quot;</span><br><span class="line">    exit 1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line">readarray -t HOSTS &lt; &lt;(grep -v &#x27;^[[:space:]]*#&#x27; &quot;$HOST_FILE&quot; | grep -v &#x27;^[[:space:]]*$&#x27;)</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">创建新会话（第一个窗口）</span></span><br><span class="line">tmux new-session -d -s &quot;$SESSION_NAME&quot; -n &quot;SSH-Panel-0&quot;</span><br><span class="line">tmux send-keys -t &quot;$SESSION_NAME:0&quot; &quot;ssh $&#123;SSH_OPTIONS&#125; -p $PORT $USER@$(head -n 1 &quot;$HOST_FILE&quot;)&quot; C-m</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">检查主机列表是否为空</span></span><br><span class="line">HOSTS_COUNT=$&#123;#HOSTS[@]&#125;</span><br><span class="line">[ $HOSTS_COUNT -eq 0 ] &amp;&amp; &#123; echo &quot;错误: 主机列表为空&quot;; exit 1; &#125;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">为剩余主机创建连接面板</span></span><br><span class="line">for ((i=1; i&lt;HOSTS_COUNT; i++)); do</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">计算窗口编号（每PANES_PER_WINDOW个主机一个窗口）</span></span><br><span class="line">  window=$((i / PANES_PER_WINDOW))</span><br><span class="line">  pane=$((i % PANES_PER_WINDOW))</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">创建新窗口（当需要时）</span></span><br><span class="line">  if [ $pane -eq 0 ]; then</span><br><span class="line">    tmux new-window -t &quot;$SESSION_NAME:$window&quot; -n &quot;SSH-Panel-$window&quot;</span><br><span class="line">  else</span><br><span class="line">    tmux split-window -t &quot;$SESSION_NAME:$window&quot; -h</span><br><span class="line">  fi</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">发送SSH连接命令并调整布局</span></span><br><span class="line">  tmux send-keys -t &quot;$SESSION_NAME:$window.$pane&quot; \</span><br><span class="line">    &quot;ssh $&#123;SSH_OPTIONS&#125; -p $PORT $USER@$&#123;HOSTS[$i]&#125;&quot; C-m</span><br><span class="line">  tmux select-layout -t &quot;$SESSION_NAME:$window&quot; &quot;$LAYOUT&quot;</span><br><span class="line">done</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置初始窗口和焦点</span></span><br><span class="line">tmux select-window -t &quot;$SESSION_NAME:0&quot;</span><br><span class="line">tmux select-pane -t 0</span><br><span class="line">tmux setw -t &quot;$SESSION_NAME&quot; synchronize-panes off</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">用户交互</span></span><br><span class="line">read -p &quot;是否立即附加到会话？[Y/n] &quot; -n 1 -r</span><br><span class="line">echo</span><br><span class="line">if [[ $REPLY =~ ^[Nn]$ ]]; then</span><br><span class="line">  echo &quot;会话已在后台运行，附加命令: tmux attach -t $SESSION_NAME&quot;</span><br><span class="line">else</span><br><span class="line">  tmux attach -t &quot;$SESSION_NAME&quot;</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+
+
+<p>可以做一个简单别名，更方便执行。将下文写入到</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">写入自定义别名</span></span><br><span class="line">vim .bashrc      </span><br><span class="line"></span><br><span class="line">alias tmuxa=&#x27;./tmux-multissh.sh&#x27;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出后重新加载配置文件</span></span><br><span class="line">source ~/.bashrc</span><br></pre></td></tr></table></figure>
+
+
+
+<p>这样就可以更方便的同时ssh到多台服务器，例如：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/13/vocqry-1.png" alt="image-20250313191539703"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>tmux</tag>
+        <tag>批量操作工具</tag>
+        <tag>tmux快捷键</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>手动搭建LNMP环境</title>
+    <url>/posts/9d5ca845.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
+<ul>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
+<li>确认源文件正常，执行以下命令。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令，安装 nginx。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
+
+<p>显示如下，则说明 Nginx 安装配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
+<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
+<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
+<ol start="4">
+<li>执行以下命令，退出 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
+<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，验证 PHP 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
+<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
+<ol>
+<li>执行以下命令，创建测试文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则说明环境配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+        <tag>LNMP环境</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>解析WordPress网站域名与常见问题</title>
+    <url>/posts/4c6ec737.html</url>
+    <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
+<ol>
+<li><h3 id="注册域名。"><a href="#注册域名。" class="headerlink" title="注册域名。"></a>注册域名。</h3></li>
+</ol>
+<p><a href="https://www.alibabacloud.com/help/zh/dws/user-guide/register-a-domain-name-on-alibaba-cloud#task-1830383">阿里云域名注册流程</a></p>
+<p><a href="https://cloud.tencent.com/document/product/242/9595">腾讯云域名注册流程</a></p>
+<p><a href="https://support.huaweicloud.com/usermanual-domain/domain_ug_310004.html">华为云域名注册流程</a></p>
+<ol start="2">
+<li><h3 id="备案域名。"><a href="#备案域名。" class="headerlink" title="备案域名。"></a>备案域名。</h3><p>如果您的域名指向的网站托管在中国内地节点服务器，则需要到对应云平台上进行ICP备案，时长按照备案地处理速度，一般在1-30个工作日。如果不备案可能会导致域名无法访问。</p>
+</li>
+<li><h3 id="解析域名。将域名指向实例公网IP。"><a href="#解析域名。将域名指向实例公网IP。" class="headerlink" title="解析域名。将域名指向实例公网IP。"></a>解析域名。将域名指向实例公网IP。</h3><p>域名解析是使用域名访问您的网站的必备环节。请在托管的云平台上进行解析，具体参考各云平台的文档，如需IPV6的访问请添加AAAA解析。</p>
+</li>
+</ol>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"><a href="#一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录" class="headerlink" title="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"></a>一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录</h3><p>该问题可能是因为WordPress配置文件主题或插件的权限不足，您可以参考以下步骤解决。</p>
+<ol>
+<li><p>登录搭建WordPress的服务器</p>
+</li>
+<li><p>运行以下命令，打开WordPress配置文件（wp-config.php文件位置请根据实际服务器上自定义的位置进行更换）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /usr/share/nginx/html/wordpress/wp-config.php</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>按<code>i</code>键进入编辑模式。</p>
+</li>
+<li><p>在最下方，添加如下代码。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">define(&quot;FS_METHOD&quot;,&quot;direct&quot;);</span><br><span class="line">define(&quot;FS_CHMOD_DIR&quot;, 0777);</span><br><span class="line">define(&quot;FS_CHMOD_FILE&quot;, 0777);</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li><p>按<code>Esc</code>键，输入<code>:wq</code>后按<code>Enter</code>键，保存退出配置文件。</p>
+</li>
+<li><p>返回WordPress仪表盘，刷新页面，可解决需要FTP登录凭证的问题。</p>
+<p>如果仍存在无法创建目录的问题，需再次返回登录，运行以下命令，将网站根目录的权限用户更新为Nginx对应的用户，本示例环境中为<code>www-data</code>用户。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chown -R www-data /usr/share/nginx/html/wordpress</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"><a href="#二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库" class="headerlink" title="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"></a>二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库</h3><p>操作步骤如下：</p>
+<ol>
+<li><p>登录数据库，root密码具体看配置数据库时修改的数据。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql -u root -p</span><br></pre></td></tr></table></figure>
+
+</li>
+<li><p>查寻并修改数据库</p>
+<blockquote>
+<p>本示例将域名<code>www.example1.com</code>改为<a href="http://www.example2.com./">www.example2.com。</a></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; use wordpress;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; select * from wp_options where option_value like &#x27;%www.example1.com&#x27;;</span><br><span class="line"></span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">| option_id | option_name | option_value              | autoload |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">|         2 | siteurl     | https://www.example1.com  | on       |</span><br><span class="line">|         3 | home        | https://www.example1.com  | on       |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">2 rows in set (0.046 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; update wp_options set option_value=replace(option_value, &#x27;https://www.example2.com&#x27;, &#x27;https://www.example2.com&#x27;) where option_name = &#x27;home&#x27; OR option_name = &#x27;siteurl&#x27;;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; exit;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>成功为WordPress网站设置新域名。</p>
+</li>
+</ol>
+<h3 id="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"><a href="#三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法" class="headerlink" title="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"></a>三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法</h3><p>在使用wordPress的时候，可能会遇到“您关注的链接已过期”或The link you followed has expired” 错误，一般从WordPress管理后台上传WordPress主题或插件到您的网站时，通常会发生此错误。WordPress有一个设置参数，可以控制从WordPress管理后台上传的文件的大小。</p>
+<ol>
+<li><p>登录服务器，查看配置文件位置</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ps -ef|grep php</span><br><span class="line"></span><br><span class="line">www-data 2754144 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">www-data 2754145 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">ops      2756021 2745748  0 17:22 pts/0    00:00:00 grep php</span><br><span class="line">root     3454264       1  0 Sep06 ?        00:00:40 php-fpm: master process (/etc/php/8.2/fpm/php-fpm.conf)</span><br><span class="line"></span><br><span class="line">可以确认配置文件在/etc/php/8.2/fpm/ 目录 修改该目录下的php.ini文件</span><br><span class="line">提前备份文件</span><br><span class="line">sudo cp /etc/php/8.2/fpm/php.ini /etc/php/8.2/fpm/php.ini.bak</span><br><span class="line">sudo vim /etc/php/8.2/fpm/php.ini</span><br><span class="line"></span><br><span class="line">打开文件后修改下面三行参数，保存并退出</span><br><span class="line"></span><br><span class="line">upload_max_filesize = 64M</span><br><span class="line">post_max_size = 64M</span><br><span class="line">max_execution_time = 300</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>服务重新加载配置文件</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl reload php8.2-fpm.service</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修复完成验证</p>
+<p>可以再次上传测试，限制调整为可以上传单个文件的最大大小为64M，最大执行时间为300秒。</p>
+</li>
+</ol>
+<h3 id="四、Nginx伪静态规则"><a href="#四、Nginx伪静态规则" class="headerlink" title="四、Nginx伪静态规则"></a>四、Nginx伪静态规则</h3><p>若在发布文章出现“此响应不是合法的JSON响应”，则需要检查nginx伪静态规则是否配置，具体配置如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">        try_files $uri $uri/ /index.php?$args;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>如nginx无配置，在location &#x2F;加入该配置即可。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>WordPress常见问题</tag>
+        <tag>WordPress域名</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Twikoo评论系统搭建配置教程</title>
+    <url>/posts/5eb7adfe.html</url>
+    <content><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>之前博客用过WordPress，但是动态博客用起来有些太重了，并且很多功能也用不到，所以重新搭建了hexo框架的静态博客。评论系统首先使用的是Giscus，但是需要登录github账号进行评论，对于一些没有技术基础的用户易用性较差，所以选择本地化搭建一套免费的，易用性强的评论静态网站评论系统。本文使用hexo静态博客系统 Butterfly 5.4版本主题下使用Twikoo评论系统。</p>
+<h2 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h2><p>本文使用私有部署，如果使用云部署可以参考<a href="https://twikoo.js.org/">twikoo官网</a>文档。私有部署涉及终端操作、申请证书、配置反向代理或负载均衡等操作，如果都不了解，建议使用别的部署方式</p>
+<ol>
+<li><h3 id="安装环境配置"><a href="#安装环境配置" class="headerlink" title="安装环境配置"></a>安装环境配置</h3><p>服务端下载安装 <a href="https://nodejs.org/zh-cn/">Node.js</a>根据实际的操作系统，使用对应命令下载。具体安装命令可以根据系统使用nodejs的下载页面进行生成。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/11124li.png" alt="image-20250905223902256"></p>
+</li>
+<li><h3 id="安装-Twikoo-server"><a href="#安装-Twikoo-server" class="headerlink" title="安装 Twikoo server"></a>安装 Twikoo server</h3></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo npm i -g tkserver</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><h3 id="根据需要配置环境变量"><a href="#根据需要配置环境变量" class="headerlink" title="根据需要配置环境变量"></a>根据需要配置环境变量</h3></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="left">名称</th>
+<th align="left">描述</th>
+<th align="left">默认值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>MONGODB_URI</code></td>
+<td align="left">MongoDB 数据库连接字符串，不传则使用 lokijs</td>
+<td align="left"><code>null</code></td>
+</tr>
+<tr>
+<td align="left"><code>MONGO_URL</code></td>
+<td align="left">MongoDB 数据库连接字符串，不传则使用 lokijs</td>
+<td align="left"><code>null</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_DATA</code></td>
+<td align="left">lokijs 数据库存储路径</td>
+<td align="left"><code>./data</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_PORT</code></td>
+<td align="left">端口号</td>
+<td align="left"><code>8080</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_THROTTLE</code></td>
+<td align="left">IP 请求限流，当同一 IP 短时间内请求次数超过阈值将对该 IP 返回错误</td>
+<td align="left"><code>250</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_LOCALHOST_ONLY</code></td>
+<td align="left">为<code>true</code>时只监听本地请求，使得 nginx 等服务器反代之后不暴露原始端口</td>
+<td align="left"><code>null</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_LOG_LEVEL</code></td>
+<td align="left">日志级别，支持 <code>verbose</code> &#x2F; <code>info</code> &#x2F; <code>warn</code> &#x2F; <code>error</code></td>
+<td align="left"><code>info</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_IP_HEADERS</code></td>
+<td align="left">在一些特殊情况下使用，如使用了 <code>CloudFlare CDN</code> 它会将请求 IP 写到请求头的 <code>cf-connecting-ip</code> 字段上，为了能够正确的获取请求 IP 你可以写成 <code>[&quot;headers.cf-connecting-ip&quot;]</code></td>
+<td align="left"><code>[]</code></td>
+</tr>
+</tbody></table>
+<ol start="4">
+<li><h3 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h3></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">启动服务有多种方式，本文建议使用systemctl统一管理</span><br><span class="line"></span><br><span class="line">sudo vim /lib/systemd/system/tkserver.service</span><br><span class="line"></span><br><span class="line">[Unit]</span><br><span class="line">Description=TKServer service</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">Restart=always</span><br><span class="line">RestartSec=5</span><br><span class="line">LimitNOFILE=655350</span><br><span class="line">ExecStart=/usr/local/bin/tkserver</span><br><span class="line">Environment=&quot;TWIKOO_PORT=8000 TWIKOO_DATA=/home/ops/service/twikoo-data TWIKOO_LOCALHOST_ONLY=true&quot;</span><br><span class="line">StandardOutput=append:/var/log/twikoo/twikoo.log</span><br><span class="line">StandardError=append:/var/log/twikoo/twikoo.error.log</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">注意将所需要的变量写入Environment。</span><br><span class="line"></span><br><span class="line">启动服务并设置为开机启动：</span><br><span class="line">sudo systemctl start tkserver.service</span><br><span class="line">sudo systemctl status tkserver.service</span><br><span class="line">sudo systemctl enable tkserver.service</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li><h3 id="配置前置代理实现-HTTPS-访问"><a href="#配置前置代理实现-HTTPS-访问" class="headerlink" title="配置前置代理实现 HTTPS 访问"></a>配置前置代理实现 HTTPS 访问</h3>可以用 Nginx、负载均衡或 Cloudflare 等。本文使用nginx可以参考以下配置：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name twikoo.yourdomain.com;                    //域名根据实际需求配置</span><br><span class="line">        return 307 https://$host$request_uri;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        listen 443 ssl http2;</span><br><span class="line">        server_name twikoo.yourdomain.com;                    //域名根据实际需求配置</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/yourdomain.com.crt;       //证书根据实际需求配置</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/yourdomain.com.key;   //证书根据实际需求配置</span><br><span class="line"></span><br><span class="line">        client_max_body_size 2m;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1:8000;</span><br><span class="line">                proxy_http_version 1.1;</span><br><span class="line">                proxy_set_header   Host $host;</span><br><span class="line">                proxy_set_header   X-Real-IP $remote_addr;</span><br><span class="line">                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">                proxy_set_header   X-Forwarded-Proto $scheme;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><h3 id="博客前端配置"><a href="#博客前端配置" class="headerlink" title="博客前端配置"></a>博客前端配置</h3>文件中配置 envId 为 <code>https://</code> 加域名（例如 <code>https://twikoo.yourdomain.com</code>）。本文以Butterfly 5.4为例 修改主题的config.yml：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">comments:</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">Up to two comments system, the first will be shown as default</span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">Leave it empty <span class="keyword">if</span> you don<span class="string">&#x27;t need comments</span></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Choose: Disqus/Disqusjs/Livere/Gitalk/Valine/Waline/Utterances/Facebook Comments/Twikoo/Giscus/Remark42/Artalk</span></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Format of two comments system : Disqus,Waline</span></span></span><br><span class="line">  use: twikoo                    //修改为twikoo</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Twikoo</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">https://github.com/imaegoo/twikoo</span></span></span><br><span class="line">twikoo:</span><br><span class="line">  envId: https://twikoo.yourdomain.com		//修改为nginx的twikoo域名</span><br><span class="line">  region:</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Use Twikoo visitor count as the page view count</span></span></span><br><span class="line">  visitor: true</span><br><span class="line">  option:</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>提示：</p>
+<ol>
+<li>数据默认在 data 目录，请注意定期备份数据。</li>
+<li>Linux服务器如果不想使用systemctl服务，可以直接使用命令启动，例如： <code>nohup tkserver &gt;&gt; tkserver.log 2&gt;&amp;1 &amp;</code> 命令后台启动。</li>
+</ol>
+</blockquote>
+<h2 id="开启管理面板"><a href="#开启管理面板" class="headerlink" title="开启管理面板"></a>开启管理面板</h2><p>点击评论窗口的“小齿轮”图标，设置管理员密码</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12rpcko.png" alt="image-20250905234424132"></p>
+<p>进行相关的需求配置</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12s7owf.png" alt="image-20250905234510132"></p>
+<p><strong>推荐开启的插件：</strong></p>
+<ol>
+<li><h3 id="图床"><a href="#图床" class="headerlink" title="图床"></a>图床</h3></li>
+</ol>
+<p>评论区可以使用上传图片</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12sxvyd.png" alt="image-20250905234632204"></p>
+<ol start="2">
+<li><h3 id="邮件通知"><a href="#邮件通知" class="headerlink" title="邮件通知"></a>邮件通知</h3></li>
+</ol>
+<p>当有评论时，可以邮件通知。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12u776c.png" alt="image-20250905234843162"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12uowa6.png" alt="image-20250905234926681"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>twikoo</tag>
+        <tag>评论</tag>
+        <tag>博客</tag>
+        <tag>Butterfly</tag>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Prometheus+Grafana+Alertmanager部署</title>
+    <url>/posts/c03992dd.html</url>
+    <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
+<h3 id="Pushgateway"><a href="#Pushgateway" class="headerlink" title="Pushgateway"></a><strong>Pushgateway</strong></h3><p><strong>Pushgateway</strong> 是 Prometheus 生态系统中的一个工具，专门用来处理短期任务或批处理作业的指标。这些短期任务通常是无法直接通过 Prometheus 的 pull 模型抓取的，因此 Pushgateway 可以接收来自这些任务的指标数据并将其保存在 Prometheus 可抓取的形式中。<br>主要功能：</p>
+<ul>
+<li>允许临时的、短期任务将其指标推送到 Pushgateway。</li>
+<li>支持长期运行的指标的暴露，适合批处理任务的场景。</li>
+</ul>
+<h3 id="Node-Exporter"><a href="#Node-Exporter" class="headerlink" title="Node Exporter"></a><strong>Node Exporter</strong></h3><p><strong>Node Exporter</strong> 是 Prometheus 生态系统中用于收集 Linux&#x2F;Unix 系统层面指标的组件。它暴露系统硬件和操作系统的运行状况，例如：</p>
+<ul>
+<li>CPU 使用率</li>
+<li>内存使用情况</li>
+<li>磁盘 I&#x2F;O</li>
+<li>网络流量</li>
+</ul>
+<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a><strong>Grafana</strong></h3><p><strong>Grafana</strong> 是一个开源的数据可视化工具，能够与 Prometheus 等数据源集成。它通过直观的图表、仪表盘（dashboard）展示时间序列数据，方便用户监控系统性能和运行状态。<br>主要功能：</p>
+<ul>
+<li>支持多种数据源（包括 Prometheus、Elasticsearch、MySQL 等）</li>
+<li>自定义仪表盘和报警</li>
+<li>提供丰富的插件以扩展功能</li>
+</ul>
+<h3 id="Alertmanager"><a href="#Alertmanager" class="headerlink" title="Alertmanager"></a><strong>Alertmanager</strong></h3><p><strong>Alertmanager</strong> 是 Prometheus 的报警管理组件，用于处理来自 Prometheus 服务器的报警。它能够根据预定义的规则分组、路由、抑制和消除报警。Alertmanager 可以将报警发送到各种通知渠道，如邮件、Slack、PagerDuty 等。<br>主要功能：</p>
+<ul>
+<li>灵活的报警管理和路由规则</li>
+<li>报警抑制与分组</li>
+<li>支持多种通知方式</li>
+</ul>
+<p>这些组件结合在一起，形成一个强大的监控系统，Prometheus 负责收集和存储数据，Pushgateway 用于处理无法直接拉取的任务，Node Exporter 提供系统层面的指标，Grafana 实现数据的可视化，Alertmanager 管理报警。</p>
+<h2 id="实例环境与下载"><a href="#实例环境与下载" class="headerlink" title="实例环境与下载"></a>实例环境与下载</h2><h3 id="实例环境"><a href="#实例环境" class="headerlink" title="实例环境"></a>实例环境</h3><p>本文搭建的环境软件组成版本及说明如下：</p>
+<ul>
+<li><p>Linux：Linux 操作系统，本文以 debian 12.6 为例。</p>
+</li>
+<li><p>prometheus：本文以  prometheus 3.4.0 为例。</p>
+</li>
+<li><p>pushgateway：本文以 pushgateway 1.11.1 为例。</p>
+</li>
+<li><p>node-exporter：本文以 node-exporter 1.9.1 为例。</p>
+</li>
+<li><p>Grafana：本文以 Grafana 12.0.0 为例。</p>
+</li>
+<li><p>Alertmanager：本文以 Alertmanager 0.28.1 为例。</p>
+</li>
+</ul>
+<h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p>部分软件有国内加速下载请根据需求选择下载方式，下载地址如下：</p>
+<blockquote>
+<p>prometheus以及相关套件可见官网：<a href="https://prometheus.io/download/">https://prometheus.io/download/</a></p>
+<p>下载地址：</p>
+<p>prometheus：<a href="https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz">https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</a></p>
+<p>Alertmanager：<a href="https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz">https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</a></p>
+<p>node-exporter：<a href="https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz">https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</a></p>
+<p>pushgateway：<a href="https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz">https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</a></p>
+<p>Grafana：</p>
+<p>​	华为源：<a href="https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb">https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</a></p>
+</blockquote>
+<blockquote>
+<p>注意：由于各软件会升级迭代，请根据实际情况调整下载地址</p>
+</blockquote>
+<p>进入服务器，执行如下命令下载并解压：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt</span><br><span class="line">mkdir prometheus_env</span><br><span class="line">cd prometheus_env</span><br><span class="line">wget https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line">wget https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line">tar -zxvf prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y adduser libfontconfig1 musl</span><br><span class="line">sudo dpkg -i grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//修改文件名去掉版本号</span><br><span class="line">cd /opt/prometheus_env</span><br><span class="line">for i in `ls -l|awk &#x27;&#123;print $9&#125;&#x27;`;do new_name=$(echo &quot;$i&quot; | awk -F &#x27;-&#x27; &#x27;&#123;print $1&#125;&#x27;);mv &quot;$i&quot; &quot;$new_name&quot;;done</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="服务配置"><a href="#服务配置" class="headerlink" title="服务配置"></a>服务配置</h2><h3 id="修改prometheus-yml-配置文件"><a href="#修改prometheus-yml-配置文件" class="headerlink" title="修改prometheus.yml 配置文件"></a>修改prometheus.yml 配置文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/prometheus</span><br><span class="line">vi prometheus.yml</span><br></pre></td></tr></table></figure>
+
+<p>内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># my global config</span><br><span class="line">global:</span><br><span class="line">  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.</span><br><span class="line">  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.</span><br><span class="line">  # scrape_timeout is set to the global default (10s).</span><br><span class="line"></span><br><span class="line"># Alertmanager configuration</span><br><span class="line">alerting:</span><br><span class="line">  alertmanagers:</span><br><span class="line">    - static_configs:</span><br><span class="line">        - targets:</span><br><span class="line">           - 127.0.0.1:9093</span><br><span class="line"></span><br><span class="line"># Load rules once and periodically evaluate them according to the global &#x27;evaluation_interval&#x27;.</span><br><span class="line">rule_files:</span><br><span class="line">   - &quot;alarm_rules.yml&quot;</span><br><span class="line"></span><br><span class="line"># A scrape configuration containing exactly one endpoint to scrape:</span><br><span class="line"># Here it&#x27;s Prometheus itself.</span><br><span class="line">scrape_configs:</span><br><span class="line">  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br><span class="line">  - job_name: &quot;prometheus&quot;</span><br><span class="line"></span><br><span class="line">    # metrics_path defaults to &#x27;/metrics&#x27;</span><br><span class="line">    # scheme defaults to &#x27;http&#x27;.</span><br><span class="line"></span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&quot;localhost:9090&quot;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;prometheus&#x27;</span><br><span class="line">  - job_name: &#x27;linux&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9100&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;localhost&#x27;</span><br><span class="line">  - job_name: &#x27;pushgateway&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9091&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;pushgateway&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="配置解析："><a href="#配置解析：" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="全局配置（global）："><a href="#全局配置（global）：" class="headerlink" title="全局配置（global）："></a><strong>全局配置（global）</strong>：</h5><ul>
+<li><code>scrape_interval</code> 和 <code>evaluation_interval</code> 设置为 15 秒，意味着每 15 秒抓取一次指标数据并评估报警规则。</li>
+</ul>
+<h5 id="报警管理（alerting）："><a href="#报警管理（alerting）：" class="headerlink" title="报警管理（alerting）："></a><strong>报警管理（alerting）</strong>：</h5><ul>
+<li>配置 Alertmanager 的地址（<code>127.0.0.1:9093</code>），确保 Alertmanager 正在该地址上运行。</li>
+</ul>
+<h5 id="规则文件（rule-files）："><a href="#规则文件（rule-files）：" class="headerlink" title="规则文件（rule_files）："></a><strong>规则文件（rule_files）</strong>：</h5><ul>
+<li>指向 alarm_rules.yml，请确保该文件存在且格式正确。</li>
+</ul>
+<h5 id="抓取配置（scrape-configs）："><a href="#抓取配置（scrape-configs）：" class="headerlink" title="抓取配置（scrape_configs）："></a><strong>抓取配置（scrape_configs）</strong>：</h5><ul>
+<li><strong>Prometheus 本身</strong>：抓取自身的指标，目标为 <code>127.0.0.1:9090</code>。</li>
+<li><strong>Linux 监控</strong>：通过 Node Exporter 抓取本地系统指标，目标为 <code>127.0.0.1:9100</code>。</li>
+<li><strong>Pushgateway</strong>：监控 Pushgateway 的指标，目标为 <code>127.0.0.1:9091</code>。</li>
+</ul>
+<p>根据需要调整 <code>scrape_interval</code> 和 <code>evaluation_interval</code>，如果你希望更频繁地抓取数据，可以将其缩短。如果有多个实例，可以考虑使用服务发现机制。</p>
+<h3 id="新增alarm-rules-yml-文件"><a href="#新增alarm-rules-yml-文件" class="headerlink" title="新增alarm_rules.yml 文件"></a>新增alarm_rules.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim alarm_rules.yml</span><br><span class="line"></span><br><span class="line">groups:</span><br><span class="line">- name: node</span><br><span class="line">  rules:</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: up&#123;&#125; == 0 </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 挂了&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: 100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes) &gt; 40     </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 内存大于50%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: (1 - avg(rate(node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;[2m])) by (instance)) * 100 &gt; 70  </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; CPU使用率大于70%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;        </span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: max((node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;) *100/(node_filesystem_avail_bytes &#123;fstype=~&quot;ext.?|xfs&quot;&#125;+(node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;)))by(instance) &gt; 80  </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 分区使用率大于80%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="修改alertmanager-yml-文件"><a href="#修改alertmanager-yml-文件" class="headerlink" title="修改alertmanager.yml 文件"></a>修改alertmanager.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/alertmanager</span><br><span class="line">vim alertmanager.yml </span><br></pre></td></tr></table></figure>
+
+<p>内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">global:</span><br><span class="line">  resolve_timeout: 5m</span><br><span class="line">  smtp_smarthost: &#x27;smtp.163.com:25&#x27; # 定义163邮箱服务器端</span><br><span class="line">  smtp_from: &#x27;yourmail@163.com&#x27;  #来自哪个邮箱发的</span><br><span class="line">  smtp_auth_username: &#x27;yourmail@163.com&#x27; #邮箱验证</span><br><span class="line">  smtp_auth_password: &#x27;1111aaaa&#x27;   # 邮箱授权码，不是登录密码</span><br><span class="line">  smtp_require_tls: true   # 是否启用tls</span><br><span class="line">route:</span><br><span class="line">  group_by: [&#x27;alertname&#x27;]</span><br><span class="line">  group_wait: 10s</span><br><span class="line">  group_interval: 10s</span><br><span class="line">  repeat_interval: 3m</span><br><span class="line">  receiver: &#x27;email&#x27;</span><br><span class="line">receivers:</span><br><span class="line">  - name: &#x27;email&#x27;</span><br><span class="line">    email_configs:</span><br><span class="line">      - to: &#x27;yourmail@qq.com&#x27;</span><br><span class="line">#inhibit_rules:</span><br><span class="line">#  - source_match:</span><br><span class="line">#      severity: &#x27;critical&#x27;</span><br><span class="line">#    target_match:</span><br><span class="line">#      severity: &#x27;warning&#x27;</span><br><span class="line">#    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置解析：-1"><a href="#配置解析：-1" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="global"><a href="#global" class="headerlink" title="global"></a>global</h5><ul>
+<li><strong>resolve_timeout</strong>: 设置告警的解决时间，5分钟内未解决则会被视为已解决。</li>
+<li><strong>smtp_smarthost</strong>: 定义 SMTP 服务器的地址和端口。</li>
+<li><strong>smtp_from</strong>: 指定发送邮件时显示的发件人邮箱地址。</li>
+<li><strong>smtp_auth_username</strong>: SMTP 认证的用户名，一般是完整的邮箱地址。</li>
+<li><strong>smtp_auth_password</strong>: 邮箱的授权码，而不是登录密码，需要在邮箱设置中生成。</li>
+<li><strong>smtp_require_tls</strong>: 是否要求使用 TLS 进行加密传输。</li>
+</ul>
+<h5 id="route"><a href="#route" class="headerlink" title="route"></a>route</h5><ul>
+<li><strong>group_by</strong>: 定义在同一组内如何聚合告警，这里按 <code>alertname</code> 聚合。</li>
+<li><strong>group_wait</strong>: 在发送组告警前的等待时间，10秒。</li>
+<li><strong>group_interval</strong>: 组内告警发送的最小间隔，10秒。</li>
+<li><strong>repeat_interval</strong>: 如果告警没有解决，重复发送告警的最小时间间隔，这里设置为 3 分钟。</li>
+<li><strong>receiver</strong>: 指定告警的接收者，这里是 <code>mail</code>。</li>
+</ul>
+<h5 id="receivers"><a href="#receivers" class="headerlink" title="receivers"></a>receivers</h5><ul>
+<li><strong>name</strong>: 定义接收者的名称，这里为 <code>mail</code>，与 <code>route</code> 中的接收者一致。</li>
+<li>email_configs:邮件发送的配置。<ul>
+<li><strong>to</strong>: 接收邮件的地址，可以列出多个邮箱地址，使用换行分隔。</li>
+</ul>
+</li>
+</ul>
+<h3 id="修改defaults-ini文件"><a href="#修改defaults-ini文件" class="headerlink" title="修改defaults.ini文件"></a>修改defaults.ini文件</h3><p>修改grafana的defaults.ini文件将界面可以匿名访问</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/grafana/grafana.ini</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">################################### Anonymous Auth ######################</span></span></span><br><span class="line">[auth.anonymous]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="built_in">enable</span> anonymous access</span></span><br><span class="line">enabled = true</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="新增systemd的service"><a href="#新增systemd的service" class="headerlink" title="新增systemd的service"></a>新增systemd的service</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
+
+<h4 id="pushgateway-service文件"><a href="#pushgateway-service文件" class="headerlink" title="pushgateway.service文件"></a>pushgateway.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Push Gateway</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/pushgateway/pushgateway</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="node-exporter-service文件"><a href="#node-exporter-service文件" class="headerlink" title="node_exporter.service文件"></a>node_exporter.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Node Exporter</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/node_exporter/node_exporter</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="prometheus-service文件"><a href="#prometheus-service文件" class="headerlink" title="prometheus.service文件"></a>prometheus.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus</span><br><span class="line">Documentation=https://prometheus.io/</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Type设置为notify时，服务会不断重启</span></span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/home/ops/prometheus/prometheus \</span><br><span class="line">--config.file=/home/ops/prometheus/prometheus.yml \</span><br><span class="line">--web.read-timeout=5m  \</span><br><span class="line">--web.max-connections=10 \</span><br><span class="line">--query.max-concurrency=20 \</span><br><span class="line">--storage.tsdb.path=/home/ops/prometheus/data \</span><br><span class="line">--storage.tsdb.retention.time=30d \</span><br><span class="line">--query.timeout=2m</span><br><span class="line">Restart=on-failure</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<h4 id="alertmanager-service文件"><a href="#alertmanager-service文件" class="headerlink" title="alertmanager.service文件"></a>alertmanager.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus alertmanager</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/alertmanager/alertmanager \</span><br><span class="line">--storage.path=/opt/prometheus_env/alertmanager/data \</span><br><span class="line">--config.file=/opt/prometheus_env/alertmanager/alertmanager.yml</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">重载配置：</span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">开启服务：</span><br><span class="line">systemctl start pushgateway</span><br><span class="line">systemctl start node_exporter</span><br><span class="line">systemctl start prometheus</span><br><span class="line">systemctl start grafana</span><br><span class="line">systemctl start alertmanager</span><br><span class="line"></span><br><span class="line">设置开机启动：</span><br><span class="line">systemctl enable pushgateway</span><br><span class="line">systemctl enable node_exporter</span><br><span class="line">systemctl enable prometheus</span><br><span class="line">systemctl enable grafana</span><br><span class="line">systemctl enable alertmanager</span><br><span class="line"></span><br><span class="line">查看服务状态:</span><br><span class="line">systemctl status pushgateway</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Prometheus</tag>
+        <tag>Grafana</tag>
+        <tag>Alertmanager</tag>
+        <tag>监控部署</tag>
+        <tag>Prometheus部署</tag>
+      </tags>
+  </entry>
+</search>
