@@ -1,206 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
-    <url>/posts/9b071109.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
-<p>本文将详细介绍如何基于DeepSeek R1+Ollama+Cherry Studio+Page Assist实现本地化部署，帮助您轻松搭建并使用DeepSeek服务。通过Web UI界面，您可以直接与模型进行交互式对话；同时，借助功能强大的交互平台架构，打造属于自己的专属AI聊天室变得轻而易举。</p>
-<h2 id="一、基础环境搭建"><a href="#一、基础环境搭建" class="headerlink" title="一、基础环境搭建"></a>一、基础环境搭建</h2><ol>
-<li><h3 id="什么是Ollama"><a href="#什么是Ollama" class="headerlink" title="什么是Ollama"></a>什么是Ollama</h3></li>
-</ol>
-<p>​	Ollama 是一个可以在本地轻松部署开源大语言模型（LLM）的工具框架，它允许开发者在本地环境中方便地运行和测试不同的语言模型，如 DeepSeek、Llama等。</p>
-<p>​	官网地址：<a href="https://ollama.com/">https://ollama.com/</a></p>
-<p>​	github地址：<a href="https://github.com/ollama/ollama">https://github.com/ollama/ollama</a></p>
-<ol start="2">
-<li><h3 id="安装Ollama"><a href="#安装Ollama" class="headerlink" title="安装Ollama"></a>安装Ollama</h3></li>
-</ol>
-<ul>
-<li><p>访问<a href="https://ollama.com/download">Ollama官网</a>下载对应操作系统的安装包（Windows&#x2F;macOS&#x2F;Linux），完成一键安装‌</p>
-<p>我这里以windows为例：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zjil1y-1.png" alt="image-20250228214909456"></p>
-<p>  下载完成后进行安装：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zmm92z-1.png" alt="image-20250228215430924"></p>
-</li>
-<li><p>安装验证</p>
-<p>安装完成后，在powershell中输入ollama -v，如果显示版本号即安装成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zp2wi8-1.png" alt="image-20250228215845649"></p>
-</li>
-</ul>
-<ol start="3">
-<li><h3 id="选择模型"><a href="#选择模型" class="headerlink" title="选择模型"></a>选择模型</h3></li>
-</ol>
-<p>各型号特性与硬件需求如下：</p>
-<table>
-<thead>
-<tr>
-<th>型号</th>
-<th>CPU</th>
-<th>内存</th>
-<th>显卡（显存要求）</th>
-<th>存储</th>
-<th>适用场景</th>
-<th>成本参考</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>‌1.5B‌</td>
-<td>4核（Intel i5&#x2F;Ryzen 5）</td>
-<td>≥8GB</td>
-<td>核显或低端独显（≥4GB）</td>
-<td>≥20GB SSD</td>
-<td>简单文本生成、轻量开发</td>
-<td>个人级（2k-5k）</td>
-</tr>
-<tr>
-<td>‌7B‌</td>
-<td>8核（i7&#x2F;Ryzen 7）</td>
-<td>≥16GB</td>
-<td>中端独显（RTX 3060，≥8GB）</td>
-<td>≥50GB NVMe</td>
-<td>代码生成、数据分析</td>
-<td>入门级（5k-1.5w）</td>
-</tr>
-<tr>
-<td>‌8B‌</td>
-<td>8核（i7&#x2F;Ryzen 7）</td>
-<td>≥16GB</td>
-<td>中高端独显（RTX 4060，≥10GB）</td>
-<td>≥50GB NVMe</td>
-<td>逻辑推理、轻量高精度任务</td>
-<td>进阶级（1w-3w）</td>
-</tr>
-<tr>
-<td>‌14B‌</td>
-<td>12核（i9&#x2F;Ryzen 9）</td>
-<td>≥32GB</td>
-<td>高端独显（RTX 4090，≥16GB）</td>
-<td>≥100GB NVMe</td>
-<td>复杂任务（合同分析、长文本）</td>
-<td>企业级（3w-8w）</td>
-</tr>
-<tr>
-<td>‌32B‌</td>
-<td>16核（服务器级）</td>
-<td>≥64GB</td>
-<td>专业卡（A100 40GB）</td>
-<td>≥200GB NVMe</td>
-<td>多模态处理、专业领域咨询</td>
-<td>高性能级（8w-15w）</td>
-</tr>
-<tr>
-<td>‌70B‌</td>
-<td>32核（双路Xeon&#x2F;EPYC）</td>
-<td>≥128GB</td>
-<td>多卡集群（2x A100&#x2F;H100）</td>
-<td>≥500GB NVMe</td>
-<td>科研级推理、大规模生成</td>
-<td>科研级（15w-50w）</td>
-</tr>
-<tr>
-<td>‌671B‌</td>
-<td>多节点服务器</td>
-<td>≥512GB ECC</td>
-<td>分布式GPU集群（8x H100）</td>
-<td>≥1TB NVMe</td>
-<td>超大规模训练、AGI探索</td>
-<td>顶尖级（50w+）</td>
-</tr>
-</tbody></table>
-<ol start="4">
-<li><h3 id="下载模型"><a href="#下载模型" class="headerlink" title="下载模型"></a>下载模型</h3></li>
-</ol>
-<p>根据选择好的模型进行拉取，详情可见ollama官网Models中的<a href="https://ollama.com/library/deepseek-r1">deepseek-r1</a>，命令如下：</p>
-<p><strong>DeepSeek-R1-Distill-Qwen-1.5B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:1.5b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Qwen-7B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:7b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Llama-8B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:8b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Qwen-14B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:14b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Qwen-32B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:32b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Llama-70B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:70b</span><br></pre></td></tr></table></figure>
-
-
-
-<p>​	若出现success，则拉取完成，会自动启用该模型。如下图：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12ja0hy-1.png" alt="image-20250228233009280"></p>
-<ol start="5">
-<li><h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3></li>
-</ol>
-<p>​	博主的配置是4080ti显卡，32G内存，i7 8086k CPU，使用的是deepseek-r1:14b，思考速度大约15s左右，CPU使用率80%左右，内存使用率40%，GPU 使用率54%，显存使用率92%。ollama全部加载在GPU中。可供各位小伙伴选择模型时参考。</p>
-<p>CPU使用率：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1ziuyn-1.png" alt="image-20250228233855506"></p>
-<p>GPU使用率：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yf0a0-1.png" alt="image-20250228235552545"></p>
-<p>ollama完全使用GPU：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yyjbb-1.png" alt="image-20250228235643561"></p>
-<p>在升级至DeepSeek-R1:32B这类专业级模型时，需配置显存更高且专业的显卡，由于模型参数量达320亿级别，显存不足会导致用户界面响应会出现明显卡顿，系统将自动调用大量系统内存进行补偿，单次任务处理时长普遍超过200秒。</p>
-<p>各个版本占用的空间如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/51smj-1.png" alt="image-20250301000848810"></p>
-<h2 id="二、打造专属DeepSeek"><a href="#二、打造专属DeepSeek" class="headerlink" title="二、打造专属DeepSeek"></a>二、打造专属DeepSeek</h2><ol>
-<li><h3 id="安装Cherry-Studio"><a href="#安装Cherry-Studio" class="headerlink" title="安装Cherry Studio"></a>安装Cherry Studio</h3></li>
-</ol>
-<p>​	前往<a href="https://cherry-ai.com/">Cherry Studio 官方网站</a>，根据你的操作系统下载安装。</p>
-<ol start="2">
-<li><h3 id="配置Cherry-Studio"><a href="#配置Cherry-Studio" class="headerlink" title="配置Cherry Studio"></a>配置Cherry Studio</h3></li>
-</ol>
-<p>​	打开 Cherry Studio，在设置中找到模型服务</p>
-<ul>
-<li>从模型列表中的Ollama选择与你本地部署的 DeepSeek-R1 模型版本对应的选项</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/i6msp-1.png" alt="image-20250301003054702"></p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/j8vq7-1.png" alt="image-20250301003232975"></p>
-<ul>
-<li><p>默认模型中选择本地部署对应的模型</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/m60qk-1.png" alt="image-20250301003723515"></p>
-</li>
-<li><p>目前新版的Cherry Studio已支持网络搜索，在网络搜索中可以注册Tavily并设置api秘钥，注册账号可以用github或google</p>
-</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/nub35-1.png" alt="image-20250301004004172"></p>
-<ol start="3">
-<li><h3 id="使用Cherry-Studio"><a href="#使用Cherry-Studio" class="headerlink" title="使用Cherry Studio"></a>使用Cherry Studio</h3></li>
-</ol>
-<p>​	配置到这里就可以开始使用专属自己的DeepSeek了，如需使用网络搜索，可在助手页面点开“开启网络搜索”。智能体内也有一些预设的提示词可供食用。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/v7lke-1.png" alt="image-20250301005242312"></p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/vkryc-1.png" alt="image-20250301005303173"></p>
-<h2 id="三、配置使用Web-UI"><a href="#三、配置使用Web-UI" class="headerlink" title="三、配置使用Web UI"></a>三、配置使用Web UI</h2><ol>
-<li><h3 id="Page-Assist是什么"><a href="#Page-Assist是什么" class="headerlink" title="Page Assist是什么"></a>Page Assist是什么</h3></li>
-</ol>
-<p>​	Page Assist 是一款开源浏览器扩展程序，主要用于提升用户在网页浏览过程中与本地 AI 模型的交互效率，提供类似 ChatGPT 的 Web UI 界面，且支持用户与本地运行的 AI 模型（如 Ollama、Gemini Nano、DeepSeek 等）进行多轮对话‌。</p>
-<ol start="2">
-<li><h3 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a><strong>安装与配置</strong></h3></li>
-</ol>
-<p>Github 官网：<a href="https://github.com/n4ze3m/page-assist">https://github.com/n4ze3m/page-assist</a></p>
-<p>首先打开Chrome浏览器，进入应用商店，搜索<a href="https://chromewebstore.google.com/detail/jfgfiigpkhlkbnfnbobbkinehhfdhndo?utm_source=item-share-cp">Page Assist</a>，点击添加至Chrome：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1q260d-1.png" alt="image-20250301010423793"></p>
-<p>添加后在浏览器右上角的扩展程序图标中打开它即可看到Web UI界面了：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1qr26r-1.png" alt="image-20250301010539620"></p>
-<p>点击右上角设置，可以修改语音识别语言和界面显示语言：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1rvrkk-1.png" alt="image-20250301010730076"></p>
-<p>选择好本地搭建好的模型后即开始使用，并且可以开启搜索网络。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1t4goy-1.png" alt="image-20250301010939030"></p>
-]]></content>
-      <categories>
-        <category>AIGC</category>
-      </categories>
-      <tags>
-        <tag>DeepSeek本地部署</tag>
-        <tag>ollama</tag>
-        <tag>Cherry Studio</tag>
-        <tag>LLM交互平台</tag>
-        <tag>Page Assist</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux初始化以及系统性能调优</title>
     <url>/posts/b4a62efd.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
@@ -332,6 +132,84 @@
         <tag>Linux</tag>
         <tag>GRUB</tag>
         <tag>BIOS</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ssl证书自动续期工具——acme</title>
+    <url>/posts/e691384c.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
+<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
+<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>注意换成自己的邮箱号</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置自动升级</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>选择服务商</li>
+</ol>
+<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
+
+<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
+<ol>
+<li>创建API秘钥</li>
+</ol>
+<p>会得到SecretId和SecretKey</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>将秘钥格式化导入环境变量</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+</ol>
+<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完毕后，证书颁发成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
+<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
+<p>将证书文件复制到nginx配置的ssl证书目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>acme</tag>
+        <tag>免费证书</tag>
+        <tag>自动化申请证书</tag>
       </tags>
   </entry>
   <entry>
@@ -703,84 +581,6 @@
       </tags>
   </entry>
   <entry>
-    <title>ssl证书自动续期工具——acme</title>
-    <url>/posts/e691384c.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
-<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
-<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>注意换成自己的邮箱号</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>设置自动升级</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>选择服务商</li>
-</ol>
-<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
-
-<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
-<ol>
-<li>创建API秘钥</li>
-</ol>
-<p>会得到SecretId和SecretKey</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>将秘钥格式化导入环境变量</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="3">
-<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
-</ol>
-<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
-
-<p>命令执行完毕后，证书颁发成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
-<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
-<p>将证书文件复制到nginx配置的ssl证书目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>acme</tag>
-        <tag>免费证书</tag>
-        <tag>自动化申请证书</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>解析WordPress网站域名与常见问题</title>
     <url>/posts/4c6ec737.html</url>
     <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
@@ -980,107 +780,6 @@
       </tags>
   </entry>
   <entry>
-    <title>windows 11 安装教程</title>
-    <url>/posts/50cbde44.html</url>
-    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
-<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
-<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
-<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
-</ol>
-<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
-<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
-<ol start="2">
-<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
-<ol start="3">
-<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
-<ol start="4">
-<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
-<ol start="5">
-<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
-<ol start="6">
-<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
-<ol start="7">
-<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
-<ol start="8">
-<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
-<ol start="9">
-<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
-<ol start="10">
-<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
-<ol start="10">
-<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
-</ol>
-<p>将U盘中的Win11激活器复制到桌面并解压</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
-<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>windows</tag>
-        <tag>系统安装</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Twikoo评论系统搭建配置教程</title>
     <url>/posts/5eb7adfe.html</url>
     <content><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>之前博客用过WordPress，但是动态博客用起来有些太重了，并且很多功能也用不到，所以重新搭建了hexo框架的静态博客。评论系统首先使用的是Giscus，但是需要登录github账号进行评论，对于一些没有技术基础的用户易用性较差，所以选择本地化搭建一套免费的，易用性强的评论静态网站评论系统。本文使用hexo静态博客系统 Butterfly 5.4版本主题下使用Twikoo评论系统。</p>
@@ -1193,6 +892,462 @@
         <tag>博客</tag>
         <tag>Butterfly</tag>
         <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>windows 11 安装教程</title>
+    <url>/posts/50cbde44.html</url>
+    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
+<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
+<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
+<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
+</ol>
+<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
+<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
+<ol start="2">
+<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
+<ol start="3">
+<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
+<ol start="4">
+<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
+<ol start="5">
+<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
+<ol start="6">
+<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
+<ol start="7">
+<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
+<ol start="8">
+<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
+<ol start="9">
+<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
+<ol start="10">
+<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
+<ol start="10">
+<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
+</ol>
+<p>将U盘中的Win11激活器复制到桌面并解压</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
+<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>windows</tag>
+        <tag>系统安装</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Prometheus+Grafana+Alertmanager部署</title>
+    <url>/posts/c03992dd.html</url>
+    <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
+<h3 id="Pushgateway"><a href="#Pushgateway" class="headerlink" title="Pushgateway"></a><strong>Pushgateway</strong></h3><p><strong>Pushgateway</strong> 是 Prometheus 生态系统中的一个工具，专门用来处理短期任务或批处理作业的指标。这些短期任务通常是无法直接通过 Prometheus 的 pull 模型抓取的，因此 Pushgateway 可以接收来自这些任务的指标数据并将其保存在 Prometheus 可抓取的形式中。<br>主要功能：</p>
+<ul>
+<li>允许临时的、短期任务将其指标推送到 Pushgateway。</li>
+<li>支持长期运行的指标的暴露，适合批处理任务的场景。</li>
+</ul>
+<h3 id="Node-Exporter"><a href="#Node-Exporter" class="headerlink" title="Node Exporter"></a><strong>Node Exporter</strong></h3><p><strong>Node Exporter</strong> 是 Prometheus 生态系统中用于收集 Linux&#x2F;Unix 系统层面指标的组件。它暴露系统硬件和操作系统的运行状况，例如：</p>
+<ul>
+<li>CPU 使用率</li>
+<li>内存使用情况</li>
+<li>磁盘 I&#x2F;O</li>
+<li>网络流量</li>
+</ul>
+<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a><strong>Grafana</strong></h3><p><strong>Grafana</strong> 是一个开源的数据可视化工具，能够与 Prometheus 等数据源集成。它通过直观的图表、仪表盘（dashboard）展示时间序列数据，方便用户监控系统性能和运行状态。<br>主要功能：</p>
+<ul>
+<li>支持多种数据源（包括 Prometheus、Elasticsearch、MySQL 等）</li>
+<li>自定义仪表盘和报警</li>
+<li>提供丰富的插件以扩展功能</li>
+</ul>
+<h3 id="Alertmanager"><a href="#Alertmanager" class="headerlink" title="Alertmanager"></a><strong>Alertmanager</strong></h3><p><strong>Alertmanager</strong> 是 Prometheus 的报警管理组件，用于处理来自 Prometheus 服务器的报警。它能够根据预定义的规则分组、路由、抑制和消除报警。Alertmanager 可以将报警发送到各种通知渠道，如邮件、Slack、PagerDuty 等。<br>主要功能：</p>
+<ul>
+<li>灵活的报警管理和路由规则</li>
+<li>报警抑制与分组</li>
+<li>支持多种通知方式</li>
+</ul>
+<p>这些组件结合在一起，形成一个强大的监控系统，Prometheus 负责收集和存储数据，Pushgateway 用于处理无法直接拉取的任务，Node Exporter 提供系统层面的指标，Grafana 实现数据的可视化，Alertmanager 管理报警。</p>
+<h2 id="实例环境与下载"><a href="#实例环境与下载" class="headerlink" title="实例环境与下载"></a>实例环境与下载</h2><h3 id="实例环境"><a href="#实例环境" class="headerlink" title="实例环境"></a>实例环境</h3><p>本文搭建的环境软件组成版本及说明如下：</p>
+<ul>
+<li><p>Linux：Linux 操作系统，本文以 debian 12.6 为例。</p>
+</li>
+<li><p>prometheus：本文以  prometheus 3.4.0 为例。</p>
+</li>
+<li><p>pushgateway：本文以 pushgateway 1.11.1 为例。</p>
+</li>
+<li><p>node-exporter：本文以 node-exporter 1.9.1 为例。</p>
+</li>
+<li><p>Grafana：本文以 Grafana 12.0.0 为例。</p>
+</li>
+<li><p>Alertmanager：本文以 Alertmanager 0.28.1 为例。</p>
+</li>
+</ul>
+<h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p>部分软件有国内加速下载请根据需求选择下载方式，下载地址如下：</p>
+<blockquote>
+<p>prometheus以及相关套件可见官网：<a href="https://prometheus.io/download/">https://prometheus.io/download/</a></p>
+<p>下载地址：</p>
+<p>prometheus：<a href="https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz">https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</a></p>
+<p>Alertmanager：<a href="https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz">https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</a></p>
+<p>node-exporter：<a href="https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz">https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</a></p>
+<p>pushgateway：<a href="https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz">https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</a></p>
+<p>Grafana：</p>
+<p>​	华为源：<a href="https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb">https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</a></p>
+</blockquote>
+<blockquote>
+<p>注意：由于各软件会升级迭代，请根据实际情况调整下载地址</p>
+</blockquote>
+<p>进入服务器，执行如下命令下载并解压：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt</span><br><span class="line">mkdir prometheus_env</span><br><span class="line">cd prometheus_env</span><br><span class="line">wget https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line">wget https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line">tar -zxvf prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y adduser libfontconfig1 musl</span><br><span class="line">sudo dpkg -i grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//修改文件名去掉版本号</span><br><span class="line">cd /opt/prometheus_env</span><br><span class="line">for i in `ls -l|awk &#x27;&#123;print $9&#125;&#x27;`;do new_name=$(echo &quot;$i&quot; | awk -F &#x27;-&#x27; &#x27;&#123;print $1&#125;&#x27;);mv &quot;$i&quot; &quot;$new_name&quot;;done</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="服务配置"><a href="#服务配置" class="headerlink" title="服务配置"></a>服务配置</h2><h3 id="修改prometheus-yml-配置文件"><a href="#修改prometheus-yml-配置文件" class="headerlink" title="修改prometheus.yml 配置文件"></a>修改prometheus.yml 配置文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/prometheus</span><br><span class="line">vi prometheus.yml</span><br></pre></td></tr></table></figure>
+
+<p>内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># my global config</span><br><span class="line">global:</span><br><span class="line">  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.</span><br><span class="line">  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.</span><br><span class="line">  # scrape_timeout is set to the global default (10s).</span><br><span class="line"></span><br><span class="line"># Alertmanager configuration</span><br><span class="line">alerting:</span><br><span class="line">  alertmanagers:</span><br><span class="line">    - static_configs:</span><br><span class="line">        - targets:</span><br><span class="line">           - 127.0.0.1:9093</span><br><span class="line"></span><br><span class="line"># Load rules once and periodically evaluate them according to the global &#x27;evaluation_interval&#x27;.</span><br><span class="line">rule_files:</span><br><span class="line">   - &quot;alarm_rules.yml&quot;</span><br><span class="line"></span><br><span class="line"># A scrape configuration containing exactly one endpoint to scrape:</span><br><span class="line"># Here it&#x27;s Prometheus itself.</span><br><span class="line">scrape_configs:</span><br><span class="line">  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br><span class="line">  - job_name: &quot;prometheus&quot;</span><br><span class="line"></span><br><span class="line">    # metrics_path defaults to &#x27;/metrics&#x27;</span><br><span class="line">    # scheme defaults to &#x27;http&#x27;.</span><br><span class="line"></span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&quot;localhost:9090&quot;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;prometheus&#x27;</span><br><span class="line">  - job_name: &#x27;linux&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9100&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;localhost&#x27;</span><br><span class="line">  - job_name: &#x27;pushgateway&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9091&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;pushgateway&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="配置解析："><a href="#配置解析：" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="全局配置（global）："><a href="#全局配置（global）：" class="headerlink" title="全局配置（global）："></a><strong>全局配置（global）</strong>：</h5><ul>
+<li><code>scrape_interval</code> 和 <code>evaluation_interval</code> 设置为 15 秒，意味着每 15 秒抓取一次指标数据并评估报警规则。</li>
+</ul>
+<h5 id="报警管理（alerting）："><a href="#报警管理（alerting）：" class="headerlink" title="报警管理（alerting）："></a><strong>报警管理（alerting）</strong>：</h5><ul>
+<li>配置 Alertmanager 的地址（<code>127.0.0.1:9093</code>），确保 Alertmanager 正在该地址上运行。</li>
+</ul>
+<h5 id="规则文件（rule-files）："><a href="#规则文件（rule-files）：" class="headerlink" title="规则文件（rule_files）："></a><strong>规则文件（rule_files）</strong>：</h5><ul>
+<li>指向 alarm_rules.yml，请确保该文件存在且格式正确。</li>
+</ul>
+<h5 id="抓取配置（scrape-configs）："><a href="#抓取配置（scrape-configs）：" class="headerlink" title="抓取配置（scrape_configs）："></a><strong>抓取配置（scrape_configs）</strong>：</h5><ul>
+<li><strong>Prometheus 本身</strong>：抓取自身的指标，目标为 <code>127.0.0.1:9090</code>。</li>
+<li><strong>Linux 监控</strong>：通过 Node Exporter 抓取本地系统指标，目标为 <code>127.0.0.1:9100</code>。</li>
+<li><strong>Pushgateway</strong>：监控 Pushgateway 的指标，目标为 <code>127.0.0.1:9091</code>。</li>
+</ul>
+<p>根据需要调整 <code>scrape_interval</code> 和 <code>evaluation_interval</code>，如果你希望更频繁地抓取数据，可以将其缩短。如果有多个实例，可以考虑使用服务发现机制。</p>
+<h3 id="新增alarm-rules-yml-文件"><a href="#新增alarm-rules-yml-文件" class="headerlink" title="新增alarm_rules.yml 文件"></a>新增alarm_rules.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim alarm_rules.yml</span><br><span class="line"></span><br><span class="line">groups:</span><br><span class="line">- name: node</span><br><span class="line">  rules:</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: up&#123;&#125; == 0 </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 挂了&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: 100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes) &gt; 40     </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 内存大于50%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: (1 - avg(rate(node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;[2m])) by (instance)) * 100 &gt; 70  </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; CPU使用率大于70%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;        </span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: max((node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;) *100/(node_filesystem_avail_bytes &#123;fstype=~&quot;ext.?|xfs&quot;&#125;+(node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;)))by(instance) &gt; 80  </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 分区使用率大于80%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="修改alertmanager-yml-文件"><a href="#修改alertmanager-yml-文件" class="headerlink" title="修改alertmanager.yml 文件"></a>修改alertmanager.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/alertmanager</span><br><span class="line">vim alertmanager.yml </span><br></pre></td></tr></table></figure>
+
+<p>内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">global:</span><br><span class="line">  resolve_timeout: 5m</span><br><span class="line">  smtp_smarthost: &#x27;smtp.163.com:25&#x27; # 定义163邮箱服务器端</span><br><span class="line">  smtp_from: &#x27;yourmail@163.com&#x27;  #来自哪个邮箱发的</span><br><span class="line">  smtp_auth_username: &#x27;yourmail@163.com&#x27; #邮箱验证</span><br><span class="line">  smtp_auth_password: &#x27;1111aaaa&#x27;   # 邮箱授权码，不是登录密码</span><br><span class="line">  smtp_require_tls: true   # 是否启用tls</span><br><span class="line">route:</span><br><span class="line">  group_by: [&#x27;alertname&#x27;]</span><br><span class="line">  group_wait: 10s</span><br><span class="line">  group_interval: 10s</span><br><span class="line">  repeat_interval: 3m</span><br><span class="line">  receiver: &#x27;email&#x27;</span><br><span class="line">receivers:</span><br><span class="line">  - name: &#x27;email&#x27;</span><br><span class="line">    email_configs:</span><br><span class="line">      - to: &#x27;yourmail@qq.com&#x27;</span><br><span class="line">#inhibit_rules:</span><br><span class="line">#  - source_match:</span><br><span class="line">#      severity: &#x27;critical&#x27;</span><br><span class="line">#    target_match:</span><br><span class="line">#      severity: &#x27;warning&#x27;</span><br><span class="line">#    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置解析：-1"><a href="#配置解析：-1" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="global"><a href="#global" class="headerlink" title="global"></a>global</h5><ul>
+<li><strong>resolve_timeout</strong>: 设置告警的解决时间，5分钟内未解决则会被视为已解决。</li>
+<li><strong>smtp_smarthost</strong>: 定义 SMTP 服务器的地址和端口。</li>
+<li><strong>smtp_from</strong>: 指定发送邮件时显示的发件人邮箱地址。</li>
+<li><strong>smtp_auth_username</strong>: SMTP 认证的用户名，一般是完整的邮箱地址。</li>
+<li><strong>smtp_auth_password</strong>: 邮箱的授权码，而不是登录密码，需要在邮箱设置中生成。</li>
+<li><strong>smtp_require_tls</strong>: 是否要求使用 TLS 进行加密传输。</li>
+</ul>
+<h5 id="route"><a href="#route" class="headerlink" title="route"></a>route</h5><ul>
+<li><strong>group_by</strong>: 定义在同一组内如何聚合告警，这里按 <code>alertname</code> 聚合。</li>
+<li><strong>group_wait</strong>: 在发送组告警前的等待时间，10秒。</li>
+<li><strong>group_interval</strong>: 组内告警发送的最小间隔，10秒。</li>
+<li><strong>repeat_interval</strong>: 如果告警没有解决，重复发送告警的最小时间间隔，这里设置为 3 分钟。</li>
+<li><strong>receiver</strong>: 指定告警的接收者，这里是 <code>mail</code>。</li>
+</ul>
+<h5 id="receivers"><a href="#receivers" class="headerlink" title="receivers"></a>receivers</h5><ul>
+<li><strong>name</strong>: 定义接收者的名称，这里为 <code>mail</code>，与 <code>route</code> 中的接收者一致。</li>
+<li>email_configs:邮件发送的配置。<ul>
+<li><strong>to</strong>: 接收邮件的地址，可以列出多个邮箱地址，使用换行分隔。</li>
+</ul>
+</li>
+</ul>
+<h3 id="修改defaults-ini文件"><a href="#修改defaults-ini文件" class="headerlink" title="修改defaults.ini文件"></a>修改defaults.ini文件</h3><p>修改grafana的defaults.ini文件将界面可以匿名访问</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/grafana/grafana.ini</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">################################### Anonymous Auth ######################</span></span></span><br><span class="line">[auth.anonymous]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="built_in">enable</span> anonymous access</span></span><br><span class="line">enabled = true</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="新增systemd的service"><a href="#新增systemd的service" class="headerlink" title="新增systemd的service"></a>新增systemd的service</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
+
+<h4 id="pushgateway-service文件"><a href="#pushgateway-service文件" class="headerlink" title="pushgateway.service文件"></a>pushgateway.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Push Gateway</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/pushgateway/pushgateway</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="node-exporter-service文件"><a href="#node-exporter-service文件" class="headerlink" title="node_exporter.service文件"></a>node_exporter.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Node Exporter</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/node_exporter/node_exporter</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="prometheus-service文件"><a href="#prometheus-service文件" class="headerlink" title="prometheus.service文件"></a>prometheus.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus</span><br><span class="line">Documentation=https://prometheus.io/</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Type设置为notify时，服务会不断重启</span></span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/home/ops/prometheus/prometheus \</span><br><span class="line">--config.file=/home/ops/prometheus/prometheus.yml \</span><br><span class="line">--web.read-timeout=5m  \</span><br><span class="line">--web.max-connections=10 \</span><br><span class="line">--query.max-concurrency=20 \</span><br><span class="line">--storage.tsdb.path=/home/ops/prometheus/data \</span><br><span class="line">--storage.tsdb.retention.time=30d \</span><br><span class="line">--query.timeout=2m</span><br><span class="line">Restart=on-failure</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<h4 id="alertmanager-service文件"><a href="#alertmanager-service文件" class="headerlink" title="alertmanager.service文件"></a>alertmanager.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus alertmanager</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/alertmanager/alertmanager \</span><br><span class="line">--storage.path=/opt/prometheus_env/alertmanager/data \</span><br><span class="line">--config.file=/opt/prometheus_env/alertmanager/alertmanager.yml</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">重载配置：</span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">开启服务：</span><br><span class="line">systemctl start pushgateway</span><br><span class="line">systemctl start node_exporter</span><br><span class="line">systemctl start prometheus</span><br><span class="line">systemctl start grafana</span><br><span class="line">systemctl start alertmanager</span><br><span class="line"></span><br><span class="line">设置开机启动：</span><br><span class="line">systemctl enable pushgateway</span><br><span class="line">systemctl enable node_exporter</span><br><span class="line">systemctl enable prometheus</span><br><span class="line">systemctl enable grafana</span><br><span class="line">systemctl enable alertmanager</span><br><span class="line"></span><br><span class="line">查看服务状态:</span><br><span class="line">systemctl status pushgateway</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Prometheus</tag>
+        <tag>Grafana</tag>
+        <tag>Alertmanager</tag>
+        <tag>监控部署</tag>
+        <tag>Prometheus部署</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
+    <url>/posts/9b071109.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
+<p>本文将详细介绍如何基于DeepSeek R1+Ollama+Cherry Studio+Page Assist实现本地化部署，帮助您轻松搭建并使用DeepSeek服务。通过Web UI界面，您可以直接与模型进行交互式对话；同时，借助功能强大的交互平台架构，打造属于自己的专属AI聊天室变得轻而易举。</p>
+<h2 id="一、基础环境搭建"><a href="#一、基础环境搭建" class="headerlink" title="一、基础环境搭建"></a>一、基础环境搭建</h2><ol>
+<li><h3 id="什么是Ollama"><a href="#什么是Ollama" class="headerlink" title="什么是Ollama"></a>什么是Ollama</h3></li>
+</ol>
+<p>​	Ollama 是一个可以在本地轻松部署开源大语言模型（LLM）的工具框架，它允许开发者在本地环境中方便地运行和测试不同的语言模型，如 DeepSeek、Llama等。</p>
+<p>​	官网地址：<a href="https://ollama.com/">https://ollama.com/</a></p>
+<p>​	github地址：<a href="https://github.com/ollama/ollama">https://github.com/ollama/ollama</a></p>
+<ol start="2">
+<li><h3 id="安装Ollama"><a href="#安装Ollama" class="headerlink" title="安装Ollama"></a>安装Ollama</h3></li>
+</ol>
+<ul>
+<li><p>访问<a href="https://ollama.com/download">Ollama官网</a>下载对应操作系统的安装包（Windows&#x2F;macOS&#x2F;Linux），完成一键安装‌</p>
+<p>我这里以windows为例：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zjil1y-1.png" alt="image-20250228214909456"></p>
+<p>  下载完成后进行安装：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zmm92z-1.png" alt="image-20250228215430924"></p>
+</li>
+<li><p>安装验证</p>
+<p>安装完成后，在powershell中输入ollama -v，如果显示版本号即安装成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zp2wi8-1.png" alt="image-20250228215845649"></p>
+</li>
+</ul>
+<ol start="3">
+<li><h3 id="选择模型"><a href="#选择模型" class="headerlink" title="选择模型"></a>选择模型</h3></li>
+</ol>
+<p>各型号特性与硬件需求如下：</p>
+<table>
+<thead>
+<tr>
+<th>型号</th>
+<th>CPU</th>
+<th>内存</th>
+<th>显卡（显存要求）</th>
+<th>存储</th>
+<th>适用场景</th>
+<th>成本参考</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>‌1.5B‌</td>
+<td>4核（Intel i5&#x2F;Ryzen 5）</td>
+<td>≥8GB</td>
+<td>核显或低端独显（≥4GB）</td>
+<td>≥20GB SSD</td>
+<td>简单文本生成、轻量开发</td>
+<td>个人级（2k-5k）</td>
+</tr>
+<tr>
+<td>‌7B‌</td>
+<td>8核（i7&#x2F;Ryzen 7）</td>
+<td>≥16GB</td>
+<td>中端独显（RTX 3060，≥8GB）</td>
+<td>≥50GB NVMe</td>
+<td>代码生成、数据分析</td>
+<td>入门级（5k-1.5w）</td>
+</tr>
+<tr>
+<td>‌8B‌</td>
+<td>8核（i7&#x2F;Ryzen 7）</td>
+<td>≥16GB</td>
+<td>中高端独显（RTX 4060，≥10GB）</td>
+<td>≥50GB NVMe</td>
+<td>逻辑推理、轻量高精度任务</td>
+<td>进阶级（1w-3w）</td>
+</tr>
+<tr>
+<td>‌14B‌</td>
+<td>12核（i9&#x2F;Ryzen 9）</td>
+<td>≥32GB</td>
+<td>高端独显（RTX 4090，≥16GB）</td>
+<td>≥100GB NVMe</td>
+<td>复杂任务（合同分析、长文本）</td>
+<td>企业级（3w-8w）</td>
+</tr>
+<tr>
+<td>‌32B‌</td>
+<td>16核（服务器级）</td>
+<td>≥64GB</td>
+<td>专业卡（A100 40GB）</td>
+<td>≥200GB NVMe</td>
+<td>多模态处理、专业领域咨询</td>
+<td>高性能级（8w-15w）</td>
+</tr>
+<tr>
+<td>‌70B‌</td>
+<td>32核（双路Xeon&#x2F;EPYC）</td>
+<td>≥128GB</td>
+<td>多卡集群（2x A100&#x2F;H100）</td>
+<td>≥500GB NVMe</td>
+<td>科研级推理、大规模生成</td>
+<td>科研级（15w-50w）</td>
+</tr>
+<tr>
+<td>‌671B‌</td>
+<td>多节点服务器</td>
+<td>≥512GB ECC</td>
+<td>分布式GPU集群（8x H100）</td>
+<td>≥1TB NVMe</td>
+<td>超大规模训练、AGI探索</td>
+<td>顶尖级（50w+）</td>
+</tr>
+</tbody></table>
+<ol start="4">
+<li><h3 id="下载模型"><a href="#下载模型" class="headerlink" title="下载模型"></a>下载模型</h3></li>
+</ol>
+<p>根据选择好的模型进行拉取，详情可见ollama官网Models中的<a href="https://ollama.com/library/deepseek-r1">deepseek-r1</a>，命令如下：</p>
+<p><strong>DeepSeek-R1-Distill-Qwen-1.5B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:1.5b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-7B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:7b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Llama-8B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:8b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-14B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:14b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-32B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:32b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Llama-70B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:70b</span><br></pre></td></tr></table></figure>
+
+
+
+<p>​	若出现success，则拉取完成，会自动启用该模型。如下图：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12ja0hy-1.png" alt="image-20250228233009280"></p>
+<ol start="5">
+<li><h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3></li>
+</ol>
+<p>​	博主的配置是4080ti显卡，32G内存，i7 8086k CPU，使用的是deepseek-r1:14b，思考速度大约15s左右，CPU使用率80%左右，内存使用率40%，GPU 使用率54%，显存使用率92%。ollama全部加载在GPU中。可供各位小伙伴选择模型时参考。</p>
+<p>CPU使用率：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1ziuyn-1.png" alt="image-20250228233855506"></p>
+<p>GPU使用率：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yf0a0-1.png" alt="image-20250228235552545"></p>
+<p>ollama完全使用GPU：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yyjbb-1.png" alt="image-20250228235643561"></p>
+<p>在升级至DeepSeek-R1:32B这类专业级模型时，需配置显存更高且专业的显卡，由于模型参数量达320亿级别，显存不足会导致用户界面响应会出现明显卡顿，系统将自动调用大量系统内存进行补偿，单次任务处理时长普遍超过200秒。</p>
+<p>各个版本占用的空间如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/51smj-1.png" alt="image-20250301000848810"></p>
+<h2 id="二、打造专属DeepSeek"><a href="#二、打造专属DeepSeek" class="headerlink" title="二、打造专属DeepSeek"></a>二、打造专属DeepSeek</h2><ol>
+<li><h3 id="安装Cherry-Studio"><a href="#安装Cherry-Studio" class="headerlink" title="安装Cherry Studio"></a>安装Cherry Studio</h3></li>
+</ol>
+<p>​	前往<a href="https://cherry-ai.com/">Cherry Studio 官方网站</a>，根据你的操作系统下载安装。</p>
+<ol start="2">
+<li><h3 id="配置Cherry-Studio"><a href="#配置Cherry-Studio" class="headerlink" title="配置Cherry Studio"></a>配置Cherry Studio</h3></li>
+</ol>
+<p>​	打开 Cherry Studio，在设置中找到模型服务</p>
+<ul>
+<li>从模型列表中的Ollama选择与你本地部署的 DeepSeek-R1 模型版本对应的选项</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/i6msp-1.png" alt="image-20250301003054702"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/j8vq7-1.png" alt="image-20250301003232975"></p>
+<ul>
+<li><p>默认模型中选择本地部署对应的模型</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/m60qk-1.png" alt="image-20250301003723515"></p>
+</li>
+<li><p>目前新版的Cherry Studio已支持网络搜索，在网络搜索中可以注册Tavily并设置api秘钥，注册账号可以用github或google</p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/nub35-1.png" alt="image-20250301004004172"></p>
+<ol start="3">
+<li><h3 id="使用Cherry-Studio"><a href="#使用Cherry-Studio" class="headerlink" title="使用Cherry Studio"></a>使用Cherry Studio</h3></li>
+</ol>
+<p>​	配置到这里就可以开始使用专属自己的DeepSeek了，如需使用网络搜索，可在助手页面点开“开启网络搜索”。智能体内也有一些预设的提示词可供食用。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/v7lke-1.png" alt="image-20250301005242312"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/vkryc-1.png" alt="image-20250301005303173"></p>
+<h2 id="三、配置使用Web-UI"><a href="#三、配置使用Web-UI" class="headerlink" title="三、配置使用Web UI"></a>三、配置使用Web UI</h2><ol>
+<li><h3 id="Page-Assist是什么"><a href="#Page-Assist是什么" class="headerlink" title="Page Assist是什么"></a>Page Assist是什么</h3></li>
+</ol>
+<p>​	Page Assist 是一款开源浏览器扩展程序，主要用于提升用户在网页浏览过程中与本地 AI 模型的交互效率，提供类似 ChatGPT 的 Web UI 界面，且支持用户与本地运行的 AI 模型（如 Ollama、Gemini Nano、DeepSeek 等）进行多轮对话‌。</p>
+<ol start="2">
+<li><h3 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a><strong>安装与配置</strong></h3></li>
+</ol>
+<p>Github 官网：<a href="https://github.com/n4ze3m/page-assist">https://github.com/n4ze3m/page-assist</a></p>
+<p>首先打开Chrome浏览器，进入应用商店，搜索<a href="https://chromewebstore.google.com/detail/jfgfiigpkhlkbnfnbobbkinehhfdhndo?utm_source=item-share-cp">Page Assist</a>，点击添加至Chrome：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1q260d-1.png" alt="image-20250301010423793"></p>
+<p>添加后在浏览器右上角的扩展程序图标中打开它即可看到Web UI界面了：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1qr26r-1.png" alt="image-20250301010539620"></p>
+<p>点击右上角设置，可以修改语音识别语言和界面显示语言：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1rvrkk-1.png" alt="image-20250301010730076"></p>
+<p>选择好本地搭建好的模型后即开始使用，并且可以开启搜索网络。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1t4goy-1.png" alt="image-20250301010939030"></p>
+]]></content>
+      <categories>
+        <category>AIGC</category>
+      </categories>
+      <tags>
+        <tag>DeepSeek本地部署</tag>
+        <tag>ollama</tag>
+        <tag>Cherry Studio</tag>
+        <tag>LLM交互平台</tag>
+        <tag>Page Assist</tag>
       </tags>
   </entry>
   <entry>
@@ -1391,161 +1546,6 @@
         <tag>系统安装</tag>
         <tag>Secure Boot</tag>
         <tag>UEF</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Prometheus+Grafana+Alertmanager部署</title>
-    <url>/posts/c03992dd.html</url>
-    <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
-<h3 id="Pushgateway"><a href="#Pushgateway" class="headerlink" title="Pushgateway"></a><strong>Pushgateway</strong></h3><p><strong>Pushgateway</strong> 是 Prometheus 生态系统中的一个工具，专门用来处理短期任务或批处理作业的指标。这些短期任务通常是无法直接通过 Prometheus 的 pull 模型抓取的，因此 Pushgateway 可以接收来自这些任务的指标数据并将其保存在 Prometheus 可抓取的形式中。<br>主要功能：</p>
-<ul>
-<li>允许临时的、短期任务将其指标推送到 Pushgateway。</li>
-<li>支持长期运行的指标的暴露，适合批处理任务的场景。</li>
-</ul>
-<h3 id="Node-Exporter"><a href="#Node-Exporter" class="headerlink" title="Node Exporter"></a><strong>Node Exporter</strong></h3><p><strong>Node Exporter</strong> 是 Prometheus 生态系统中用于收集 Linux&#x2F;Unix 系统层面指标的组件。它暴露系统硬件和操作系统的运行状况，例如：</p>
-<ul>
-<li>CPU 使用率</li>
-<li>内存使用情况</li>
-<li>磁盘 I&#x2F;O</li>
-<li>网络流量</li>
-</ul>
-<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a><strong>Grafana</strong></h3><p><strong>Grafana</strong> 是一个开源的数据可视化工具，能够与 Prometheus 等数据源集成。它通过直观的图表、仪表盘（dashboard）展示时间序列数据，方便用户监控系统性能和运行状态。<br>主要功能：</p>
-<ul>
-<li>支持多种数据源（包括 Prometheus、Elasticsearch、MySQL 等）</li>
-<li>自定义仪表盘和报警</li>
-<li>提供丰富的插件以扩展功能</li>
-</ul>
-<h3 id="Alertmanager"><a href="#Alertmanager" class="headerlink" title="Alertmanager"></a><strong>Alertmanager</strong></h3><p><strong>Alertmanager</strong> 是 Prometheus 的报警管理组件，用于处理来自 Prometheus 服务器的报警。它能够根据预定义的规则分组、路由、抑制和消除报警。Alertmanager 可以将报警发送到各种通知渠道，如邮件、Slack、PagerDuty 等。<br>主要功能：</p>
-<ul>
-<li>灵活的报警管理和路由规则</li>
-<li>报警抑制与分组</li>
-<li>支持多种通知方式</li>
-</ul>
-<p>这些组件结合在一起，形成一个强大的监控系统，Prometheus 负责收集和存储数据，Pushgateway 用于处理无法直接拉取的任务，Node Exporter 提供系统层面的指标，Grafana 实现数据的可视化，Alertmanager 管理报警。</p>
-<h2 id="实例环境与下载"><a href="#实例环境与下载" class="headerlink" title="实例环境与下载"></a>实例环境与下载</h2><h3 id="实例环境"><a href="#实例环境" class="headerlink" title="实例环境"></a>实例环境</h3><p>本文搭建的环境软件组成版本及说明如下：</p>
-<ul>
-<li><p>Linux：Linux 操作系统，本文以 debian 12.6 为例。</p>
-</li>
-<li><p>prometheus：本文以  prometheus 3.4.0 为例。</p>
-</li>
-<li><p>pushgateway：本文以 pushgateway 1.11.1 为例。</p>
-</li>
-<li><p>node-exporter：本文以 node-exporter 1.9.1 为例。</p>
-</li>
-<li><p>Grafana：本文以 Grafana 12.0.0 为例。</p>
-</li>
-<li><p>Alertmanager：本文以 Alertmanager 0.28.1 为例。</p>
-</li>
-</ul>
-<h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p>部分软件有国内加速下载请根据需求选择下载方式，下载地址如下：</p>
-<blockquote>
-<p>prometheus以及相关套件可见官网：<a href="https://prometheus.io/download/">https://prometheus.io/download/</a></p>
-<p>下载地址：</p>
-<p>prometheus：<a href="https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz">https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</a></p>
-<p>Alertmanager：<a href="https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz">https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</a></p>
-<p>node-exporter：<a href="https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz">https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</a></p>
-<p>pushgateway：<a href="https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz">https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</a></p>
-<p>Grafana：</p>
-<p>​	华为源：<a href="https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb">https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</a></p>
-</blockquote>
-<blockquote>
-<p>注意：由于各软件会升级迭代，请根据实际情况调整下载地址</p>
-</blockquote>
-<p>进入服务器，执行如下命令下载并解压：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt</span><br><span class="line">mkdir prometheus_env</span><br><span class="line">cd prometheus_env</span><br><span class="line">wget https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line">wget https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line">tar -zxvf prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y adduser libfontconfig1 musl</span><br><span class="line">sudo dpkg -i grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//修改文件名去掉版本号</span><br><span class="line">cd /opt/prometheus_env</span><br><span class="line">for i in `ls -l|awk &#x27;&#123;print $9&#125;&#x27;`;do new_name=$(echo &quot;$i&quot; | awk -F &#x27;-&#x27; &#x27;&#123;print $1&#125;&#x27;);mv &quot;$i&quot; &quot;$new_name&quot;;done</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="服务配置"><a href="#服务配置" class="headerlink" title="服务配置"></a>服务配置</h2><h3 id="修改prometheus-yml-配置文件"><a href="#修改prometheus-yml-配置文件" class="headerlink" title="修改prometheus.yml 配置文件"></a>修改prometheus.yml 配置文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/prometheus</span><br><span class="line">vi prometheus.yml</span><br></pre></td></tr></table></figure>
-
-<p>内容如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># my global config</span><br><span class="line">global:</span><br><span class="line">  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.</span><br><span class="line">  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.</span><br><span class="line">  # scrape_timeout is set to the global default (10s).</span><br><span class="line"></span><br><span class="line"># Alertmanager configuration</span><br><span class="line">alerting:</span><br><span class="line">  alertmanagers:</span><br><span class="line">    - static_configs:</span><br><span class="line">        - targets:</span><br><span class="line">           - 127.0.0.1:9093</span><br><span class="line"></span><br><span class="line"># Load rules once and periodically evaluate them according to the global &#x27;evaluation_interval&#x27;.</span><br><span class="line">rule_files:</span><br><span class="line">   - &quot;alarm_rules.yml&quot;</span><br><span class="line"></span><br><span class="line"># A scrape configuration containing exactly one endpoint to scrape:</span><br><span class="line"># Here it&#x27;s Prometheus itself.</span><br><span class="line">scrape_configs:</span><br><span class="line">  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br><span class="line">  - job_name: &quot;prometheus&quot;</span><br><span class="line"></span><br><span class="line">    # metrics_path defaults to &#x27;/metrics&#x27;</span><br><span class="line">    # scheme defaults to &#x27;http&#x27;.</span><br><span class="line"></span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&quot;localhost:9090&quot;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;prometheus&#x27;</span><br><span class="line">  - job_name: &#x27;linux&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9100&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;localhost&#x27;</span><br><span class="line">  - job_name: &#x27;pushgateway&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9091&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;pushgateway&#x27;</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="配置解析："><a href="#配置解析：" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="全局配置（global）："><a href="#全局配置（global）：" class="headerlink" title="全局配置（global）："></a><strong>全局配置（global）</strong>：</h5><ul>
-<li><code>scrape_interval</code> 和 <code>evaluation_interval</code> 设置为 15 秒，意味着每 15 秒抓取一次指标数据并评估报警规则。</li>
-</ul>
-<h5 id="报警管理（alerting）："><a href="#报警管理（alerting）：" class="headerlink" title="报警管理（alerting）："></a><strong>报警管理（alerting）</strong>：</h5><ul>
-<li>配置 Alertmanager 的地址（<code>127.0.0.1:9093</code>），确保 Alertmanager 正在该地址上运行。</li>
-</ul>
-<h5 id="规则文件（rule-files）："><a href="#规则文件（rule-files）：" class="headerlink" title="规则文件（rule_files）："></a><strong>规则文件（rule_files）</strong>：</h5><ul>
-<li>指向 alarm_rules.yml，请确保该文件存在且格式正确。</li>
-</ul>
-<h5 id="抓取配置（scrape-configs）："><a href="#抓取配置（scrape-configs）：" class="headerlink" title="抓取配置（scrape_configs）："></a><strong>抓取配置（scrape_configs）</strong>：</h5><ul>
-<li><strong>Prometheus 本身</strong>：抓取自身的指标，目标为 <code>127.0.0.1:9090</code>。</li>
-<li><strong>Linux 监控</strong>：通过 Node Exporter 抓取本地系统指标，目标为 <code>127.0.0.1:9100</code>。</li>
-<li><strong>Pushgateway</strong>：监控 Pushgateway 的指标，目标为 <code>127.0.0.1:9091</code>。</li>
-</ul>
-<p>根据需要调整 <code>scrape_interval</code> 和 <code>evaluation_interval</code>，如果你希望更频繁地抓取数据，可以将其缩短。如果有多个实例，可以考虑使用服务发现机制。</p>
-<h3 id="新增alarm-rules-yml-文件"><a href="#新增alarm-rules-yml-文件" class="headerlink" title="新增alarm_rules.yml 文件"></a>新增alarm_rules.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim alarm_rules.yml</span><br><span class="line"></span><br><span class="line">groups:</span><br><span class="line">- name: node</span><br><span class="line">  rules:</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: up&#123;&#125; == 0 </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 挂了&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: 100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes) &gt; 40     </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 内存大于50%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: (1 - avg(rate(node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;[2m])) by (instance)) * 100 &gt; 70  </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; CPU使用率大于70%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;        </span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: max((node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;) *100/(node_filesystem_avail_bytes &#123;fstype=~&quot;ext.?|xfs&quot;&#125;+(node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;)))by(instance) &gt; 80  </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 分区使用率大于80%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="修改alertmanager-yml-文件"><a href="#修改alertmanager-yml-文件" class="headerlink" title="修改alertmanager.yml 文件"></a>修改alertmanager.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/alertmanager</span><br><span class="line">vim alertmanager.yml </span><br></pre></td></tr></table></figure>
-
-<p>内容如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">global:</span><br><span class="line">  resolve_timeout: 5m</span><br><span class="line">  smtp_smarthost: &#x27;smtp.163.com:25&#x27; # 定义163邮箱服务器端</span><br><span class="line">  smtp_from: &#x27;yourmail@163.com&#x27;  #来自哪个邮箱发的</span><br><span class="line">  smtp_auth_username: &#x27;yourmail@163.com&#x27; #邮箱验证</span><br><span class="line">  smtp_auth_password: &#x27;1111aaaa&#x27;   # 邮箱授权码，不是登录密码</span><br><span class="line">  smtp_require_tls: true   # 是否启用tls</span><br><span class="line">route:</span><br><span class="line">  group_by: [&#x27;alertname&#x27;]</span><br><span class="line">  group_wait: 10s</span><br><span class="line">  group_interval: 10s</span><br><span class="line">  repeat_interval: 3m</span><br><span class="line">  receiver: &#x27;email&#x27;</span><br><span class="line">receivers:</span><br><span class="line">  - name: &#x27;email&#x27;</span><br><span class="line">    email_configs:</span><br><span class="line">      - to: &#x27;yourmail@qq.com&#x27;</span><br><span class="line">#inhibit_rules:</span><br><span class="line">#  - source_match:</span><br><span class="line">#      severity: &#x27;critical&#x27;</span><br><span class="line">#    target_match:</span><br><span class="line">#      severity: &#x27;warning&#x27;</span><br><span class="line">#    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]</span><br></pre></td></tr></table></figure>
-
-<h4 id="配置解析：-1"><a href="#配置解析：-1" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="global"><a href="#global" class="headerlink" title="global"></a>global</h5><ul>
-<li><strong>resolve_timeout</strong>: 设置告警的解决时间，5分钟内未解决则会被视为已解决。</li>
-<li><strong>smtp_smarthost</strong>: 定义 SMTP 服务器的地址和端口。</li>
-<li><strong>smtp_from</strong>: 指定发送邮件时显示的发件人邮箱地址。</li>
-<li><strong>smtp_auth_username</strong>: SMTP 认证的用户名，一般是完整的邮箱地址。</li>
-<li><strong>smtp_auth_password</strong>: 邮箱的授权码，而不是登录密码，需要在邮箱设置中生成。</li>
-<li><strong>smtp_require_tls</strong>: 是否要求使用 TLS 进行加密传输。</li>
-</ul>
-<h5 id="route"><a href="#route" class="headerlink" title="route"></a>route</h5><ul>
-<li><strong>group_by</strong>: 定义在同一组内如何聚合告警，这里按 <code>alertname</code> 聚合。</li>
-<li><strong>group_wait</strong>: 在发送组告警前的等待时间，10秒。</li>
-<li><strong>group_interval</strong>: 组内告警发送的最小间隔，10秒。</li>
-<li><strong>repeat_interval</strong>: 如果告警没有解决，重复发送告警的最小时间间隔，这里设置为 3 分钟。</li>
-<li><strong>receiver</strong>: 指定告警的接收者，这里是 <code>mail</code>。</li>
-</ul>
-<h5 id="receivers"><a href="#receivers" class="headerlink" title="receivers"></a>receivers</h5><ul>
-<li><strong>name</strong>: 定义接收者的名称，这里为 <code>mail</code>，与 <code>route</code> 中的接收者一致。</li>
-<li>email_configs:邮件发送的配置。<ul>
-<li><strong>to</strong>: 接收邮件的地址，可以列出多个邮箱地址，使用换行分隔。</li>
-</ul>
-</li>
-</ul>
-<h3 id="修改defaults-ini文件"><a href="#修改defaults-ini文件" class="headerlink" title="修改defaults.ini文件"></a>修改defaults.ini文件</h3><p>修改grafana的defaults.ini文件将界面可以匿名访问</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/grafana/grafana.ini</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">################################### Anonymous Auth ######################</span></span></span><br><span class="line">[auth.anonymous]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="built_in">enable</span> anonymous access</span></span><br><span class="line">enabled = true</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="新增systemd的service"><a href="#新增systemd的service" class="headerlink" title="新增systemd的service"></a>新增systemd的service</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
-
-<h4 id="pushgateway-service文件"><a href="#pushgateway-service文件" class="headerlink" title="pushgateway.service文件"></a>pushgateway.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Push Gateway</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/pushgateway/pushgateway</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="node-exporter-service文件"><a href="#node-exporter-service文件" class="headerlink" title="node_exporter.service文件"></a>node_exporter.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Node Exporter</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/node_exporter/node_exporter</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="prometheus-service文件"><a href="#prometheus-service文件" class="headerlink" title="prometheus.service文件"></a>prometheus.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus</span><br><span class="line">Documentation=https://prometheus.io/</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Type设置为notify时，服务会不断重启</span></span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/home/ops/prometheus/prometheus \</span><br><span class="line">--config.file=/home/ops/prometheus/prometheus.yml \</span><br><span class="line">--web.read-timeout=5m  \</span><br><span class="line">--web.max-connections=10 \</span><br><span class="line">--query.max-concurrency=20 \</span><br><span class="line">--storage.tsdb.path=/home/ops/prometheus/data \</span><br><span class="line">--storage.tsdb.retention.time=30d \</span><br><span class="line">--query.timeout=2m</span><br><span class="line">Restart=on-failure</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-<h4 id="alertmanager-service文件"><a href="#alertmanager-service文件" class="headerlink" title="alertmanager.service文件"></a>alertmanager.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus alertmanager</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/alertmanager/alertmanager \</span><br><span class="line">--storage.path=/opt/prometheus_env/alertmanager/data \</span><br><span class="line">--config.file=/opt/prometheus_env/alertmanager/alertmanager.yml</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">重载配置：</span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">开启服务：</span><br><span class="line">systemctl start pushgateway</span><br><span class="line">systemctl start node_exporter</span><br><span class="line">systemctl start prometheus</span><br><span class="line">systemctl start grafana</span><br><span class="line">systemctl start alertmanager</span><br><span class="line"></span><br><span class="line">设置开机启动：</span><br><span class="line">systemctl enable pushgateway</span><br><span class="line">systemctl enable node_exporter</span><br><span class="line">systemctl enable prometheus</span><br><span class="line">systemctl enable grafana</span><br><span class="line">systemctl enable alertmanager</span><br><span class="line"></span><br><span class="line">查看服务状态:</span><br><span class="line">systemctl status pushgateway</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Prometheus</tag>
-        <tag>Grafana</tag>
-        <tag>Alertmanager</tag>
-        <tag>监控部署</tag>
-        <tag>Prometheus部署</tag>
       </tags>
   </entry>
 </search>
