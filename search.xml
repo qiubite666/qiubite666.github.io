@@ -413,111 +413,131 @@
       </tags>
   </entry>
   <entry>
-    <title>手动搭建LNMP环境</title>
-    <url>/posts/9d5ca845.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
+    <title>手动搭建 WordPress 个人站点(Linux)</title>
+    <url>/posts/c171e9f0.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 WordPress 个人站点组成版本及说明如下：</p>
 <ul>
 <li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
 <li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
 <li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
 <li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+<li>WordPress：博客平台，本文以 WordPress 6.6.1 为例。</li>
 </ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
-<li>确认源文件正常，执行以下命令。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令，安装 nginx。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
-
-<ol start="8">
-<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
-
-<p>显示如下，则说明 Nginx 安装配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
-<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
-<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux-实例"><a href="#步骤1：登录-Linux-实例" class="headerlink" title="步骤1：登录 Linux 实例"></a>步骤1：登录 Linux 实例</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="https://www.qiubite.fun/posts/9d5ca845.html">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
+<h3 id="步骤3：配置数据库"><a href="#步骤3：配置数据库" class="headerlink" title="步骤3：配置数据库"></a>步骤3：配置数据库</h3><ol>
+<li>执行以下命令，进入 MariaDB。</li>
 </ol>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
 
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
+<ol start="2">
+<li>执行以下命令，创建 MariaDB 数据库。例如 “wordpress”。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE wordpress;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，创建一个新用户。例如 “user”，登录密码为 <code>123456</code>。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">create user &#x27;user&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
+
 <ol start="4">
+<li>执行以下命令，赋予用户对 “wordpress” 数据库的全部权限。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON wordpress.* TO &#x27;user&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，设置 root 账户密码。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD(&#x27;输入您的密码&#x27;);</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>执行以下命令，使所有配置生效。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<ol start="7">
 <li>执行以下命令，退出 MariaDB。</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure>
 
-<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
-<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
+<h3 id="步骤4：安装和配置-WordPress"><a href="#步骤4：安装和配置-WordPress" class="headerlink" title="步骤4：安装和配置 WordPress"></a>步骤4：安装和配置 WordPress</h3><h4 id="下载-WordPress"><a href="#下载-WordPress" class="headerlink" title="下载 WordPress"></a>下载 WordPress</h4><ol>
+<li>执行以下命令，删除网站根目录下用于测试 PHP-Nginx 配置的<code>index.php</code>文件。</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
 
 <ol start="2">
-<li>执行以下命令，验证 PHP 是否安装成功。</li>
+<li>依次执行以下命令，进入<code>/usr/share/nginx/html/</code>目录，并下载与解压 WordPress。</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html</span><br><span class="line"></span><br><span class="line">wget https://cn.wordpress.org/wordpress-6.6.1-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line">tar zxvf wordpress-6.6.1-zh_CN.tar.gz</span><br></pre></td></tr></table></figure>
 
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
-<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
-<ol>
-<li>执行以下命令，创建测试文件。</li>
+
+
+<p>WordPress可以放到自定义的目录，修改时需要同步修改nginx配置文件中root 描述的目录。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fr07r-1.png" alt="image-20240907200548425"></p>
+<h4 id="修改-WordPress-配置文件"><a href="#修改-WordPress-配置文件" class="headerlink" title="修改 WordPress 配置文件"></a>修改 WordPress 配置文件</h4><ol>
+<li>依次执行以下命令，进入 WordPress 安装目录，将<code>wp-config-sample.php</code>文件复制到<code>wp-config.php</code>文件中，并将原先的示例配置文件保留作为备份。</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
-
-
+<figure class="highlight shellsession"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html/wordpress</span><br><span class="line">cp wp-config-sample.php wp-config.php</span><br></pre></td></tr></table></figure>
 
 <ol start="2">
-<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
+<li>执行以下命令，打开并编辑新创建的配置文件。</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
 
-<p>显示结果如下，则说明环境配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
+<ol start="3">
+<li>按 <strong>i</strong> 切换至编辑模式，找到文件中 MySQL 的部分，并将相关配置信息修改为配置 WordPress 数据库 中的内容。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> // ** Database settings - You can get this info from your web host ** //</span><br><span class="line">/** The name of the database for WordPress */</span><br><span class="line">define( &#x27;DB_NAME&#x27;, &#x27;wordpress&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database username */</span><br><span class="line">define( &#x27;DB_USER&#x27;, &#x27;user&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database password */</span><br><span class="line">define( &#x27;DB_PASSWORD&#x27;, &#x27;123456&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database hostname */</span><br><span class="line">define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>修改完成后，按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件返回。</li>
+</ol>
+<h3 id="步骤5：验证-WordPress-安装"><a href="#步骤5：验证-WordPress-安装" class="headerlink" title="步骤5：验证 WordPress 安装"></a>步骤5：验证 WordPress 安装</h3><ol>
+<li>在浏览器地址栏输入<code>http://域名或公网 IP/wordpress 文件夹</code>，例如：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://192.xxx.xxx.xx/wordpress  </span><br><span class="line">或</span><br><span class="line">http://xxx.com/wordpress</span><br></pre></td></tr></table></figure>
+
+<p>转至 WordPress 安装页，开始配置 WordPress。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fqy0a-1.png" alt="配置WP1"></p>
+<ol start="2">
+<li>根据 WordPress 安装向导提示输入以下安装信息，单击<strong>安装 WordPress</strong>，完成安装。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>所需信息</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>站点标题</td>
+<td>WordPress 网站名称。</td>
+</tr>
+<tr>
+<td>用户名</td>
+<td>WordPress 管理员名称。出于安全考虑，建议设置一个不同于 admin 的名称。因为与默认用户名称 admin 相比，该名称更难破解。</td>
+</tr>
+<tr>
+<td>密码</td>
+<td>可以使用默认的密码或者自定义密码。请勿重复使用现有密码，并确保将密码保存在安全的位置。</td>
+</tr>
+<tr>
+<td>您的电子邮件</td>
+<td>用于接收通知的电子邮件地址。</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li>输入在安装WordPress时设置的<strong>用户名</strong>和<strong>密码</strong>，然后单击<strong>登录</strong></li>
+</ol>
+<p>成功进入您个人的WordPress网站。</p>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
         <tag>Linux</tag>
-        <tag>LNMP环境</tag>
+        <tag>手动搭建 WordPress</tag>
         <tag>Nginx</tag>
         <tag>MySQL</tag>
         <tag>PHP</tag>
@@ -761,124 +781,104 @@
       </tags>
   </entry>
   <entry>
-    <title>手动搭建 WordPress 个人站点(Linux)</title>
-    <url>/posts/c171e9f0.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 WordPress 个人站点组成版本及说明如下：</p>
+    <title>手动搭建LNMP环境</title>
+    <url>/posts/9d5ca845.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
 <ul>
 <li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
 <li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
 <li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
 <li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
-<li>WordPress：博客平台，本文以 WordPress 6.6.1 为例。</li>
 </ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux-实例"><a href="#步骤1：登录-Linux-实例" class="headerlink" title="步骤1：登录 Linux 实例"></a>步骤1：登录 Linux 实例</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="https://www.qiubite.fun/posts/9d5ca845.html">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
-<h3 id="步骤3：配置数据库"><a href="#步骤3：配置数据库" class="headerlink" title="步骤3：配置数据库"></a>步骤3：配置数据库</h3><ol>
-<li>执行以下命令，进入 MariaDB。</li>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
+<li>确认源文件正常，执行以下命令。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令，安装 nginx。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
+
+<p>显示如下，则说明 Nginx 安装配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
+<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
+<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
 </ol>
 <figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
 
-<ol start="2">
-<li>执行以下命令，创建 MariaDB 数据库。例如 “wordpress”。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE wordpress;</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>执行以下命令，创建一个新用户。例如 “user”，登录密码为 <code>123456</code>。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">create user &#x27;user&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
-
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
 <ol start="4">
-<li>执行以下命令，赋予用户对 “wordpress” 数据库的全部权限。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON wordpress.* TO &#x27;user&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li>执行以下命令，设置 root 账户密码。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD(&#x27;输入您的密码&#x27;);</span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li>执行以下命令，使所有配置生效。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
-
-<ol start="7">
 <li>执行以下命令，退出 MariaDB。</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
 
-<h3 id="步骤4：安装和配置-WordPress"><a href="#步骤4：安装和配置-WordPress" class="headerlink" title="步骤4：安装和配置 WordPress"></a>步骤4：安装和配置 WordPress</h3><h4 id="下载-WordPress"><a href="#下载-WordPress" class="headerlink" title="下载 WordPress"></a>下载 WordPress</h4><ol>
-<li>执行以下命令，删除网站根目录下用于测试 PHP-Nginx 配置的<code>index.php</code>文件。</li>
+<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
+<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>依次执行以下命令，进入<code>/usr/share/nginx/html/</code>目录，并下载与解压 WordPress。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html</span><br><span class="line"></span><br><span class="line">wget https://cn.wordpress.org/wordpress-6.6.1-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line">tar zxvf wordpress-6.6.1-zh_CN.tar.gz</span><br></pre></td></tr></table></figure>
-
-
-
-<p>WordPress可以放到自定义的目录，修改时需要同步修改nginx配置文件中root 描述的目录。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fr07r-1.png" alt="image-20240907200548425"></p>
-<h4 id="修改-WordPress-配置文件"><a href="#修改-WordPress-配置文件" class="headerlink" title="修改 WordPress 配置文件"></a>修改 WordPress 配置文件</h4><ol>
-<li>依次执行以下命令，进入 WordPress 安装目录，将<code>wp-config-sample.php</code>文件复制到<code>wp-config.php</code>文件中，并将原先的示例配置文件保留作为备份。</li>
-</ol>
-<figure class="highlight shellsession"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html/wordpress</span><br><span class="line">cp wp-config-sample.php wp-config.php</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
 
 <ol start="2">
-<li>执行以下命令，打开并编辑新创建的配置文件。</li>
+<li>执行以下命令，验证 PHP 是否安装成功。</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
 
-<ol start="3">
-<li>按 <strong>i</strong> 切换至编辑模式，找到文件中 MySQL 的部分，并将相关配置信息修改为配置 WordPress 数据库 中的内容。</li>
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
+<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
+<ol>
+<li>执行以下命令，创建测试文件。</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> // ** Database settings - You can get this info from your web host ** //</span><br><span class="line">/** The name of the database for WordPress */</span><br><span class="line">define( &#x27;DB_NAME&#x27;, &#x27;wordpress&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database username */</span><br><span class="line">define( &#x27;DB_USER&#x27;, &#x27;user&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database password */</span><br><span class="line">define( &#x27;DB_PASSWORD&#x27;, &#x27;123456&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database hostname */</span><br><span class="line">define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
 
-<ol start="4">
-<li>修改完成后，按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件返回。</li>
-</ol>
-<h3 id="步骤5：验证-WordPress-安装"><a href="#步骤5：验证-WordPress-安装" class="headerlink" title="步骤5：验证 WordPress 安装"></a>步骤5：验证 WordPress 安装</h3><ol>
-<li>在浏览器地址栏输入<code>http://域名或公网 IP/wordpress 文件夹</code>，例如：</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://192.xxx.xxx.xx/wordpress  </span><br><span class="line">或</span><br><span class="line">http://xxx.com/wordpress</span><br></pre></td></tr></table></figure>
 
-<p>转至 WordPress 安装页，开始配置 WordPress。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fqy0a-1.png" alt="配置WP1"></p>
+
 <ol start="2">
-<li>根据 WordPress 安装向导提示输入以下安装信息，单击<strong>安装 WordPress</strong>，完成安装。</li>
+<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
 </ol>
-<table>
-<thead>
-<tr>
-<th>所需信息</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>站点标题</td>
-<td>WordPress 网站名称。</td>
-</tr>
-<tr>
-<td>用户名</td>
-<td>WordPress 管理员名称。出于安全考虑，建议设置一个不同于 admin 的名称。因为与默认用户名称 admin 相比，该名称更难破解。</td>
-</tr>
-<tr>
-<td>密码</td>
-<td>可以使用默认的密码或者自定义密码。请勿重复使用现有密码，并确保将密码保存在安全的位置。</td>
-</tr>
-<tr>
-<td>您的电子邮件</td>
-<td>用于接收通知的电子邮件地址。</td>
-</tr>
-</tbody></table>
-<ol start="3">
-<li>输入在安装WordPress时设置的<strong>用户名</strong>和<strong>密码</strong>，然后单击<strong>登录</strong></li>
-</ol>
-<p>成功进入您个人的WordPress网站。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则说明环境配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
 ]]></content>
       <categories>
         <category>运维</category>
@@ -889,7 +889,7 @@
         <tag>MySQL</tag>
         <tag>PHP</tag>
         <tag>wordpress</tag>
-        <tag>手动搭建 WordPress</tag>
+        <tag>LNMP环境</tag>
       </tags>
   </entry>
   <entry>
@@ -1095,6 +1095,107 @@
       </tags>
   </entry>
   <entry>
+    <title>windows 11 安装教程</title>
+    <url>/posts/50cbde44.html</url>
+    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
+<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
+<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
+<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
+</ol>
+<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
+<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
+<ol start="2">
+<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
+<ol start="3">
+<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
+<ol start="4">
+<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
+<ol start="5">
+<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
+<ol start="6">
+<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
+<ol start="7">
+<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
+<ol start="8">
+<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
+<ol start="9">
+<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
+<ol start="10">
+<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
+<ol start="10">
+<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
+</ol>
+<p>将U盘中的Win11激活器复制到桌面并解压</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
+<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>windows</tag>
+        <tag>系统安装</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Prometheus+Grafana+Alertmanager部署</title>
     <url>/posts/c03992dd.html</url>
     <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
@@ -1247,107 +1348,6 @@
         <tag>Alertmanager</tag>
         <tag>监控部署</tag>
         <tag>Prometheus部署</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>windows 11 安装教程</title>
-    <url>/posts/50cbde44.html</url>
-    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
-<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
-<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
-<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
-</ol>
-<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
-<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
-<ol start="2">
-<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
-<ol start="3">
-<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
-<ol start="4">
-<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
-<ol start="5">
-<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
-<ol start="6">
-<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
-<ol start="7">
-<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
-<ol start="8">
-<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
-<ol start="9">
-<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
-<ol start="10">
-<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
-<ol start="10">
-<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
-</ol>
-<p>将U盘中的Win11激活器复制到桌面并解压</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
-<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>windows</tag>
-        <tag>系统安装</tag>
       </tags>
   </entry>
   <entry>
