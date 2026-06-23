@@ -1,293 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Windows 11 重装遇到离谱问题分析排查</title>
-    <url>/posts/ebc9b05d.html</url>
-    <content><![CDATA[<h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><ol>
-<li><p><strong>重装原因</strong>：原有 Windows11系统经常蓝屏，并且也想清理下C盘。</p>
-</li>
-<li><p><strong>环境信息</strong>：华硕TUF Z370+I7 8086K+RTX 3080TI</p>
-</li>
-</ol>
-<h2 id="二、工具"><a href="#二、工具" class="headerlink" title="二、工具"></a>二、工具</h2><ul>
-<li><a href="https://next.itellyou.cn/"><strong>MSDN</strong></a> 下载的 Windows 11 ISO 镜像</li>
-<li><strong><a href="https://rufus.ie/zh/">Rufus 4.14</a></strong> 制作 USB 启动盘</li>
-<li>**<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Media Creation Tool (MCT) for Windows 11</a>**微软官方制作启动盘工具</li>
-<li>第三方PE经典老毛桃（刚发现已经被火绒认为是流氓软件）</li>
-</ul>
-<h2 id="三、安装过程"><a href="#三、安装过程" class="headerlink" title="三、安装过程"></a>三、安装过程</h2><ol>
-<li><h3 id="ISO-本地安装"><a href="#ISO-本地安装" class="headerlink" title="ISO 本地安装"></a><strong>ISO 本地安装</strong></h3></li>
-</ol>
+    <title>Linux初始化以及系统性能调优</title>
+    <url>/posts/b4a62efd.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
+<p>本文主要以debian为例针对CPU、硬盘、内核等操作系统参数进行优化。</p>
+<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><h3 id="关闭cpu节能"><a href="#关闭cpu节能" class="headerlink" title="关闭cpu节能"></a>关闭cpu节能</h3><p>随着CPU的发展，Intel出现了EIST技术，它可以动态的调整CPU的频率。当CPU使用率地下或者接近0时候,能降低CPU频率并且降压，从而降低功耗和发热。当检测到CPU使用率增高，它会马上回到原始工作频率，但是你必须考虑CPU被唤醒的时间，并且确保它会再次100％运行。这一系列的过程通常被称为“C-states”或“C-modes”,它是从C0开始的。</p>
+<p>关闭CPU节能方式如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;intel_idle.max_cstate=0 intel_pstate=disable processor.max_cstate=1&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出，更新grub</span></span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+
 <ul>
-<li><p>在现有 Windows 系统中挂载 ISO，运行 <code>setup.exe</code>，选择“不保留任何内容”进行纯净安装。</p>
-</li>
-<li><p>文件复制完成，系统重启。</p>
-</li>
-<li><p>重启后显示 Windows 徽标，下方转圈动画10秒后画面消失，显示器黑屏（有背光）。</p>
-</li>
+<li>intel_idle.max_cstate&#x3D;0</li>
 </ul>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+<p>这个参数用于 Intel 平台，指定禁用 intel_idle 驱动，让系统退回使用通用的 acpi_idle 驱动。这样 acpi_idle 驱动会遵循 processor.max_cstate 参数的设置，从而限制 CPU 只能使用浅层 C-state（C1）。</p>
 <ul>
-<li>等待 30 分钟无任何响应重启还是开在这里，换U盘重装。</li>
+<li>intel_pstate&#x3D;disable</li>
 </ul>
-<ol start="2">
-<li><h3 id="Rufus-刻录-U-盘安装"><a href="#Rufus-刻录-U-盘安装" class="headerlink" title="Rufus 刻录 U 盘安装"></a><strong>Rufus 刻录 U 盘安装</strong></h3></li>
-</ol>
-<p>设置如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbxjh4.webp" alt="Rufus1"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbz7ji.webp" alt="Rufus2"></p>
-<hr>
+<p>禁用Intel处理器的动态频率调节驱动（P-state），改用传统ACPI <code>cpufreq</code>驱动管理CPU频率‌。</p>
 <ul>
-<li><p>使用 Rufus 4.14，分区类型 GPT，目标系统 UEFI，写入 ISO</p>
-</li>
-<li><p>BIOS 选择 UEFI USB 启动</p>
-</li>
-<li><p>同样出现徽标转圈 → 黑屏无响应，无法进入安装界面</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
-</li>
+<li>processor.max_cstate&#x3D;1</li>
 </ul>
-<p>怀疑是不是镜像或者刻录工具的问题，换个工具和镜像再试试。</p>
-<ol start="3">
-<li><h3 id="Media-Creation-Tool-制作-U-盘安装"><a href="#Media-Creation-Tool-制作-U-盘安装" class="headerlink" title="Media Creation Tool 制作 U 盘安装"></a><strong>Media Creation Tool 制作 U 盘安装</strong></h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmplno.webp" alt="安装1"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmqsoe.webp" alt="安装2"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmre0h.webp" alt="安装3"></p>
+<p>限制Intel处理器的空闲状态最大为C1，禁止进入更深层节能状态（如C2&#x2F;C3），减少唤醒延迟‌。与设置为processor.max_cstate&#x3D;0等效</p>
+<h2 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h2><h3 id="网络接口命名规则"><a href="#网络接口命名规则" class="headerlink" title="网络接口命名规则"></a>网络接口命名规则</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;net.ifnames=0 biosdevname=0&quot;</span><br></pre></td></tr></table></figure>
+
 <ul>
-<li>Media Creation Tool会自动下载Windows镜像，并且自动刻录。</li>
-<li>将制作好的U盘插入BIOS 选择 UEFI USB 启动。</li>
-<li>启动后现象与 Rufus 完全相同：转圈后黑屏。</li>
+<li>net.ifnames&#x3D;0</li>
 </ul>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
-<hr>
-<ol start="4">
-<li><h3 id="BIOS-启动项与模式调整"><a href="#BIOS-启动项与模式调整" class="headerlink" title="BIOS 启动项与模式调整"></a><strong>BIOS 启动项与模式调整</strong></h3></li>
-</ol>
+<p>禁用可预测的网络接口命名（如<code>ens33</code>），恢复传统命名方式（如<code>eth0</code>）‌。</p>
 <ul>
-<li><p>逐一尝试不同启动项（UEFI USB、不带 UEFI 标识的 USB、硬盘 Windows Boot Manager）→ 均失败。</p>
-</li>
-<li><p>CSM 中Boot Devices Control 改为仅 UEFI → 无效。</p>
-</li>
+<li>biosdevname&#x3D;0</li>
 </ul>
-<ol start="5">
-<li><h3 id="尝试使用经典工具老毛桃PE"><a href="#尝试使用经典工具老毛桃PE" class="headerlink" title="尝试使用经典工具老毛桃PE"></a><strong>尝试使用经典工具老毛桃PE</strong></h3></li>
-</ol>
+<p>关闭基于BIOS设备名的网络接口命名规则（如<code>em1</code>），需与<code>net.ifnames=0</code>配合生效‌。</p>
+<h3 id="网络优化配置"><a href="#网络优化配置" class="headerlink" title="网络优化配置"></a>网络优化配置</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看当前队列</span></span><br><span class="line">ethtool -l eth0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置队列数量</span></span><br><span class="line">sudo ethtool -L eth0 combined 8</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="硬盘"><a href="#硬盘" class="headerlink" title="硬盘"></a>硬盘</h2><h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">NVME设置调度策略为none</span></span><br><span class="line">echo none | sudo tee /sys/block/nvme0n1/queue/scheduler</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">机械硬盘设置调度策略为deadline</span></span><br><span class="line">echo deadline | sudo tee /sys/block/sda/queue/scheduler</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
 <ul>
-<li>U盘刻录老毛桃PE→ 黑屏依旧。</li>
+<li>mq-deadline</li>
 </ul>
-<ol start="6">
-<li><h3 id="问题排查"><a href="#问题排查" class="headerlink" title="问题排查"></a><strong>问题排查</strong></h3></li>
-</ol>
-<p>google后在Reddit 发现一个现象很像的案例 <a href="https://www.reddit.com/r/pchelp/comments/16qw1zl/black_screen_on_my_new_build_while_installing/?show=original">Black Screen on my New Build while installing Windows 11</a>大致描述是与显示输出设备有关，根据社区的建议做了几个尝试如下：</p>
+<p><code>mq-deadline</code> 调度程序将排队的 I&#x2F;O 请求分为读取或写入批处理，然后调度它们以增加逻辑块寻址 (LBA) 顺序执行。默认情况下，读取批处理的优先级高于写入批处理，因为应用程序更有可能阻止读 I&#x2F;O 操作。在 <code>mq-deadline</code> 批处理后，它会检查写操作在处理器时间耗尽的时间，并根据情况调度下一个读取或写入批处理。</p>
+<p>这个调度程序适用于大多数用例，特别是那些写入操作是异步的。</p>
 <ul>
-<li>DisplayPort 拔插+换接口 → 还是黑屏且直接变成无背光无信号</li>
-<li>更换HDMI线材→ 还是黑屏故障相同</li>
-<li>将 HDMI 从独立显卡拔下，接到主板核显接口 → 依然黑屏</li>
+<li>none</li>
 </ul>
-<p>试着这几种方法都没能解决问题，梳理了一下后面的测试方案：</p>
+<p>所有进程的io请求都进入<a href="https://so.csdn.net/so/search?q=FIFO&spm=1001.2101.3001.7020">FIFO</a>队列，完全按照队列的顺序进行io的读取，适合于ssd，因为io请求饥饿以及每次请求都需要寻道，ssd不存在传统hdd的寻道时间。</p>
+<h3 id="文件系统优化"><a href="#文件系统优化" class="headerlink" title="文件系统优化"></a>文件系统优化</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/fstab 添加挂载参数</span></span><br><span class="line">noatime,nodiratime</span><br></pre></td></tr></table></figure>
+
 <ul>
-<li><strong>显卡隔离</strong>‌：移除独立显卡，将显示输出切换至主板板载显示接口（HDMI），以排除独显故障或驱动引入的异常。</li>
-<li><strong>内存最小化测试</strong>：仅保留单条内存模组进行开机验证，必要时更换插槽交叉测试，以判断是否存在内存兼容性或硬件损坏</li>
-<li>**主板初始化恢复：**通过清除 CMOS 或恢复 BIOS 默认设置的方式，将主板恢复至出厂默认状态，排除配置问题。</li>
+<li>noatime: 不更新文件的最后访问时间，减少磁盘 I&#x2F;O。</li>
+<li>nodiratime: 不更新目录的访问时间，进一步减少磁盘 I&#x2F;O。</li>
 </ul>
-<ol start="7">
-<li><h3 id="BIOS-重置"><a href="#BIOS-重置" class="headerlink" title="BIOS 重置"></a><strong>BIOS 重置</strong></h3></li>
-</ol>
-<ul>
-<li><p>将BIOS恢复出厂设置</p>
-</li>
-<li><p>使用 Rufus U 盘重新启动安装</p>
-</li>
-</ul>
-<p>故障解决，成功进入 Windows 安装界面，安装完成后可以正常开机。</p>
-<hr>
-<h2 id="四、推测根因"><a href="#四、推测根因" class="headerlink" title="四、推测根因"></a>四、推测根因</h2><p>UEFI&#x2F;CSM&#x2F;显卡 GOP（UEFI 显示初始化）阶段的兼容性问题</p>
-<ol>
-<li><h3 id="现象指向"><a href="#现象指向" class="headerlink" title="现象指向"></a><strong>现象指向</strong></h3></li>
-</ol>
-<p>所有安装方式失败都有一个共同点</p>
-<p>Windows Logo 出现 → 转圈 → 黑屏（显示器仍有背光或短暂无信号）</p>
-<ol start="2">
-<li><h3 id="根因分析"><a href="#根因分析" class="headerlink" title="根因分析"></a>根因分析</h3></li>
-</ol>
-<p>UEFI启动流程可以分为以下7各阶段：</p>
-<p>SEC（安全验证）-&gt;PEI（EFI前期初始化）-&gt;DXE（驱动执行环境）-&gt;BDS（启动设备选择）-&gt;TSL（操作系统加载前期）-&gt;RT（系统系统运行阶段）-&gt;AL（系统灾难恢复期或关机）</p>
-<p>各阶段表现对照分析：</p>
-<table>
-<thead>
-<tr>
-<th>阶段</th>
-<th>状态</th>
-<th>是否正常</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>SEC</td>
-<td>CPU微码加载、缓存初始化、检查平台安全状态</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>PEI</td>
-<td>初始化CPU、芯片组和内存（RAM）</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>DXE</td>
-<td>枚举并加载绝大多数硬件驱动，包括 PCIe总线驱动 和 显卡的UEFI GOP驱动。此时固件绘制出BIOS设置界面</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>BDS</td>
-<td>根据启动顺序加载指定的EFI应用程序（即 <code>bootmgfw.efi</code>，Windows引导管理器）</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>TSL</td>
-<td><strong>操作系统加载器（Windows Boot Manager）运行</strong>。它加载内核、HAL和初始驱动，然后<strong>调用 <code>ExitBootServices()</code> 结束固件对硬件的控制权</strong>，将控制权交给操作系统内核。</td>
-<td>⚠️ 发生故障</td>
-</tr>
-<tr>
-<td>RT</td>
-<td>操作系统完全接管硬件，驱动正常运行，用户进入桌面或安装界面。</td>
-<td>未进入</td>
-</tr>
-<tr>
-<td>AL</td>
-<td>系统遇到致命错误重启或执行关机命令</td>
-<td>无关</td>
-</tr>
-</tbody></table>
-<p><strong>故障发生点</strong>：Windows徽标出现（由Bootloader借助UEFI GOP绘制），转圈动画结束后，固件控制权刚移交给内核，<strong>内核试图加载其内置的显示驱动（Basic Display Driver）并初始化图形界面</strong>，但此时显卡未能成功响应内核的Mode-Set（模式设置）请求，导致信号中断黑屏。</p>
-<ol start="3">
-<li><h3 id="为什么是TSL-阶段出现问题"><a href="#为什么是TSL-阶段出现问题" class="headerlink" title="为什么是TSL 阶段出现问题"></a>为什么是TSL 阶段出现问题</h3></li>
-</ol>
-<p><strong>“徽标转圈”是TSL阶段的前半段</strong>：Windows的“转圈”动画，本质上是 <code>bootmgfw.efi</code> 在 <strong>UEFI 启动服务（Boot Services）</strong> 环境下，通过调用DXE阶段安装的 <strong>GOP（图形输出协议）</strong> 来绘制的。这说明固件级的显示通道是通畅的。</p>
-<p><strong>“转圈后黑屏”是TSL阶段的分水岭</strong>：转圈结束意味着 <code>bootmgfw.efi</code> 完成了内核加载，执行 <strong><code>ExitBootServices()</code></strong>。</p>
-<ul>
-<li>在此之后，UEFI固件中的GOP驱动虽然还在内存里，但已经<strong>失去了对硬件的控制权</strong>。</li>
-<li>Windows内核接管后，会立即调用自己的 <strong>Windows Basic Display Driver（基本显示驱动）</strong>，该驱动试图重新初始化显卡硬件。</li>
-<li>如果显卡的vBIOS在UEFI模式下的**状态机（State Machine）**无法正确响应内核发起的模式切换指令就会导致显示缓冲区挂起，输出全黑但有背光（或直接无信号）</li>
-</ul>
-<ol start="4">
-<li><h3 id="为什么-BIOS-Reset-能修复？"><a href="#为什么-BIOS-Reset-能修复？" class="headerlink" title="为什么 BIOS Reset 能修复？"></a>为什么 BIOS Reset 能修复？</h3></li>
-</ol>
-<p>BIOS Reset 后之所以恢复，大概率是因为主板重新建立 UEFI 启动环境、GOP 显示初始化状态及相关 NVRAM 配置，同时将Secure Boot&#x2F;CSM 等策略恢复默认值，从而消除了异常显示初始化状态，使 Windows 安装程序能够正常完成显示接管并进入安装界面。</p>
 <p>参考链接：</p>
 <ol>
-<li><a href="https://zhuanlan.zhihu.com/p/483888207">UEFI启动流程概览</a></li>
-<li><a href="https://www.reddit.com/r/buildapc/comments/wwz8eb/trying_to_clean_install_windows_11_but_keep/?show=original">Trying to clean install windows 11 but keep getting black screen</a></li>
+<li><a href="https://www.cnblogs.com/kanie/p/15252921.html">mq-deadline调度器原理及源码分析</a></li>
+<li><a href="https://documentation.suse.com/zh-cn/sled/15-SP5/html/SLED-all/cha-tuning-io.html">微调 I&#x2F;O 性能</a></li>
+<li><a href="https://www.phoronix.com/review/linux-56-nvme/2">Linux 5.6 I&#x2F;O Scheduler Benchmarks: None, Kyber, BFQ, MQ-Deadline</a></li>
 </ol>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>windows</tag>
-        <tag>系统安装</tag>
-        <tag>BIOS</tag>
-        <tag>Secure Boot</tag>
-        <tag>UEF</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>windows 11 安装教程</title>
-    <url>/posts/50cbde44.html</url>
-    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
-<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
-<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
-<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
-</ol>
-<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
-<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
-<ol start="2">
-<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
-<ol start="3">
-<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
-<ol start="4">
-<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
-<ol start="5">
-<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
-<ol start="6">
-<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
-<ol start="7">
-<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
-<ol start="8">
-<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
-<ol start="9">
-<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
-<ol start="10">
-<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
-<ol start="10">
-<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
-</ol>
-<p>将U盘中的Win11激活器复制到桌面并解压</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
-<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>windows</tag>
-        <tag>系统安装</tag>
+        <tag>Linux</tag>
+        <tag>初始化</tag>
+        <tag>GRUB</tag>
+        <tag>性能调优</tag>
       </tags>
   </entry>
   <entry>
@@ -491,77 +272,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux初始化以及系统性能调优</title>
-    <url>/posts/b4a62efd.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
-<p>本文主要以debian为例针对CPU、硬盘、内核等操作系统参数进行优化。</p>
-<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><h3 id="关闭cpu节能"><a href="#关闭cpu节能" class="headerlink" title="关闭cpu节能"></a>关闭cpu节能</h3><p>随着CPU的发展，Intel出现了EIST技术，它可以动态的调整CPU的频率。当CPU使用率地下或者接近0时候,能降低CPU频率并且降压，从而降低功耗和发热。当检测到CPU使用率增高，它会马上回到原始工作频率，但是你必须考虑CPU被唤醒的时间，并且确保它会再次100％运行。这一系列的过程通常被称为“C-states”或“C-modes”,它是从C0开始的。</p>
-<p>关闭CPU节能方式如下：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;intel_idle.max_cstate=0 intel_pstate=disable processor.max_cstate=1&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出，更新grub</span></span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>intel_idle.max_cstate&#x3D;0</li>
-</ul>
-<p>这个参数用于 Intel 平台，指定禁用 intel_idle 驱动，让系统退回使用通用的 acpi_idle 驱动。这样 acpi_idle 驱动会遵循 processor.max_cstate 参数的设置，从而限制 CPU 只能使用浅层 C-state（C1）。</p>
-<ul>
-<li>intel_pstate&#x3D;disable</li>
-</ul>
-<p>禁用Intel处理器的动态频率调节驱动（P-state），改用传统ACPI <code>cpufreq</code>驱动管理CPU频率‌。</p>
-<ul>
-<li>processor.max_cstate&#x3D;1</li>
-</ul>
-<p>限制Intel处理器的空闲状态最大为C1，禁止进入更深层节能状态（如C2&#x2F;C3），减少唤醒延迟‌。与设置为processor.max_cstate&#x3D;0等效</p>
-<h2 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h2><h3 id="网络接口命名规则"><a href="#网络接口命名规则" class="headerlink" title="网络接口命名规则"></a>网络接口命名规则</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;net.ifnames=0 biosdevname=0&quot;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>net.ifnames&#x3D;0</li>
-</ul>
-<p>禁用可预测的网络接口命名（如<code>ens33</code>），恢复传统命名方式（如<code>eth0</code>）‌。</p>
-<ul>
-<li>biosdevname&#x3D;0</li>
-</ul>
-<p>关闭基于BIOS设备名的网络接口命名规则（如<code>em1</code>），需与<code>net.ifnames=0</code>配合生效‌。</p>
-<h3 id="网络优化配置"><a href="#网络优化配置" class="headerlink" title="网络优化配置"></a>网络优化配置</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看当前队列</span></span><br><span class="line">ethtool -l eth0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置队列数量</span></span><br><span class="line">sudo ethtool -L eth0 combined 8</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="硬盘"><a href="#硬盘" class="headerlink" title="硬盘"></a>硬盘</h2><h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">NVME设置调度策略为none</span></span><br><span class="line">echo none | sudo tee /sys/block/nvme0n1/queue/scheduler</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">机械硬盘设置调度策略为deadline</span></span><br><span class="line">echo deadline | sudo tee /sys/block/sda/queue/scheduler</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<ul>
-<li>mq-deadline</li>
-</ul>
-<p><code>mq-deadline</code> 调度程序将排队的 I&#x2F;O 请求分为读取或写入批处理，然后调度它们以增加逻辑块寻址 (LBA) 顺序执行。默认情况下，读取批处理的优先级高于写入批处理，因为应用程序更有可能阻止读 I&#x2F;O 操作。在 <code>mq-deadline</code> 批处理后，它会检查写操作在处理器时间耗尽的时间，并根据情况调度下一个读取或写入批处理。</p>
-<p>这个调度程序适用于大多数用例，特别是那些写入操作是异步的。</p>
-<ul>
-<li>none</li>
-</ul>
-<p>所有进程的io请求都进入<a href="https://so.csdn.net/so/search?q=FIFO&spm=1001.2101.3001.7020">FIFO</a>队列，完全按照队列的顺序进行io的读取，适合于ssd，因为io请求饥饿以及每次请求都需要寻道，ssd不存在传统hdd的寻道时间。</p>
-<h3 id="文件系统优化"><a href="#文件系统优化" class="headerlink" title="文件系统优化"></a>文件系统优化</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/fstab 添加挂载参数</span></span><br><span class="line">noatime,nodiratime</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>noatime: 不更新文件的最后访问时间，减少磁盘 I&#x2F;O。</li>
-<li>nodiratime: 不更新目录的访问时间，进一步减少磁盘 I&#x2F;O。</li>
-</ul>
-<p>参考链接：</p>
-<ol>
-<li><a href="https://www.cnblogs.com/kanie/p/15252921.html">mq-deadline调度器原理及源码分析</a></li>
-<li><a href="https://documentation.suse.com/zh-cn/sled/15-SP5/html/SLED-all/cha-tuning-io.html">微调 I&#x2F;O 性能</a></li>
-<li><a href="https://www.phoronix.com/review/linux-56-nvme/2">Linux 5.6 I&#x2F;O Scheduler Benchmarks: None, Kyber, BFQ, MQ-Deadline</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>初始化</tag>
-        <tag>GRUB</tag>
-        <tag>性能调优</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux启动流程</title>
     <url>/posts/ae574090.html</url>
     <content><![CDATA[<p>系统的启动流程可分为以下几个关键阶段，综合硬件初始化、引导加载、内核加载及用户空间初始化等过程。</p>
@@ -619,141 +329,9 @@
         <category>运维</category>
       </categories>
       <tags>
-        <tag>BIOS</tag>
         <tag>Linux</tag>
         <tag>GRUB</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>手动搭建 WordPress 个人站点(Linux)</title>
-    <url>/posts/c171e9f0.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 WordPress 个人站点组成版本及说明如下：</p>
-<ul>
-<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
-<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
-<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
-<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
-<li>WordPress：博客平台，本文以 WordPress 6.6.1 为例。</li>
-</ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux-实例"><a href="#步骤1：登录-Linux-实例" class="headerlink" title="步骤1：登录 Linux 实例"></a>步骤1：登录 Linux 实例</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="https://www.qiubite.fun/posts/9d5ca845.html">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
-<h3 id="步骤3：配置数据库"><a href="#步骤3：配置数据库" class="headerlink" title="步骤3：配置数据库"></a>步骤3：配置数据库</h3><ol>
-<li>执行以下命令，进入 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，创建 MariaDB 数据库。例如 “wordpress”。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE wordpress;</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>执行以下命令，创建一个新用户。例如 “user”，登录密码为 <code>123456</code>。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">create user &#x27;user&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>执行以下命令，赋予用户对 “wordpress” 数据库的全部权限。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON wordpress.* TO &#x27;user&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li>执行以下命令，设置 root 账户密码。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD(&#x27;输入您的密码&#x27;);</span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li>执行以下命令，使所有配置生效。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
-
-<ol start="7">
-<li>执行以下命令，退出 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure>
-
-<h3 id="步骤4：安装和配置-WordPress"><a href="#步骤4：安装和配置-WordPress" class="headerlink" title="步骤4：安装和配置 WordPress"></a>步骤4：安装和配置 WordPress</h3><h4 id="下载-WordPress"><a href="#下载-WordPress" class="headerlink" title="下载 WordPress"></a>下载 WordPress</h4><ol>
-<li>执行以下命令，删除网站根目录下用于测试 PHP-Nginx 配置的<code>index.php</code>文件。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>依次执行以下命令，进入<code>/usr/share/nginx/html/</code>目录，并下载与解压 WordPress。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html</span><br><span class="line"></span><br><span class="line">wget https://cn.wordpress.org/wordpress-6.6.1-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line">tar zxvf wordpress-6.6.1-zh_CN.tar.gz</span><br></pre></td></tr></table></figure>
-
-
-
-<p>WordPress可以放到自定义的目录，修改时需要同步修改nginx配置文件中root 描述的目录。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fr07r-1.png" alt="image-20240907200548425"></p>
-<h4 id="修改-WordPress-配置文件"><a href="#修改-WordPress-配置文件" class="headerlink" title="修改 WordPress 配置文件"></a>修改 WordPress 配置文件</h4><ol>
-<li>依次执行以下命令，进入 WordPress 安装目录，将<code>wp-config-sample.php</code>文件复制到<code>wp-config.php</code>文件中，并将原先的示例配置文件保留作为备份。</li>
-</ol>
-<figure class="highlight shellsession"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html/wordpress</span><br><span class="line">cp wp-config-sample.php wp-config.php</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，打开并编辑新创建的配置文件。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>按 <strong>i</strong> 切换至编辑模式，找到文件中 MySQL 的部分，并将相关配置信息修改为配置 WordPress 数据库 中的内容。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> // ** Database settings - You can get this info from your web host ** //</span><br><span class="line">/** The name of the database for WordPress */</span><br><span class="line">define( &#x27;DB_NAME&#x27;, &#x27;wordpress&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database username */</span><br><span class="line">define( &#x27;DB_USER&#x27;, &#x27;user&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database password */</span><br><span class="line">define( &#x27;DB_PASSWORD&#x27;, &#x27;123456&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database hostname */</span><br><span class="line">define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>修改完成后，按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件返回。</li>
-</ol>
-<h3 id="步骤5：验证-WordPress-安装"><a href="#步骤5：验证-WordPress-安装" class="headerlink" title="步骤5：验证 WordPress 安装"></a>步骤5：验证 WordPress 安装</h3><ol>
-<li>在浏览器地址栏输入<code>http://域名或公网 IP/wordpress 文件夹</code>，例如：</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://192.xxx.xxx.xx/wordpress  </span><br><span class="line">或</span><br><span class="line">http://xxx.com/wordpress</span><br></pre></td></tr></table></figure>
-
-<p>转至 WordPress 安装页，开始配置 WordPress。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fqy0a-1.png" alt="配置WP1"></p>
-<ol start="2">
-<li>根据 WordPress 安装向导提示输入以下安装信息，单击<strong>安装 WordPress</strong>，完成安装。</li>
-</ol>
-<table>
-<thead>
-<tr>
-<th>所需信息</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>站点标题</td>
-<td>WordPress 网站名称。</td>
-</tr>
-<tr>
-<td>用户名</td>
-<td>WordPress 管理员名称。出于安全考虑，建议设置一个不同于 admin 的名称。因为与默认用户名称 admin 相比，该名称更难破解。</td>
-</tr>
-<tr>
-<td>密码</td>
-<td>可以使用默认的密码或者自定义密码。请勿重复使用现有密码，并确保将密码保存在安全的位置。</td>
-</tr>
-<tr>
-<td>您的电子邮件</td>
-<td>用于接收通知的电子邮件地址。</td>
-</tr>
-</tbody></table>
-<ol start="3">
-<li>输入在安装WordPress时设置的<strong>用户名</strong>和<strong>密码</strong>，然后单击<strong>登录</strong></li>
-</ol>
-<p>成功进入您个人的WordPress网站。</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>手动搭建 WordPress</tag>
-        <tag>Nginx</tag>
-        <tag>MySQL</tag>
-        <tag>PHP</tag>
-        <tag>wordpress</tag>
+        <tag>BIOS</tag>
       </tags>
   </entry>
   <entry>
@@ -1071,6 +649,138 @@
       </tags>
   </entry>
   <entry>
+    <title>手动搭建 WordPress 个人站点(Linux)</title>
+    <url>/posts/c171e9f0.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 WordPress 个人站点组成版本及说明如下：</p>
+<ul>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+<li>WordPress：博客平台，本文以 WordPress 6.6.1 为例。</li>
+</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux-实例"><a href="#步骤1：登录-Linux-实例" class="headerlink" title="步骤1：登录 Linux 实例"></a>步骤1：登录 Linux 实例</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：手动搭建-LNMP-环境"><a href="#步骤2：手动搭建-LNMP-环境" class="headerlink" title="步骤2：手动搭建 LNMP 环境"></a>步骤2：手动搭建 LNMP 环境</h3><p>LNMP 是 Linux、Nginx、MariaDB 和 PHP 的缩写，这个组合是最常见的 Web 服务器的运行环境之一。在登录服务器实例之后，您可以参见 <a href="https://www.qiubite.fun/posts/9d5ca845.html">手动搭建 LNMP 环境</a>完成基本环境搭建。</p>
+<h3 id="步骤3：配置数据库"><a href="#步骤3：配置数据库" class="headerlink" title="步骤3：配置数据库"></a>步骤3：配置数据库</h3><ol>
+<li>执行以下命令，进入 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，创建 MariaDB 数据库。例如 “wordpress”。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">CREATE DATABASE wordpress;</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，创建一个新用户。例如 “user”，登录密码为 <code>123456</code>。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">create user &#x27;user&#x27;@&#x27;localhost&#x27; IDENTIFIED BY &#x27;123456&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>执行以下命令，赋予用户对 “wordpress” 数据库的全部权限。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">GRANT ALL PRIVILEGES ON wordpress.* TO &#x27;user&#x27;@&#x27;localhost&#x27;;</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，设置 root 账户密码。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD(&#x27;输入您的密码&#x27;);</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>执行以下命令，使所有配置生效。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">FLUSH PRIVILEGES;</span><br></pre></td></tr></table></figure>
+
+<ol start="7">
+<li>执行以下命令，退出 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">\q</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装和配置-WordPress"><a href="#步骤4：安装和配置-WordPress" class="headerlink" title="步骤4：安装和配置 WordPress"></a>步骤4：安装和配置 WordPress</h3><h4 id="下载-WordPress"><a href="#下载-WordPress" class="headerlink" title="下载 WordPress"></a>下载 WordPress</h4><ol>
+<li>执行以下命令，删除网站根目录下用于测试 PHP-Nginx 配置的<code>index.php</code>文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">rm -rf /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>依次执行以下命令，进入<code>/usr/share/nginx/html/</code>目录，并下载与解压 WordPress。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html</span><br><span class="line"></span><br><span class="line">wget https://cn.wordpress.org/wordpress-6.6.1-zh_CN.tar.gz</span><br><span class="line"></span><br><span class="line">tar zxvf wordpress-6.6.1-zh_CN.tar.gz</span><br></pre></td></tr></table></figure>
+
+
+
+<p>WordPress可以放到自定义的目录，修改时需要同步修改nginx配置文件中root 描述的目录。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fr07r-1.png" alt="image-20240907200548425"></p>
+<h4 id="修改-WordPress-配置文件"><a href="#修改-WordPress-配置文件" class="headerlink" title="修改 WordPress 配置文件"></a>修改 WordPress 配置文件</h4><ol>
+<li>依次执行以下命令，进入 WordPress 安装目录，将<code>wp-config-sample.php</code>文件复制到<code>wp-config.php</code>文件中，并将原先的示例配置文件保留作为备份。</li>
+</ol>
+<figure class="highlight shellsession"><table><tr><td class="code"><pre><span class="line">cd /usr/share/nginx/html/wordpress</span><br><span class="line">cp wp-config-sample.php wp-config.php</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，打开并编辑新创建的配置文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim wp-config.php</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>按 <strong>i</strong> 切换至编辑模式，找到文件中 MySQL 的部分，并将相关配置信息修改为配置 WordPress 数据库 中的内容。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"> // ** Database settings - You can get this info from your web host ** //</span><br><span class="line">/** The name of the database for WordPress */</span><br><span class="line">define( &#x27;DB_NAME&#x27;, &#x27;wordpress&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database username */</span><br><span class="line">define( &#x27;DB_USER&#x27;, &#x27;user&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database password */</span><br><span class="line">define( &#x27;DB_PASSWORD&#x27;, &#x27;123456&#x27; );</span><br><span class="line"></span><br><span class="line">/** Database hostname */</span><br><span class="line">define( &#x27;DB_HOST&#x27;, &#x27;localhost&#x27; );</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>修改完成后，按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件返回。</li>
+</ol>
+<h3 id="步骤5：验证-WordPress-安装"><a href="#步骤5：验证-WordPress-安装" class="headerlink" title="步骤5：验证 WordPress 安装"></a>步骤5：验证 WordPress 安装</h3><ol>
+<li>在浏览器地址栏输入<code>http://域名或公网 IP/wordpress 文件夹</code>，例如：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://192.xxx.xxx.xx/wordpress  </span><br><span class="line">或</span><br><span class="line">http://xxx.com/wordpress</span><br></pre></td></tr></table></figure>
+
+<p>转至 WordPress 安装页，开始配置 WordPress。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12fqy0a-1.png" alt="配置WP1"></p>
+<ol start="2">
+<li>根据 WordPress 安装向导提示输入以下安装信息，单击<strong>安装 WordPress</strong>，完成安装。</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>所需信息</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>站点标题</td>
+<td>WordPress 网站名称。</td>
+</tr>
+<tr>
+<td>用户名</td>
+<td>WordPress 管理员名称。出于安全考虑，建议设置一个不同于 admin 的名称。因为与默认用户名称 admin 相比，该名称更难破解。</td>
+</tr>
+<tr>
+<td>密码</td>
+<td>可以使用默认的密码或者自定义密码。请勿重复使用现有密码，并确保将密码保存在安全的位置。</td>
+</tr>
+<tr>
+<td>您的电子邮件</td>
+<td>用于接收通知的电子邮件地址。</td>
+</tr>
+</tbody></table>
+<ol start="3">
+<li>输入在安装WordPress时设置的<strong>用户名</strong>和<strong>密码</strong>，然后单击<strong>登录</strong></li>
+</ol>
+<p>成功进入您个人的WordPress网站。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>手动搭建 WordPress</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>手动搭建LNMP环境</title>
     <url>/posts/9d5ca845.html</url>
     <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
@@ -1270,121 +980,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Twikoo评论系统搭建配置教程</title>
-    <url>/posts/5eb7adfe.html</url>
-    <content><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>之前博客用过WordPress，但是动态博客用起来有些太重了，并且很多功能也用不到，所以重新搭建了hexo框架的静态博客。评论系统首先使用的是Giscus，但是需要登录github账号进行评论，对于一些没有技术基础的用户易用性较差，所以选择本地化搭建一套免费的，易用性强的评论静态网站评论系统。本文使用hexo静态博客系统 Butterfly 5.4版本主题下使用Twikoo评论系统。</p>
-<h2 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h2><p>本文使用私有部署，如果使用云部署可以参考<a href="https://twikoo.js.org/">twikoo官网</a>文档。私有部署涉及终端操作、申请证书、配置反向代理或负载均衡等操作，如果都不了解，建议使用别的部署方式</p>
-<ol>
-<li><h3 id="安装环境配置"><a href="#安装环境配置" class="headerlink" title="安装环境配置"></a>安装环境配置</h3><p>服务端下载安装 <a href="https://nodejs.org/zh-cn/">Node.js</a>根据实际的操作系统，使用对应命令下载。具体安装命令可以根据系统使用nodejs的下载页面进行生成。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/09/05/11124li.png" alt="image-20250905223902256"></p>
-</li>
-<li><h3 id="安装-Twikoo-server"><a href="#安装-Twikoo-server" class="headerlink" title="安装 Twikoo server"></a>安装 Twikoo server</h3></li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo npm i -g tkserver</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><h3 id="根据需要配置环境变量"><a href="#根据需要配置环境变量" class="headerlink" title="根据需要配置环境变量"></a>根据需要配置环境变量</h3></li>
-</ol>
-<table>
-<thead>
-<tr>
-<th align="left">名称</th>
-<th align="left">描述</th>
-<th align="left">默认值</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left"><code>MONGODB_URI</code></td>
-<td align="left">MongoDB 数据库连接字符串，不传则使用 lokijs</td>
-<td align="left"><code>null</code></td>
-</tr>
-<tr>
-<td align="left"><code>MONGO_URL</code></td>
-<td align="left">MongoDB 数据库连接字符串，不传则使用 lokijs</td>
-<td align="left"><code>null</code></td>
-</tr>
-<tr>
-<td align="left"><code>TWIKOO_DATA</code></td>
-<td align="left">lokijs 数据库存储路径</td>
-<td align="left"><code>./data</code></td>
-</tr>
-<tr>
-<td align="left"><code>TWIKOO_PORT</code></td>
-<td align="left">端口号</td>
-<td align="left"><code>8080</code></td>
-</tr>
-<tr>
-<td align="left"><code>TWIKOO_THROTTLE</code></td>
-<td align="left">IP 请求限流，当同一 IP 短时间内请求次数超过阈值将对该 IP 返回错误</td>
-<td align="left"><code>250</code></td>
-</tr>
-<tr>
-<td align="left"><code>TWIKOO_LOCALHOST_ONLY</code></td>
-<td align="left">为<code>true</code>时只监听本地请求，使得 nginx 等服务器反代之后不暴露原始端口</td>
-<td align="left"><code>null</code></td>
-</tr>
-<tr>
-<td align="left"><code>TWIKOO_LOG_LEVEL</code></td>
-<td align="left">日志级别，支持 <code>verbose</code> &#x2F; <code>info</code> &#x2F; <code>warn</code> &#x2F; <code>error</code></td>
-<td align="left"><code>info</code></td>
-</tr>
-<tr>
-<td align="left"><code>TWIKOO_IP_HEADERS</code></td>
-<td align="left">在一些特殊情况下使用，如使用了 <code>CloudFlare CDN</code> 它会将请求 IP 写到请求头的 <code>cf-connecting-ip</code> 字段上，为了能够正确的获取请求 IP 你可以写成 <code>[&quot;headers.cf-connecting-ip&quot;]</code></td>
-<td align="left"><code>[]</code></td>
-</tr>
-</tbody></table>
-<ol start="4">
-<li><h3 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h3></li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">启动服务有多种方式，本文建议使用systemctl统一管理</span><br><span class="line"></span><br><span class="line">sudo vim /lib/systemd/system/tkserver.service</span><br><span class="line"></span><br><span class="line">[Unit]</span><br><span class="line">Description=TKServer service</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">Restart=always</span><br><span class="line">RestartSec=5</span><br><span class="line">LimitNOFILE=655350</span><br><span class="line">ExecStart=/usr/local/bin/tkserver</span><br><span class="line">Environment=&quot;TWIKOO_PORT=8000 TWIKOO_DATA=/home/ops/service/twikoo-data TWIKOO_LOCALHOST_ONLY=true&quot;</span><br><span class="line">StandardOutput=append:/var/log/twikoo/twikoo.log</span><br><span class="line">StandardError=append:/var/log/twikoo/twikoo.error.log</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">注意将所需要的变量写入Environment。</span><br><span class="line"></span><br><span class="line">启动服务并设置为开机启动：</span><br><span class="line">sudo systemctl start tkserver.service</span><br><span class="line">sudo systemctl status tkserver.service</span><br><span class="line">sudo systemctl enable tkserver.service</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li><h3 id="配置前置代理实现-HTTPS-访问"><a href="#配置前置代理实现-HTTPS-访问" class="headerlink" title="配置前置代理实现 HTTPS 访问"></a>配置前置代理实现 HTTPS 访问</h3>可以用 Nginx、负载均衡或 Cloudflare 等。本文使用nginx可以参考以下配置：</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name twikoo.yourdomain.com;                    //域名根据实际需求配置</span><br><span class="line">        return 307 https://$host$request_uri;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        listen 443 ssl http2;</span><br><span class="line">        server_name twikoo.yourdomain.com;                    //域名根据实际需求配置</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/yourdomain.com.crt;       //证书根据实际需求配置</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/yourdomain.com.key;   //证书根据实际需求配置</span><br><span class="line"></span><br><span class="line">        client_max_body_size 2m;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1:8000;</span><br><span class="line">                proxy_http_version 1.1;</span><br><span class="line">                proxy_set_header   Host $host;</span><br><span class="line">                proxy_set_header   X-Real-IP $remote_addr;</span><br><span class="line">                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">                proxy_set_header   X-Forwarded-Proto $scheme;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li><h3 id="博客前端配置"><a href="#博客前端配置" class="headerlink" title="博客前端配置"></a>博客前端配置</h3>文件中配置 envId 为 <code>https://</code> 加域名（例如 <code>https://twikoo.yourdomain.com</code>）。本文以Butterfly 5.4为例 修改主题的config.yml：</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">comments:</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">Up to two comments system, the first will be shown as default</span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">Leave it empty <span class="keyword">if</span> you don<span class="string">&#x27;t need comments</span></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Choose: Disqus/Disqusjs/Livere/Gitalk/Valine/Waline/Utterances/Facebook Comments/Twikoo/Giscus/Remark42/Artalk</span></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Format of two comments system : Disqus,Waline</span></span></span><br><span class="line">  use: twikoo                    //修改为twikoo</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Twikoo</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">https://github.com/imaegoo/twikoo</span></span></span><br><span class="line">twikoo:</span><br><span class="line">  envId: https://twikoo.yourdomain.com		//修改为nginx的twikoo域名</span><br><span class="line">  region:</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Use Twikoo visitor count as the page view count</span></span></span><br><span class="line">  visitor: true</span><br><span class="line">  option:</span><br></pre></td></tr></table></figure>
-
-<blockquote>
-<p>提示：</p>
-<ol>
-<li>数据默认在 data 目录，请注意定期备份数据。</li>
-<li>Linux服务器如果不想使用systemctl服务，可以直接使用命令启动，例如： <code>nohup tkserver &gt;&gt; tkserver.log 2&gt;&amp;1 &amp;</code> 命令后台启动。</li>
-</ol>
-</blockquote>
-<h2 id="开启管理面板"><a href="#开启管理面板" class="headerlink" title="开启管理面板"></a>开启管理面板</h2><p>点击评论窗口的“小齿轮”图标，设置管理员密码</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12rpcko.png" alt="image-20250905234424132"></p>
-<p>进行相关的需求配置</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12s7owf.png" alt="image-20250905234510132"></p>
-<p><strong>推荐开启的插件：</strong></p>
-<ol>
-<li><h3 id="图床"><a href="#图床" class="headerlink" title="图床"></a>图床</h3></li>
-</ol>
-<p>评论区可以使用上传图片</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12sxvyd.png" alt="image-20250905234632204"></p>
-<ol start="2">
-<li><h3 id="邮件通知"><a href="#邮件通知" class="headerlink" title="邮件通知"></a>邮件通知</h3></li>
-</ol>
-<p>当有评论时，可以邮件通知。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12u776c.png" alt="image-20250905234843162"></p>
-<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12uowa6.png" alt="image-20250905234926681"></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>twikoo</tag>
-        <tag>评论</tag>
-        <tag>博客</tag>
-        <tag>Butterfly</tag>
-        <tag>hexo</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Prometheus+Grafana+Alertmanager部署</title>
     <url>/posts/c03992dd.html</url>
     <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
@@ -1537,6 +1132,420 @@
         <tag>Alertmanager</tag>
         <tag>监控部署</tag>
         <tag>Prometheus部署</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>windows 11 安装教程</title>
+    <url>/posts/50cbde44.html</url>
+    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
+<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
+<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
+<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
+</ol>
+<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
+<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
+<ol start="2">
+<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
+<ol start="3">
+<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
+<ol start="4">
+<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
+<ol start="5">
+<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
+<ol start="6">
+<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
+<ol start="7">
+<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
+<ol start="8">
+<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
+<ol start="9">
+<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
+<ol start="10">
+<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
+<ol start="10">
+<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
+</ol>
+<p>将U盘中的Win11激活器复制到桌面并解压</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
+<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>windows</tag>
+        <tag>系统安装</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Twikoo评论系统搭建配置教程</title>
+    <url>/posts/5eb7adfe.html</url>
+    <content><![CDATA[<h2 id="简介"><a href="#简介" class="headerlink" title="简介"></a>简介</h2><p>之前博客用过WordPress，但是动态博客用起来有些太重了，并且很多功能也用不到，所以重新搭建了hexo框架的静态博客。评论系统首先使用的是Giscus，但是需要登录github账号进行评论，对于一些没有技术基础的用户易用性较差，所以选择本地化搭建一套免费的，易用性强的评论静态网站评论系统。本文使用hexo静态博客系统 Butterfly 5.4版本主题下使用Twikoo评论系统。</p>
+<h2 id="搭建"><a href="#搭建" class="headerlink" title="搭建"></a>搭建</h2><p>本文使用私有部署，如果使用云部署可以参考<a href="https://twikoo.js.org/">twikoo官网</a>文档。私有部署涉及终端操作、申请证书、配置反向代理或负载均衡等操作，如果都不了解，建议使用别的部署方式</p>
+<ol>
+<li><h3 id="安装环境配置"><a href="#安装环境配置" class="headerlink" title="安装环境配置"></a>安装环境配置</h3><p>服务端下载安装 <a href="https://nodejs.org/zh-cn/">Node.js</a>根据实际的操作系统，使用对应命令下载。具体安装命令可以根据系统使用nodejs的下载页面进行生成。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/11124li.png" alt="image-20250905223902256"></p>
+</li>
+<li><h3 id="安装-Twikoo-server"><a href="#安装-Twikoo-server" class="headerlink" title="安装 Twikoo server"></a>安装 Twikoo server</h3></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo npm i -g tkserver</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><h3 id="根据需要配置环境变量"><a href="#根据需要配置环境变量" class="headerlink" title="根据需要配置环境变量"></a>根据需要配置环境变量</h3></li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="left">名称</th>
+<th align="left">描述</th>
+<th align="left">默认值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><code>MONGODB_URI</code></td>
+<td align="left">MongoDB 数据库连接字符串，不传则使用 lokijs</td>
+<td align="left"><code>null</code></td>
+</tr>
+<tr>
+<td align="left"><code>MONGO_URL</code></td>
+<td align="left">MongoDB 数据库连接字符串，不传则使用 lokijs</td>
+<td align="left"><code>null</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_DATA</code></td>
+<td align="left">lokijs 数据库存储路径</td>
+<td align="left"><code>./data</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_PORT</code></td>
+<td align="left">端口号</td>
+<td align="left"><code>8080</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_THROTTLE</code></td>
+<td align="left">IP 请求限流，当同一 IP 短时间内请求次数超过阈值将对该 IP 返回错误</td>
+<td align="left"><code>250</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_LOCALHOST_ONLY</code></td>
+<td align="left">为<code>true</code>时只监听本地请求，使得 nginx 等服务器反代之后不暴露原始端口</td>
+<td align="left"><code>null</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_LOG_LEVEL</code></td>
+<td align="left">日志级别，支持 <code>verbose</code> &#x2F; <code>info</code> &#x2F; <code>warn</code> &#x2F; <code>error</code></td>
+<td align="left"><code>info</code></td>
+</tr>
+<tr>
+<td align="left"><code>TWIKOO_IP_HEADERS</code></td>
+<td align="left">在一些特殊情况下使用，如使用了 <code>CloudFlare CDN</code> 它会将请求 IP 写到请求头的 <code>cf-connecting-ip</code> 字段上，为了能够正确的获取请求 IP 你可以写成 <code>[&quot;headers.cf-connecting-ip&quot;]</code></td>
+<td align="left"><code>[]</code></td>
+</tr>
+</tbody></table>
+<ol start="4">
+<li><h3 id="启动服务"><a href="#启动服务" class="headerlink" title="启动服务"></a>启动服务</h3></li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">启动服务有多种方式，本文建议使用systemctl统一管理</span><br><span class="line"></span><br><span class="line">sudo vim /lib/systemd/system/tkserver.service</span><br><span class="line"></span><br><span class="line">[Unit]</span><br><span class="line">Description=TKServer service</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line">Restart=always</span><br><span class="line">RestartSec=5</span><br><span class="line">LimitNOFILE=655350</span><br><span class="line">ExecStart=/usr/local/bin/tkserver</span><br><span class="line">Environment=&quot;TWIKOO_PORT=8000 TWIKOO_DATA=/home/ops/service/twikoo-data TWIKOO_LOCALHOST_ONLY=true&quot;</span><br><span class="line">StandardOutput=append:/var/log/twikoo/twikoo.log</span><br><span class="line">StandardError=append:/var/log/twikoo/twikoo.error.log</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">注意将所需要的变量写入Environment。</span><br><span class="line"></span><br><span class="line">启动服务并设置为开机启动：</span><br><span class="line">sudo systemctl start tkserver.service</span><br><span class="line">sudo systemctl status tkserver.service</span><br><span class="line">sudo systemctl enable tkserver.service</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li><h3 id="配置前置代理实现-HTTPS-访问"><a href="#配置前置代理实现-HTTPS-访问" class="headerlink" title="配置前置代理实现 HTTPS 访问"></a>配置前置代理实现 HTTPS 访问</h3>可以用 Nginx、负载均衡或 Cloudflare 等。本文使用nginx可以参考以下配置：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name twikoo.yourdomain.com;                    //域名根据实际需求配置</span><br><span class="line">        return 307 https://$host$request_uri;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        listen 443 ssl http2;</span><br><span class="line">        server_name twikoo.yourdomain.com;                    //域名根据实际需求配置</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/yourdomain.com.crt;       //证书根据实际需求配置</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/yourdomain.com.key;   //证书根据实际需求配置</span><br><span class="line"></span><br><span class="line">        client_max_body_size 2m;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1:8000;</span><br><span class="line">                proxy_http_version 1.1;</span><br><span class="line">                proxy_set_header   Host $host;</span><br><span class="line">                proxy_set_header   X-Real-IP $remote_addr;</span><br><span class="line">                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line">                proxy_set_header   X-Forwarded-Proto $scheme;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><h3 id="博客前端配置"><a href="#博客前端配置" class="headerlink" title="博客前端配置"></a>博客前端配置</h3>文件中配置 envId 为 <code>https://</code> 加域名（例如 <code>https://twikoo.yourdomain.com</code>）。本文以Butterfly 5.4为例 修改主题的config.yml：</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">comments:</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">Up to two comments system, the first will be shown as default</span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash">Leave it empty <span class="keyword">if</span> you don<span class="string">&#x27;t need comments</span></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Choose: Disqus/Disqusjs/Livere/Gitalk/Valine/Waline/Utterances/Facebook Comments/Twikoo/Giscus/Remark42/Artalk</span></span></span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Format of two comments system : Disqus,Waline</span></span></span><br><span class="line">  use: twikoo                    //修改为twikoo</span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line">  </span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Twikoo</span></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="string">https://github.com/imaegoo/twikoo</span></span></span><br><span class="line">twikoo:</span><br><span class="line">  envId: https://twikoo.yourdomain.com		//修改为nginx的twikoo域名</span><br><span class="line">  region:</span><br><span class="line"><span class="meta prompt_">  # </span><span class="language-bash"><span class="string">Use Twikoo visitor count as the page view count</span></span></span><br><span class="line">  visitor: true</span><br><span class="line">  option:</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>提示：</p>
+<ol>
+<li>数据默认在 data 目录，请注意定期备份数据。</li>
+<li>Linux服务器如果不想使用systemctl服务，可以直接使用命令启动，例如： <code>nohup tkserver &gt;&gt; tkserver.log 2&gt;&amp;1 &amp;</code> 命令后台启动。</li>
+</ol>
+</blockquote>
+<h2 id="开启管理面板"><a href="#开启管理面板" class="headerlink" title="开启管理面板"></a>开启管理面板</h2><p>点击评论窗口的“小齿轮”图标，设置管理员密码</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12rpcko.png" alt="image-20250905234424132"></p>
+<p>进行相关的需求配置</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12s7owf.png" alt="image-20250905234510132"></p>
+<p><strong>推荐开启的插件：</strong></p>
+<ol>
+<li><h3 id="图床"><a href="#图床" class="headerlink" title="图床"></a>图床</h3></li>
+</ol>
+<p>评论区可以使用上传图片</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12sxvyd.png" alt="image-20250905234632204"></p>
+<ol start="2">
+<li><h3 id="邮件通知"><a href="#邮件通知" class="headerlink" title="邮件通知"></a>邮件通知</h3></li>
+</ol>
+<p>当有评论时，可以邮件通知。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12u776c.png" alt="image-20250905234843162"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/09/05/12uowa6.png" alt="image-20250905234926681"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>twikoo</tag>
+        <tag>评论</tag>
+        <tag>博客</tag>
+        <tag>Butterfly</tag>
+        <tag>hexo</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Windows 11 重装遇到离谱问题分析排查</title>
+    <url>/posts/ebc9b05d.html</url>
+    <content><![CDATA[<h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><ol>
+<li><p><strong>重装原因</strong>：原有 Windows11系统经常蓝屏，并且也想清理下C盘。</p>
+</li>
+<li><p><strong>环境信息</strong>：华硕TUF Z370+I7 8086K+RTX 3080TI</p>
+</li>
+</ol>
+<h2 id="二、工具"><a href="#二、工具" class="headerlink" title="二、工具"></a>二、工具</h2><ul>
+<li><a href="https://next.itellyou.cn/"><strong>MSDN</strong></a> 下载的 Windows 11 ISO 镜像</li>
+<li><strong><a href="https://rufus.ie/zh/">Rufus 4.14</a></strong> 制作 USB 启动盘</li>
+<li>**<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Media Creation Tool (MCT) for Windows 11</a>**微软官方制作启动盘工具</li>
+<li>第三方PE经典老毛桃（刚发现已经被火绒认为是流氓软件）</li>
+</ul>
+<h2 id="三、安装过程"><a href="#三、安装过程" class="headerlink" title="三、安装过程"></a>三、安装过程</h2><ol>
+<li><h3 id="ISO-本地安装"><a href="#ISO-本地安装" class="headerlink" title="ISO 本地安装"></a><strong>ISO 本地安装</strong></h3></li>
+</ol>
+<ul>
+<li><p>在现有 Windows 系统中挂载 ISO，运行 <code>setup.exe</code>，选择“不保留任何内容”进行纯净安装。</p>
+</li>
+<li><p>文件复制完成，系统重启。</p>
+</li>
+<li><p>重启后显示 Windows 徽标，下方转圈动画10秒后画面消失，显示器黑屏（有背光）。</p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+<ul>
+<li>等待 30 分钟无任何响应重启还是开在这里，换U盘重装。</li>
+</ul>
+<ol start="2">
+<li><h3 id="Rufus-刻录-U-盘安装"><a href="#Rufus-刻录-U-盘安装" class="headerlink" title="Rufus 刻录 U 盘安装"></a><strong>Rufus 刻录 U 盘安装</strong></h3></li>
+</ol>
+<p>设置如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbxjh4.webp" alt="Rufus1"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbz7ji.webp" alt="Rufus2"></p>
+<hr>
+<ul>
+<li><p>使用 Rufus 4.14，分区类型 GPT，目标系统 UEFI，写入 ISO</p>
+</li>
+<li><p>BIOS 选择 UEFI USB 启动</p>
+</li>
+<li><p>同样出现徽标转圈 → 黑屏无响应，无法进入安装界面</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+</li>
+</ul>
+<p>怀疑是不是镜像或者刻录工具的问题，换个工具和镜像再试试。</p>
+<ol start="3">
+<li><h3 id="Media-Creation-Tool-制作-U-盘安装"><a href="#Media-Creation-Tool-制作-U-盘安装" class="headerlink" title="Media Creation Tool 制作 U 盘安装"></a><strong>Media Creation Tool 制作 U 盘安装</strong></h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmplno.webp" alt="安装1"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmqsoe.webp" alt="安装2"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmre0h.webp" alt="安装3"></p>
+<ul>
+<li>Media Creation Tool会自动下载Windows镜像，并且自动刻录。</li>
+<li>将制作好的U盘插入BIOS 选择 UEFI USB 启动。</li>
+<li>启动后现象与 Rufus 完全相同：转圈后黑屏。</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+<hr>
+<ol start="4">
+<li><h3 id="BIOS-启动项与模式调整"><a href="#BIOS-启动项与模式调整" class="headerlink" title="BIOS 启动项与模式调整"></a><strong>BIOS 启动项与模式调整</strong></h3></li>
+</ol>
+<ul>
+<li><p>逐一尝试不同启动项（UEFI USB、不带 UEFI 标识的 USB、硬盘 Windows Boot Manager）→ 均失败。</p>
+</li>
+<li><p>CSM 中Boot Devices Control 改为仅 UEFI → 无效。</p>
+</li>
+</ul>
+<ol start="5">
+<li><h3 id="尝试使用经典工具老毛桃PE"><a href="#尝试使用经典工具老毛桃PE" class="headerlink" title="尝试使用经典工具老毛桃PE"></a><strong>尝试使用经典工具老毛桃PE</strong></h3></li>
+</ol>
+<ul>
+<li>U盘刻录老毛桃PE→ 黑屏依旧。</li>
+</ul>
+<ol start="6">
+<li><h3 id="问题排查"><a href="#问题排查" class="headerlink" title="问题排查"></a><strong>问题排查</strong></h3></li>
+</ol>
+<p>google后在Reddit 发现一个现象很像的案例 <a href="https://www.reddit.com/r/pchelp/comments/16qw1zl/black_screen_on_my_new_build_while_installing/?show=original">Black Screen on my New Build while installing Windows 11</a>大致描述是与显示输出设备有关，根据社区的建议做了几个尝试如下：</p>
+<ul>
+<li>DisplayPort 拔插+换接口 → 还是黑屏且直接变成无背光无信号</li>
+<li>更换HDMI线材→ 还是黑屏故障相同</li>
+<li>将 HDMI 从独立显卡拔下，接到主板核显接口 → 依然黑屏</li>
+</ul>
+<p>试着这几种方法都没能解决问题，梳理了一下后面的测试方案：</p>
+<ul>
+<li><strong>显卡隔离</strong>‌：移除独立显卡，将显示输出切换至主板板载显示接口（HDMI），以排除独显故障或驱动引入的异常。</li>
+<li><strong>内存最小化测试</strong>：仅保留单条内存模组进行开机验证，必要时更换插槽交叉测试，以判断是否存在内存兼容性或硬件损坏</li>
+<li><strong>主板初始化恢复</strong>：通过清除 CMOS 或恢复 BIOS 默认设置的方式，将主板恢复至出厂默认状态，排除配置问题。</li>
+</ul>
+<ol start="7">
+<li><h3 id="BIOS-重置"><a href="#BIOS-重置" class="headerlink" title="BIOS 重置"></a><strong>BIOS 重置</strong></h3></li>
+</ol>
+<ul>
+<li><p>将BIOS恢复出厂设置</p>
+</li>
+<li><p>使用 Rufus U 盘重新启动安装</p>
+</li>
+</ul>
+<p>故障解决，成功进入 Windows 安装界面，安装完成后可以正常开机。</p>
+<hr>
+<h2 id="四、推测根因"><a href="#四、推测根因" class="headerlink" title="四、推测根因"></a>四、推测根因</h2><p>UEFI&#x2F;CSM&#x2F;显卡 GOP（UEFI 显示初始化）阶段的兼容性问题</p>
+<ol>
+<li><h3 id="现象指向"><a href="#现象指向" class="headerlink" title="现象指向"></a><strong>现象指向</strong></h3></li>
+</ol>
+<p>所有安装方式失败都有一个共同点</p>
+<p>Windows Logo 出现 → 转圈 → 黑屏（显示器仍有背光或短暂无信号）</p>
+<ol start="2">
+<li><h3 id="根因分析"><a href="#根因分析" class="headerlink" title="根因分析"></a>根因分析</h3></li>
+</ol>
+<p>UEFI启动流程可以分为以下7各阶段：</p>
+<p>SEC（安全验证）-&gt;PEI（EFI前期初始化）-&gt;DXE（驱动执行环境）-&gt;BDS（启动设备选择）-&gt;TSL（操作系统加载前期）-&gt;RT（系统系统运行阶段）-&gt;AL（系统灾难恢复期或关机）</p>
+<p>各阶段表现对照分析：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>状态</th>
+<th>是否正常</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SEC</td>
+<td>CPU微码加载、缓存初始化、检查平台安全状态</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>PEI</td>
+<td>初始化CPU、芯片组和内存（RAM）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>DXE</td>
+<td>枚举并加载绝大多数硬件驱动，包括 PCIe总线驱动 和 显卡的UEFI GOP驱动。此时固件绘制出BIOS设置界面</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>BDS</td>
+<td>根据启动顺序加载指定的EFI应用程序（即 <code>bootmgfw.efi</code>，Windows引导管理器）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>TSL</td>
+<td><strong>操作系统加载器（Windows Boot Manager）运行</strong>。它加载内核、HAL和初始驱动，然后<strong>调用 <code>ExitBootServices()</code> 结束固件对硬件的控制权</strong>，将控制权交给操作系统内核。</td>
+<td>⚠️ 发生故障</td>
+</tr>
+<tr>
+<td>RT</td>
+<td>操作系统完全接管硬件，驱动正常运行，用户进入桌面或安装界面。</td>
+<td>未进入</td>
+</tr>
+<tr>
+<td>AL</td>
+<td>系统遇到致命错误重启或执行关机命令</td>
+<td>无关</td>
+</tr>
+</tbody></table>
+<p><strong>故障发生点</strong>：Windows徽标出现（由Bootloader借助UEFI GOP绘制），转圈动画结束后，固件控制权刚移交给内核，<strong>内核试图加载其内置的显示驱动（Basic Display Driver）并初始化图形界面</strong>，但此时显卡未能成功响应内核的Mode-Set（模式设置）请求，导致信号中断黑屏。</p>
+<ol start="3">
+<li><h3 id="为什么是TSL-阶段出现问题"><a href="#为什么是TSL-阶段出现问题" class="headerlink" title="为什么是TSL 阶段出现问题"></a>为什么是TSL 阶段出现问题</h3></li>
+</ol>
+<p><strong>“徽标转圈”是TSL阶段的前半段</strong>：Windows的“转圈”动画，本质上是 <code>bootmgfw.efi</code> 在 <strong>UEFI 启动服务（Boot Services）</strong> 环境下，通过调用DXE阶段安装的 <strong>GOP（图形输出协议）</strong> 来绘制的。这说明固件级的显示通道是通畅的。</p>
+<p><strong>“转圈后黑屏”是TSL阶段的分水岭</strong>：转圈结束意味着 <code>bootmgfw.efi</code> 完成了内核加载，执行 <strong><code>ExitBootServices()</code></strong>。</p>
+<ul>
+<li>在此之后，UEFI固件中的GOP驱动虽然还在内存里，但已经<strong>失去了对硬件的控制权</strong>。</li>
+<li>Windows内核接管后，会立即调用自己的 <strong>Windows Basic Display Driver（基本显示驱动）</strong>，该驱动试图重新初始化显卡硬件。</li>
+<li>如果显卡的vBIOS在UEFI模式下的状态机（State Machine）无法正确响应内核发起的模式切换指令就会导致显示缓冲区挂起，输出全黑但有背光（或直接无信号）</li>
+</ul>
+<ol start="4">
+<li><h3 id="为什么-BIOS-Reset-能修复？"><a href="#为什么-BIOS-Reset-能修复？" class="headerlink" title="为什么 BIOS Reset 能修复？"></a>为什么 BIOS Reset 能修复？</h3></li>
+</ol>
+<p>BIOS Reset 后之所以恢复，大概率是因为主板重新建立 UEFI 启动环境、GOP 显示初始化状态及相关 NVRAM 配置，同时将Secure Boot&#x2F;CSM 等策略恢复默认值，从而消除了异常显示初始化状态，使 Windows 安装程序能够正常完成显示接管并进入安装界面。</p>
+<h2 id="五、未来风险"><a href="#五、未来风险" class="headerlink" title="五、未来风险"></a>五、未来风险</h2><p>自 Windows 8 和 Windows Server 2012 起，微软在 Secure Boot 体系中使用了一组 2011 年签发的根证书，其中<strong>Microsoft UEFI CA 2011</strong> 证书即将在2026年6月27日到期，该CA证书主要对第三方引导加载程序和 EFI 应用程序进行签名。2023年之前生产的独立显卡（NVIDIA和AMD都受到影响），其VBIOS（显卡固件）中GOP模块大多都是由微软UEFI CA 2011证书签名的。如果开启安全启动（Secure Boot）并且使用UEFI重装系统时，则会在DXE阶段验证GOP失败，导致直接黑屏。</p>
+<p>现象为正常进入BIOS→ 选择UEFI启动安装盘→ 直接黑屏，如果出现此问题可以选择将Secure Boot从<strong>Windows UEFI Mode</strong>改为<strong>Other OS</strong>试一试。</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/23/nrqqha.webp" alt="显卡UEFI"></p>
+<p>参考链接：</p>
+<ol>
+<li><p><a href="https://zhuanlan.zhihu.com/p/483888207">UEFI启动流程概览</a></p>
+</li>
+<li><p><a href="https://www.reddit.com/r/buildapc/comments/wwz8eb/trying_to_clean_install_windows_11_but_keep/?show=original">Trying to clean install windows 11 but keep getting black screen</a></p>
+</li>
+<li><p><a href="https://support.microsoft.com/zh-hk/topic/windows-%E5%AE%89%E5%85%A8%E9%96%8B%E6%A9%9F%E6%86%91%E8%AD%89%E5%88%B0%E6%9C%9F%E8%88%87-ca-%E6%9B%B4%E6%96%B0-7ff40d33-95dc-4c3c-8725-a9b95457578e">Windows 安全开机凭证到期与CA 更新</a></p>
+</li>
+<li><p><a href="https://baijiahao.baidu.com/s?id=1867864521102478474&wfr=spider&for=pc">Windows安全启动证书6月下旬开始到期：你的电脑不会变砖，但显卡可能黑屏！3分钟自查+修复指南</a></p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>BIOS</tag>
+        <tag>windows</tag>
+        <tag>系统安装</tag>
+        <tag>Secure Boot</tag>
+        <tag>UEF</tag>
       </tags>
   </entry>
 </search>
