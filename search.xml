@@ -201,6 +201,305 @@
       </tags>
   </entry>
   <entry>
+    <title>Windows 11 重装遇到离谱问题分析排查</title>
+    <url>/posts/ebc9b05d.html</url>
+    <content><![CDATA[<h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><ol>
+<li><p><strong>重装原因</strong>：原有 Windows11系统经常蓝屏，并且也想清理下C盘。</p>
+</li>
+<li><p><strong>环境信息</strong>：华硕TUF Z370+I7 8086K+RTX 3080TI</p>
+</li>
+</ol>
+<h2 id="二、工具"><a href="#二、工具" class="headerlink" title="二、工具"></a>二、工具</h2><ul>
+<li><a href="https://next.itellyou.cn/"><strong>MSDN</strong></a> 下载的 Windows 11 ISO 镜像</li>
+<li><strong><a href="https://rufus.ie/zh/">Rufus 4.14</a></strong> 制作 USB 启动盘</li>
+<li><a href="https://www.microsoft.com/zh-cn/software-download/windows11"><strong>Media Creation Tool (MCT) for Windows 11</strong></a>微软官方制作启动盘工具</li>
+<li>第三方PE经典老毛桃（刚发现已经被火绒认为是流氓软件）</li>
+</ul>
+<h2 id="三、安装过程"><a href="#三、安装过程" class="headerlink" title="三、安装过程"></a>三、安装过程</h2><ol>
+<li><h3 id="ISO-本地安装"><a href="#ISO-本地安装" class="headerlink" title="ISO 本地安装"></a><strong>ISO 本地安装</strong></h3></li>
+</ol>
+<ul>
+<li><p>在现有 Windows 系统中挂载 ISO，运行 <code>setup.exe</code>，选择“不保留任何内容”进行纯净安装。</p>
+</li>
+<li><p>文件复制完成，系统重启。</p>
+</li>
+<li><p>重启后显示 Windows 徽标，下方转圈动画10秒后画面消失，显示器黑屏（有背光）。</p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+<ul>
+<li>等待 30 分钟无任何响应重启还是开在这里，换U盘重装。</li>
+</ul>
+<ol start="2">
+<li><h3 id="Rufus-刻录-U-盘安装"><a href="#Rufus-刻录-U-盘安装" class="headerlink" title="Rufus 刻录 U 盘安装"></a><strong>Rufus 刻录 U 盘安装</strong></h3></li>
+</ol>
+<p>设置如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbxjh4.webp" alt="Rufus1"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbz7ji.webp" alt="Rufus2"></p>
+<hr>
+<ul>
+<li><p>使用 Rufus 4.14，分区类型 GPT，目标系统 UEFI，写入 ISO</p>
+</li>
+<li><p>BIOS 选择 UEFI USB 启动</p>
+</li>
+<li><p>同样出现徽标转圈 → 黑屏无响应，无法进入安装界面</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+</li>
+</ul>
+<p>怀疑是不是镜像或者刻录工具的问题，换个工具和镜像再试试。</p>
+<ol start="3">
+<li><h3 id="Media-Creation-Tool-制作-U-盘安装"><a href="#Media-Creation-Tool-制作-U-盘安装" class="headerlink" title="Media Creation Tool 制作 U 盘安装"></a><strong>Media Creation Tool 制作 U 盘安装</strong></h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmplno.webp" alt="安装1"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmqsoe.webp" alt="安装2"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmre0h.webp" alt="安装3"></p>
+<ul>
+<li>Media Creation Tool会自动下载Windows镜像，并且自动刻录。</li>
+<li>将制作好的U盘插入BIOS 选择 UEFI USB 启动。</li>
+<li>启动后现象与 Rufus 完全相同：转圈后黑屏。</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
+<hr>
+<ol start="4">
+<li><h3 id="BIOS-启动项与模式调整"><a href="#BIOS-启动项与模式调整" class="headerlink" title="BIOS 启动项与模式调整"></a><strong>BIOS 启动项与模式调整</strong></h3></li>
+</ol>
+<ul>
+<li><p>逐一尝试不同启动项（UEFI USB、不带 UEFI 标识的 USB、硬盘 Windows Boot Manager）→ 均失败。</p>
+</li>
+<li><p>CSM 中Boot Devices Control 改为仅 UEFI → 无效。</p>
+</li>
+</ul>
+<ol start="5">
+<li><h3 id="尝试使用经典工具老毛桃PE"><a href="#尝试使用经典工具老毛桃PE" class="headerlink" title="尝试使用经典工具老毛桃PE"></a><strong>尝试使用经典工具老毛桃PE</strong></h3></li>
+</ol>
+<ul>
+<li>U盘刻录老毛桃PE→ 黑屏依旧。</li>
+</ul>
+<ol start="6">
+<li><h3 id="问题排查"><a href="#问题排查" class="headerlink" title="问题排查"></a><strong>问题排查</strong></h3></li>
+</ol>
+<p>google后在Reddit 发现一个现象很像的案例 <a href="https://www.reddit.com/r/pchelp/comments/16qw1zl/black_screen_on_my_new_build_while_installing/?show=original">Black Screen on my New Build while installing Windows 11</a>大致描述是与显示输出设备有关，根据社区的建议做了几个尝试如下：</p>
+<ul>
+<li>DisplayPort 拔插+换接口 → 还是黑屏且直接变成无背光无信号</li>
+<li>更换HDMI线材→ 还是黑屏故障相同</li>
+<li>将 HDMI 从独立显卡拔下，接到主板核显接口 → 依然黑屏</li>
+</ul>
+<p>试着这几种方法都没能解决问题，梳理了一下后面的测试方案：</p>
+<ul>
+<li><strong>显卡隔离</strong>‌：移除独立显卡，将显示输出切换至主板板载显示接口（HDMI），以排除独显故障或驱动引入的异常。</li>
+<li><strong>内存最小化测试</strong>：仅保留单条内存模组进行开机验证，必要时更换插槽交叉测试，以判断是否存在内存兼容性或硬件损坏</li>
+<li><strong>主板初始化恢复</strong>：通过清除 CMOS 或恢复 BIOS 默认设置的方式，将主板恢复至出厂默认状态，排除配置问题。</li>
+</ul>
+<ol start="7">
+<li><h3 id="BIOS-重置"><a href="#BIOS-重置" class="headerlink" title="BIOS 重置"></a><strong>BIOS 重置</strong></h3></li>
+</ol>
+<ul>
+<li><p>将BIOS恢复出厂设置</p>
+</li>
+<li><p>使用 Rufus U 盘重新启动安装</p>
+</li>
+</ul>
+<p>故障解决，成功进入 Windows 安装界面，安装完成后可以正常开机。</p>
+<hr>
+<h2 id="四、推测根因"><a href="#四、推测根因" class="headerlink" title="四、推测根因"></a>四、推测根因</h2><p>UEFI&#x2F;CSM&#x2F;显卡 GOP（UEFI 显示初始化）阶段的兼容性问题</p>
+<ol>
+<li><h3 id="现象指向"><a href="#现象指向" class="headerlink" title="现象指向"></a><strong>现象指向</strong></h3></li>
+</ol>
+<p>所有安装方式失败都有一个共同点</p>
+<p>Windows Logo 出现 → 转圈 → 黑屏（显示器仍有背光或短暂无信号）</p>
+<ol start="2">
+<li><h3 id="根因分析"><a href="#根因分析" class="headerlink" title="根因分析"></a>根因分析</h3></li>
+</ol>
+<p>UEFI启动流程可以分为以下7各阶段：</p>
+<p>SEC（安全验证）-&gt;PEI（EFI前期初始化）-&gt;DXE（驱动执行环境）-&gt;BDS（启动设备选择）-&gt;TSL（操作系统加载前期）-&gt;RT（系统系统运行阶段）-&gt;AL（系统灾难恢复期或关机）</p>
+<p>各阶段表现对照分析：</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>状态</th>
+<th>是否正常</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SEC</td>
+<td>CPU微码加载、缓存初始化、检查平台安全状态</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>PEI</td>
+<td>初始化CPU、芯片组和内存（RAM）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>DXE</td>
+<td>枚举并加载绝大多数硬件驱动，包括 PCIe总线驱动 和 显卡的UEFI GOP驱动。此时固件绘制出BIOS设置界面</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>BDS</td>
+<td>根据启动顺序加载指定的EFI应用程序（即 <code>bootmgfw.efi</code>，Windows引导管理器）</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>TSL</td>
+<td><strong>操作系统加载器（Windows Boot Manager）运行</strong>。它加载内核、HAL和初始驱动，然后<strong>调用 <code>ExitBootServices()</code> 结束固件对硬件的控制权</strong>，将控制权交给操作系统内核。</td>
+<td>⚠️ 发生故障</td>
+</tr>
+<tr>
+<td>RT</td>
+<td>操作系统完全接管硬件，驱动正常运行，用户进入桌面或安装界面。</td>
+<td>未进入</td>
+</tr>
+<tr>
+<td>AL</td>
+<td>系统遇到致命错误重启或执行关机命令</td>
+<td>无关</td>
+</tr>
+</tbody></table>
+<p><strong>故障发生点</strong>：Windows徽标出现（由Bootloader借助UEFI GOP绘制），转圈动画结束后，固件控制权刚移交给内核，<strong>内核试图加载其内置的显示驱动（Basic Display Driver）并初始化图形界面</strong>，但此时显卡未能成功响应内核的Mode-Set（模式设置）请求，导致信号中断黑屏。</p>
+<ol start="3">
+<li><h3 id="为什么是TSL-阶段出现问题"><a href="#为什么是TSL-阶段出现问题" class="headerlink" title="为什么是TSL 阶段出现问题"></a>为什么是TSL 阶段出现问题</h3></li>
+</ol>
+<p><strong>“徽标转圈”是TSL阶段的前半段</strong>：Windows的“转圈”动画，本质上是 <code>bootmgfw.efi</code> 在 <strong>UEFI 启动服务（Boot Services）</strong> 环境下，通过调用DXE阶段安装的 <strong>GOP（图形输出协议）</strong> 来绘制的。这说明固件级的显示通道是通畅的。</p>
+<p><strong>“转圈后黑屏”是TSL阶段的分水岭</strong>：转圈结束意味着 <code>bootmgfw.efi</code> 完成了内核加载，执行 <strong><code>ExitBootServices()</code></strong>。</p>
+<ul>
+<li>在此之后，UEFI固件中的GOP驱动虽然还在内存里，但已经<strong>失去了对硬件的控制权</strong>。</li>
+<li>Windows内核接管后，会立即调用自己的 <strong>Windows Basic Display Driver（基本显示驱动）</strong>，该驱动试图重新初始化显卡硬件。</li>
+<li>如果显卡的vBIOS在UEFI模式下的状态机（State Machine）无法正确响应内核发起的模式切换指令就会导致显示缓冲区挂起，输出全黑但有背光（或直接无信号）</li>
+</ul>
+<ol start="4">
+<li><h3 id="为什么-BIOS-Reset-能修复？"><a href="#为什么-BIOS-Reset-能修复？" class="headerlink" title="为什么 BIOS Reset 能修复？"></a>为什么 BIOS Reset 能修复？</h3></li>
+</ol>
+<p>BIOS Reset 后之所以恢复，大概率是因为主板重新建立 UEFI 启动环境、GOP 显示初始化状态及相关 NVRAM 配置，同时将Secure Boot&#x2F;CSM 等策略恢复默认值，从而消除了异常显示初始化状态，使 Windows 安装程序能够正常完成显示接管并进入安装界面。</p>
+<h2 id="五、未来风险"><a href="#五、未来风险" class="headerlink" title="五、未来风险"></a>五、未来风险</h2><p>自 Windows 8 和 Windows Server 2012 起，微软在 Secure Boot 体系中使用了一组 2011 年签发的根证书，其中<strong>Microsoft UEFI CA 2011</strong> 证书即将在2026年6月27日到期，该CA证书主要对第三方引导加载程序和 EFI 应用程序进行签名。2023年之前生产的独立显卡（NVIDIA和AMD都受到影响），其VBIOS（显卡固件）中GOP模块大多都是由微软UEFI CA 2011证书签名的。如果开启安全启动（Secure Boot）并且使用UEFI重装系统时，则会在DXE阶段验证GOP失败，导致直接黑屏。</p>
+<p>现象为正常进入BIOS→ 选择UEFI启动安装盘→ 直接黑屏，如果出现此问题可以选择将Secure Boot从<strong>Windows UEFI Mode</strong>改为<strong>Other OS</strong>试一试。</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/06/23/nrqqha.webp" alt="显卡UEFI"></p>
+<p>参考链接：</p>
+<ol>
+<li><p><a href="https://zhuanlan.zhihu.com/p/483888207">UEFI启动流程概览</a></p>
+</li>
+<li><p><a href="https://www.reddit.com/r/buildapc/comments/wwz8eb/trying_to_clean_install_windows_11_but_keep/?show=original">Trying to clean install windows 11 but keep getting black screen</a></p>
+</li>
+<li><p><a href="https://support.microsoft.com/zh-hk/topic/windows-%E5%AE%89%E5%85%A8%E9%96%8B%E6%A9%9F%E6%86%91%E8%AD%89%E5%88%B0%E6%9C%9F%E8%88%87-ca-%E6%9B%B4%E6%96%B0-7ff40d33-95dc-4c3c-8725-a9b95457578e">Windows 安全开机凭证到期与CA 更新</a></p>
+</li>
+<li><p><a href="https://baijiahao.baidu.com/s?id=1867864521102478474&wfr=spider&for=pc">Windows安全启动证书6月下旬开始到期：你的电脑不会变砖，但显卡可能黑屏！3分钟自查+修复指南</a></p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>windows</tag>
+        <tag>系统安装</tag>
+        <tag>BIOS</tag>
+        <tag>Secure Boot</tag>
+        <tag>UEF</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>windows 11 安装教程</title>
+    <url>/posts/50cbde44.html</url>
+    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
+<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
+<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
+<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
+</ol>
+<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
+<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
+<ol start="2">
+<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
+<ol start="3">
+<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
+<ol start="4">
+<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
+<ol start="5">
+<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
+<ol start="6">
+<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
+<ol start="7">
+<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
+<ol start="8">
+<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
+<ol start="9">
+<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
+<ol start="10">
+<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
+<ol start="10">
+<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
+</ol>
+<p>将U盘中的Win11激活器复制到桌面并解压</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
+<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>windows</tag>
+        <tag>系统安装</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>Linux初始化以及系统性能调优</title>
     <url>/posts/b4a62efd.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
@@ -329,87 +628,115 @@
         <category>运维</category>
       </categories>
       <tags>
+        <tag>BIOS</tag>
         <tag>Linux</tag>
         <tag>GRUB</tag>
-        <tag>BIOS</tag>
       </tags>
   </entry>
   <entry>
-    <title>ssl证书自动续期工具——acme</title>
-    <url>/posts/e691384c.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
-<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
-<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>注意换成自己的邮箱号</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>设置自动升级</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>选择服务商</li>
-</ol>
-<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
-
-<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
+    <title>交换机access、hybrid、trunk口的区别、特点、应用场景以及如何配置</title>
+    <url>/posts/18d22523.html</url>
+    <content><![CDATA[<p>在数据中心和大型企业网络环境中，交换机是作为局域网的核心设备。它不仅能够连接不同的网络设备，还能够通过划分虚拟局域网（VLAN）来优化网络性能和安全性。而端口模式的配置决定了交换机端口如何处理VLAN标签。</p>
+<p>下文主要讲解交换机的三种端口模式Access、Hybrid 和 Trunk，它们的特点、应用场景、如何配置以及区别。</p>
+<h2 id="交换机三种端口模式：Access、Trunk、Hybrid"><a href="#交换机三种端口模式：Access、Trunk、Hybrid" class="headerlink" title="交换机三种端口模式：Access、Trunk、Hybrid"></a>交换机三种端口模式：Access、Trunk、Hybrid</h2><p>交换机端口在二层转发时，最核心的动作就是处理 <strong>VLAN 标签（802.1Q Tag）</strong>。根据对标签的处理方式，端口被划分为三种模式。</p>
 <ol>
-<li>创建API秘钥</li>
+<li><h3 id="Access"><a href="#Access" class="headerlink" title="Access"></a>Access</h3></li>
 </ol>
-<p>会得到SecretId和SecretKey</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+<p>端口仅属于一个 VLAN，也就是<strong>发出的帧不带标签</strong>，<strong>收到的帧一律打上该 VLAN 标签（PVID）</strong>。通常用于接入主机、服务器等终端设备。</p>
+<p>配置命令（以VLAN10为例）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">switchport mode access;</span><br><span class="line">switchport access vlan 10;</span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">port link-type access;</span><br><span class="line">port default vlan 10;</span><br></pre></td></tr></table></figure>
 
 
 
 <ol start="2">
-<li>将秘钥格式化导入环境变量</li>
+<li><h3 id="Trunk"><a href="#Trunk" class="headerlink" title="Trunk"></a>Trunk</h3></li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+<p>端口可以同时加入多个 VLAN，适用于交换机之间的链路互联。工作原理是<strong>发出的帧除 PVID外，全部带标签</strong>；<strong>收到的帧，带标签的保留，不带标签的则打上 PVID 所属标签</strong>。</p>
+<p>总结trunk的判断逻辑如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/01/sj2ixj.png" alt="交换机trunk端口判断逻辑"></p>
+<p>配置命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">interface GigabitEthernet 1/0/1</span><br><span class="line">switchport mode trunk;</span><br><span class="line">switchport trunk encapsulation dot1q;</span><br><span class="line">switchport trunk native vlan 10</span><br><span class="line">switchport trunk allowed vlan 10,11,20;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type trunk;</span><br><span class="line">port trunk pvid vlan 10;</span><br><span class="line">port trunk allow-pass vlan 10,11,20;</span><br></pre></td></tr></table></figure>
 
 
 
 <ol start="3">
-<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+<li><h3 id="Hybrid"><a href="#Hybrid" class="headerlink" title="Hybrid"></a>Hybrid</h3></li>
 </ol>
-<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+<p>Hybrid是华为系命令厂家中交换机具备的一种额外的模式，这种模式被设计用来兼容access模式和trunk模式，Hybrid 端口允许部分 VLAN 帧不带标签（untagged），部分带标签（tagged），灵活性更高。</p>
+<p>Hybrid接口共有三个参数：</p>
+<ul>
+<li>tagged vlan（带标签 VLAN）：从该端口<strong>发出</strong>的数据帧，保留原有的 802.1Q 标签（即带着 VLAN ID 出去）。</li>
+<li>untagged vlan（不带标签 VLAN）：从该端口<strong>发出</strong>时，剥去 802.1Q 标签，变成标准以太网帧。</li>
+<li>pvid（这里的pvid与trunk的pvid不可混淆，二者有一定的区别）</li>
+</ul>
+<p>总结trunk的判断逻辑如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/01/x7tavz.png" alt="交换机hybrid端口判断逻辑"></p>
+<p>​     对比Trunk的判断逻辑表和Hybrid判断逻辑表，可以发现pvid在两个模式下的生效的作用略有不用。在hybrid模式下面，pvid只生效于入接口方向，在出方向上不考虑pvid，出方向只检查vlan标签被tagged&#x2F;untagged列表匹配情况。而到了Trunk接口模式下，情况就有所变化了。在入方向上，pvid的逻辑完全继承了hybrid模式的逻辑，但在出方向上，在匹配逻辑上Trunk会多考虑一个环节，就是是否匹配pvid，如果匹配上了pvid，数据帧会被脱掉vlan标签转发，而hybrid根本不检查pvid，全部都执行直接转发的动作。</p>
+<p>配置命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type hybrid;</span><br><span class="line">port hybrid pvid vlan 10;</span><br><span class="line">port hybrid untagged vlan 10;</span><br><span class="line">port hybrid tagged vlan 20</span><br></pre></td></tr></table></figure>
 
-<p>命令执行完毕后，证书颁发成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
-<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
-<p>将证书文件复制到nginx配置的ssl证书目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
 
 
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
+<h2 id="横向对比表与应用场景"><a href="#横向对比表与应用场景" class="headerlink" title="横向对比表与应用场景"></a>横向对比表与应用场景</h2><table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">Access</th>
+<th align="left">Trunk</th>
+<th align="left">Hybrid</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">所属 VLAN 数</td>
+<td align="left">1 个</td>
+<td align="left">多个（允许列表）</td>
+<td align="left">多个（允许列表）</td>
+</tr>
+<tr>
+<td align="left">发出帧标签规则</td>
+<td align="left">全部 Untagged</td>
+<td align="left">PVID Untagged，其他 Tagged</td>
+<td align="left">按 VLAN 手工设置 Tagged&#x2F;Untagged</td>
+</tr>
+<tr>
+<td align="left">收到无标签帧处理</td>
+<td align="left">打上所属 VLAN 标签</td>
+<td align="left">打上 PVID 标签</td>
+<td align="left">打上 PVID 标签（若该 VLAN 允许通过）</td>
+</tr>
+<tr>
+<td align="left">收到带标签帧处理</td>
+<td align="left">丢弃（VLAN 不一致则丢弃）</td>
+<td align="left">检查是否在允许列表</td>
+<td align="left">检查是否在允许列表</td>
+</tr>
+<tr>
+<td align="left">典型应用</td>
+<td align="left">终端接入</td>
+<td align="left">交换机间互联</td>
+<td align="left">灵活 VLAN 部署，如 IPTV、管理网段混传</td>
+</tr>
+</tbody></table>
+<p>参考链接：</p>
+<ol>
+<li><p><a href="https://support.huawei.com/enterprise/zh/knowledge/EKB1000060549">交换机端口与C友商模式横向对比</a></p>
+</li>
+<li><p><a href="https://cloud.tencent.com/developer/article/2502264">你知道交换机有哪三种端口工作模式吗？</a></p>
+</li>
+<li><p><a href="https://zhuanlan.zhihu.com/p/451399550">交换机三种端口模式Access、Hybrid和Trunk的理解</a></p>
+</li>
+<li><p><a href="https://zhuanlan.zhihu.com/p/714222918">交换机端口模式详解看这篇，Access、Hybrid、Trunk很清晰</a></p>
+</li>
+</ol>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>acme</tag>
-        <tag>免费证书</tag>
-        <tag>自动化申请证书</tag>
+        <tag>access</tag>
+        <tag>hybrid</tag>
+        <tag>trunk</tag>
+        <tag>交换机</tag>
       </tags>
   </entry>
   <entry>
@@ -781,306 +1108,6 @@
       </tags>
   </entry>
   <entry>
-    <title>手动搭建LNMP环境</title>
-    <url>/posts/9d5ca845.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
-<ul>
-<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
-<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
-<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
-<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
-</ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
-<li>确认源文件正常，执行以下命令。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令，安装 nginx。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
-
-<ol start="8">
-<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
-
-<p>显示如下，则说明 Nginx 安装配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
-<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
-<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
-<ol start="4">
-<li>执行以下命令，退出 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
-
-<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
-<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，验证 PHP 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
-<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
-<ol>
-<li>执行以下命令，创建测试文件。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则说明环境配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>Linux</tag>
-        <tag>Nginx</tag>
-        <tag>MySQL</tag>
-        <tag>PHP</tag>
-        <tag>wordpress</tag>
-        <tag>LNMP环境</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>解析WordPress网站域名与常见问题</title>
-    <url>/posts/4c6ec737.html</url>
-    <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
-<ol>
-<li><h3 id="注册域名。"><a href="#注册域名。" class="headerlink" title="注册域名。"></a>注册域名。</h3></li>
-</ol>
-<p><a href="https://www.alibabacloud.com/help/zh/dws/user-guide/register-a-domain-name-on-alibaba-cloud#task-1830383">阿里云域名注册流程</a></p>
-<p><a href="https://cloud.tencent.com/document/product/242/9595">腾讯云域名注册流程</a></p>
-<p><a href="https://support.huaweicloud.com/usermanual-domain/domain_ug_310004.html">华为云域名注册流程</a></p>
-<ol start="2">
-<li><h3 id="备案域名。"><a href="#备案域名。" class="headerlink" title="备案域名。"></a>备案域名。</h3><p>如果您的域名指向的网站托管在中国内地节点服务器，则需要到对应云平台上进行ICP备案，时长按照备案地处理速度，一般在1-30个工作日。如果不备案可能会导致域名无法访问。</p>
-</li>
-<li><h3 id="解析域名。将域名指向实例公网IP。"><a href="#解析域名。将域名指向实例公网IP。" class="headerlink" title="解析域名。将域名指向实例公网IP。"></a>解析域名。将域名指向实例公网IP。</h3><p>域名解析是使用域名访问您的网站的必备环节。请在托管的云平台上进行解析，具体参考各云平台的文档，如需IPV6的访问请添加AAAA解析。</p>
-</li>
-</ol>
-<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"><a href="#一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录" class="headerlink" title="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"></a>一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录</h3><p>该问题可能是因为WordPress配置文件主题或插件的权限不足，您可以参考以下步骤解决。</p>
-<ol>
-<li><p>登录搭建WordPress的服务器</p>
-</li>
-<li><p>运行以下命令，打开WordPress配置文件（wp-config.php文件位置请根据实际服务器上自定义的位置进行更换）</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /usr/share/nginx/html/wordpress/wp-config.php</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>按<code>i</code>键进入编辑模式。</p>
-</li>
-<li><p>在最下方，添加如下代码。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">define(&quot;FS_METHOD&quot;,&quot;direct&quot;);</span><br><span class="line">define(&quot;FS_CHMOD_DIR&quot;, 0777);</span><br><span class="line">define(&quot;FS_CHMOD_FILE&quot;, 0777);</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li><p>按<code>Esc</code>键，输入<code>:wq</code>后按<code>Enter</code>键，保存退出配置文件。</p>
-</li>
-<li><p>返回WordPress仪表盘，刷新页面，可解决需要FTP登录凭证的问题。</p>
-<p>如果仍存在无法创建目录的问题，需再次返回登录，运行以下命令，将网站根目录的权限用户更新为Nginx对应的用户，本示例环境中为<code>www-data</code>用户。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chown -R www-data /usr/share/nginx/html/wordpress</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"><a href="#二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库" class="headerlink" title="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"></a>二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库</h3><p>操作步骤如下：</p>
-<ol>
-<li><p>登录数据库，root密码具体看配置数据库时修改的数据。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql -u root -p</span><br></pre></td></tr></table></figure>
-
-</li>
-<li><p>查寻并修改数据库</p>
-<blockquote>
-<p>本示例将域名<code>www.example1.com</code>改为<a href="http://www.example2.com./">www.example2.com。</a></p>
-</blockquote>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; use wordpress;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; select * from wp_options where option_value like &#x27;%www.example1.com&#x27;;</span><br><span class="line"></span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">| option_id | option_name | option_value              | autoload |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">|         2 | siteurl     | https://www.example1.com  | on       |</span><br><span class="line">|         3 | home        | https://www.example1.com  | on       |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">2 rows in set (0.046 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; update wp_options set option_value=replace(option_value, &#x27;https://www.example2.com&#x27;, &#x27;https://www.example2.com&#x27;) where option_name = &#x27;home&#x27; OR option_name = &#x27;siteurl&#x27;;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; exit;</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>成功为WordPress网站设置新域名。</p>
-</li>
-</ol>
-<h3 id="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"><a href="#三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法" class="headerlink" title="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"></a>三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法</h3><p>在使用wordPress的时候，可能会遇到“您关注的链接已过期”或The link you followed has expired” 错误，一般从WordPress管理后台上传WordPress主题或插件到您的网站时，通常会发生此错误。WordPress有一个设置参数，可以控制从WordPress管理后台上传的文件的大小。</p>
-<ol>
-<li><p>登录服务器，查看配置文件位置</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ps -ef|grep php</span><br><span class="line"></span><br><span class="line">www-data 2754144 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">www-data 2754145 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">ops      2756021 2745748  0 17:22 pts/0    00:00:00 grep php</span><br><span class="line">root     3454264       1  0 Sep06 ?        00:00:40 php-fpm: master process (/etc/php/8.2/fpm/php-fpm.conf)</span><br><span class="line"></span><br><span class="line">可以确认配置文件在/etc/php/8.2/fpm/ 目录 修改该目录下的php.ini文件</span><br><span class="line">提前备份文件</span><br><span class="line">sudo cp /etc/php/8.2/fpm/php.ini /etc/php/8.2/fpm/php.ini.bak</span><br><span class="line">sudo vim /etc/php/8.2/fpm/php.ini</span><br><span class="line"></span><br><span class="line">打开文件后修改下面三行参数，保存并退出</span><br><span class="line"></span><br><span class="line">upload_max_filesize = 64M</span><br><span class="line">post_max_size = 64M</span><br><span class="line">max_execution_time = 300</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>服务重新加载配置文件</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl reload php8.2-fpm.service</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>修复完成验证</p>
-<p>可以再次上传测试，限制调整为可以上传单个文件的最大大小为64M，最大执行时间为300秒。</p>
-</li>
-</ol>
-<h3 id="四、Nginx伪静态规则"><a href="#四、Nginx伪静态规则" class="headerlink" title="四、Nginx伪静态规则"></a>四、Nginx伪静态规则</h3><p>若在发布文章出现“此响应不是合法的JSON响应”，则需要检查nginx伪静态规则是否配置，具体配置如下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">        try_files $uri $uri/ /index.php?$args;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>如nginx无配置，在location &#x2F;加入该配置即可。</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>WordPress常见问题</tag>
-        <tag>WordPress域名</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>windows 11 安装教程</title>
-    <url>/posts/50cbde44.html</url>
-    <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
-<p>制作系统盘可以到<a href="https://next.itellyou.cn/">MSDN</a>上按需下载，制作启动盘可以使用官方工具<a href="https://www.microsoft.com/zh-cn/software-download/windows11">Windows11安装助手</a>或者使用Rufus等工具。</p>
-<h2 id="第二步：安装Windows11"><a href="#第二步：安装Windows11" class="headerlink" title="第二步：安装Windows11"></a>第二步：安装Windows11</h2><ol>
-<li><h3 id="进入选择启动项界面"><a href="#进入选择启动项界面" class="headerlink" title="进入选择启动项界面"></a>进入选择启动项界面</h3></li>
-</ol>
-<p>可自行百度自己笔记本电脑进入bios页面的快捷键，以联想笔记本为例</p>
-<p>将电脑关机之后，按住Fn键，启动电源，出现BIOS页面,选中 Boot Menu，回车</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mhnlm.jpeg" alt="b04a2dfdfcb889b2edd5619a7912019f"></p>
-<ol start="2">
-<li><h3 id="选择USB启动项"><a href="#选择USB启动项" class="headerlink" title="选择USB启动项"></a>选择USB启动项</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10mrf91.jpeg" alt="7ac69351bab76e9a9e64427a5f4e87da"></p>
-<ol start="3">
-<li><h3 id="进入windows安装页面"><a href="#进入windows安装页面" class="headerlink" title="进入windows安装页面"></a>进入windows安装页面</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oufhx.png" alt="PixPin_2026-01-12_21-54-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12ovkvl.png" alt="PixPin_2026-01-12_23-32-39"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12owgls.png" alt="PixPin_2026-01-12_23-32-56"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12oxnxd.png" alt="PixPin_2026-01-12_23-33-05"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p7fgj.png" alt="PixPin_2026-01-12_23-33-25"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12p9u72.png" alt="PixPin_2026-01-12_23-33-37"></p>
-<ol start="4">
-<li><h3 id="删除所有分区"><a href="#删除所有分区" class="headerlink" title="删除所有分区"></a>删除所有分区</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pvif6.png" alt="PixPin_2026-01-12_23-34-58"></p>
-<ol start="5">
-<li><h3 id="直到只剩未分配空间"><a href="#直到只剩未分配空间" class="headerlink" title="直到只剩未分配空间"></a>直到只剩未分配空间</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12pwivi.png" alt="PixPin_2026-01-12_23-37-01"></p>
-<ol start="6">
-<li><h3 id="然后按照需求新建分区"><a href="#然后按照需求新建分区" class="headerlink" title="然后按照需求新建分区"></a>然后按照需求新建分区</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qiqh3.png" alt="PixPin_2026-01-12_23-38-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qjw8i.png" alt="PixPin_2026-01-12_23-38-19"></p>
-<ol start="7">
-<li><h3 id="开始安装系统"><a href="#开始安装系统" class="headerlink" title="开始安装系统"></a>开始安装系统</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qmjuc.png" alt="PixPin_2026-01-12_23-38-25"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12qouns.png" alt="PixPin_2026-01-12_23-38-31"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12swqrs.png" alt="PixPin_2026-01-12_23-46-11"></p>
-<ol start="8">
-<li><h3 id="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"><a href="#等待安装完成重启开机，如果想本地账户登录建议拔掉网线" class="headerlink" title="等待安装完成重启开机，如果想本地账户登录建议拔掉网线"></a>等待安装完成重启开机，如果想本地账户登录建议拔掉网线</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pekwr.png" alt="PixPin_2026-01-12_20-54-21"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pv07z.png" alt="PixPin_2026-01-12_20-54-45"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/12upawv.png" alt="PixPin_2026-01-12_23-49-17"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pw455.png" alt="PixPin_2026-01-12_21-09-43"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10pwzhn.png" alt="PixPin_2026-01-12_21-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/t48a.png" alt="PixPin_2026-01-12_23-56-30"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/uale.png" alt="PixPin_2026-01-12_23-56-44"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/va2b.png" alt="PixPin_2026-01-12_23-57-22"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/3wne6.png" alt="PixPin_2026-01-12_23-57-40"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/46dyb.png" alt="PixPin_2026-01-12_23-58-08"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/47h2i.png" alt="PixPin_2026-01-12_23-58-54"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5hqi3.png" alt="PixPin_2026-01-13_00-07-55"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5ikjd.png" alt="PixPin_2026-01-13_00-08-13"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5jie3.png" alt="PixPin_2026-01-13_00-08-58"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/5n658.png" alt="PixPin_2026-01-13_00-09-37"></p>
-<ol start="9">
-<li><h3 id="设置完成进入桌面"><a href="#设置完成进入桌面" class="headerlink" title="设置完成进入桌面"></a>设置完成进入桌面</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6k5sp.png" alt="PixPin_2026-01-13_00-10-01"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6m4ab.png" alt="PixPin_2026-01-13_00-10-14"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/6mtth.png" alt="PixPin_2026-01-13_00-10-24"></p>
-<ol start="10">
-<li><h3 id="关闭病毒防护"><a href="#关闭病毒防护" class="headerlink" title="关闭病毒防护"></a>关闭病毒防护</h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/dzc35.png" alt="PixPin_2026-01-13_00-21-27"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e0h13.png" alt="PixPin_2026-01-13_00-21-47"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/e1kar.png" alt="PixPin_2026-01-13_00-22-10"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eb0uv.png" alt="PixPin_2026-01-13_00-22-15"></p>
-<ol start="10">
-<li><h3 id="激活系统添加桌面图标"><a href="#激活系统添加桌面图标" class="headerlink" title="激活系统添加桌面图标"></a>激活系统添加桌面图标</h3></li>
-</ol>
-<p>将U盘中的Win11激活器复制到桌面并解压</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/efq5u.png" alt="PixPin_2026-01-13_00-12-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ehmcg.png" alt="PixPin_2026-01-13_00-13-00"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/eimo2.png" alt="PixPin_2026-01-13_00-13-09"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ejly3.png" alt="PixPin_2026-01-13_00-14-03"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/13/ekwiw.png" alt="PixPin_2026-01-13_00-14-17"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s4vl8.png" alt="PixPin_2026-01-12_21-52-49"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10s5keb.png" alt="PixPin_2026-01-12_21-52-55"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sbpeg.png" alt="PixPin_2026-01-12_21-54-04"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10scayg.png" alt="PixPin_2026-01-12_21-54-28"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sdg0t.png" alt="PixPin_2026-01-12_21-55-23"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10se3je.png" alt="PixPin_2026-01-12_21-55-35"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sev5y.png" alt="PixPin_2026-01-12_21-55-51"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/01/12/10sflv6.png" alt="PixPin_2026-01-12_21-56-26"></p>
-<p><strong>全部安装完成，其余设置可以按照需求进行修改。</strong></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>windows</tag>
-        <tag>系统安装</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Prometheus+Grafana+Alertmanager部署</title>
     <url>/posts/c03992dd.html</url>
     <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
@@ -1236,201 +1263,280 @@
       </tags>
   </entry>
   <entry>
-    <title>Windows 11 重装遇到离谱问题分析排查</title>
-    <url>/posts/ebc9b05d.html</url>
-    <content><![CDATA[<h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><ol>
-<li><p><strong>重装原因</strong>：原有 Windows11系统经常蓝屏，并且也想清理下C盘。</p>
-</li>
-<li><p><strong>环境信息</strong>：华硕TUF Z370+I7 8086K+RTX 3080TI</p>
-</li>
-</ol>
-<h2 id="二、工具"><a href="#二、工具" class="headerlink" title="二、工具"></a>二、工具</h2><ul>
-<li><a href="https://next.itellyou.cn/"><strong>MSDN</strong></a> 下载的 Windows 11 ISO 镜像</li>
-<li><strong><a href="https://rufus.ie/zh/">Rufus 4.14</a></strong> 制作 USB 启动盘</li>
-<li><a href="https://www.microsoft.com/zh-cn/software-download/windows11"><strong>Media Creation Tool (MCT) for Windows 11</strong></a>微软官方制作启动盘工具</li>
-<li>第三方PE经典老毛桃（刚发现已经被火绒认为是流氓软件）</li>
-</ul>
-<h2 id="三、安装过程"><a href="#三、安装过程" class="headerlink" title="三、安装过程"></a>三、安装过程</h2><ol>
-<li><h3 id="ISO-本地安装"><a href="#ISO-本地安装" class="headerlink" title="ISO 本地安装"></a><strong>ISO 本地安装</strong></h3></li>
-</ol>
+    <title>手动搭建LNMP环境</title>
+    <url>/posts/9d5ca845.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
 <ul>
-<li><p>在现有 Windows 系统中挂载 ISO，运行 <code>setup.exe</code>，选择“不保留任何内容”进行纯净安装。</p>
-</li>
-<li><p>文件复制完成，系统重启。</p>
-</li>
-<li><p>重启后显示 Windows 徽标，下方转圈动画10秒后画面消失，显示器黑屏（有背光）。</p>
-</li>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
 </ul>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
-<ul>
-<li>等待 30 分钟无任何响应重启还是开在这里，换U盘重装。</li>
-</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
+<li>确认源文件正常，执行以下命令。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
 <ol start="2">
-<li><h3 id="Rufus-刻录-U-盘安装"><a href="#Rufus-刻录-U-盘安装" class="headerlink" title="Rufus 刻录 U 盘安装"></a><strong>Rufus 刻录 U 盘安装</strong></h3></li>
+<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
 </ol>
-<p>设置如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbxjh4.webp" alt="Rufus1"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zbz7ji.webp" alt="Rufus2"></p>
-<hr>
-<ul>
-<li><p>使用 Rufus 4.14，分区类型 GPT，目标系统 UEFI，写入 ISO</p>
-</li>
-<li><p>BIOS 选择 UEFI USB 启动</p>
-</li>
-<li><p>同样出现徽标转圈 → 黑屏无响应，无法进入安装界面</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
-</li>
-</ul>
-<p>怀疑是不是镜像或者刻录工具的问题，换个工具和镜像再试试。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
+
 <ol start="3">
-<li><h3 id="Media-Creation-Tool-制作-U-盘安装"><a href="#Media-Creation-Tool-制作-U-盘安装" class="headerlink" title="Media Creation Tool 制作 U 盘安装"></a><strong>Media Creation Tool 制作 U 盘安装</strong></h3></li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmplno.webp" alt="安装1"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmqsoe.webp" alt="安装2"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/zmre0h.webp" alt="安装3"></p>
-<ul>
-<li>Media Creation Tool会自动下载Windows镜像，并且自动刻录。</li>
-<li>将制作好的U盘插入BIOS 选择 UEFI USB 启动。</li>
-<li>启动后现象与 Rufus 完全相同：转圈后黑屏。</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/04/z9oyc1.webp" alt="Windows开机动画"></p>
-<hr>
-<ol start="4">
-<li><h3 id="BIOS-启动项与模式调整"><a href="#BIOS-启动项与模式调整" class="headerlink" title="BIOS 启动项与模式调整"></a><strong>BIOS 启动项与模式调整</strong></h3></li>
-</ol>
-<ul>
-<li><p>逐一尝试不同启动项（UEFI USB、不带 UEFI 标识的 USB、硬盘 Windows Boot Manager）→ 均失败。</p>
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
 </li>
-<li><p>CSM 中Boot Devices Control 改为仅 UEFI → 无效。</p>
+<li><p>执行以下命令，安装 nginx。</p>
 </li>
-</ul>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
+
 <ol start="5">
-<li><h3 id="尝试使用经典工具老毛桃PE"><a href="#尝试使用经典工具老毛桃PE" class="headerlink" title="尝试使用经典工具老毛桃PE"></a><strong>尝试使用经典工具老毛桃PE</strong></h3></li>
+<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
 </ol>
-<ul>
-<li>U盘刻录老毛桃PE→ 黑屏依旧。</li>
-</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
 <ol start="6">
-<li><h3 id="问题排查"><a href="#问题排查" class="headerlink" title="问题排查"></a><strong>问题排查</strong></h3></li>
-</ol>
-<p>google后在Reddit 发现一个现象很像的案例 <a href="https://www.reddit.com/r/pchelp/comments/16qw1zl/black_screen_on_my_new_build_while_installing/?show=original">Black Screen on my New Build while installing Windows 11</a>大致描述是与显示输出设备有关，根据社区的建议做了几个尝试如下：</p>
-<ul>
-<li>DisplayPort 拔插+换接口 → 还是黑屏且直接变成无背光无信号</li>
-<li>更换HDMI线材→ 还是黑屏故障相同</li>
-<li>将 HDMI 从独立显卡拔下，接到主板核显接口 → 依然黑屏</li>
-</ul>
-<p>试着这几种方法都没能解决问题，梳理了一下后面的测试方案：</p>
-<ul>
-<li><strong>显卡隔离</strong>‌：移除独立显卡，将显示输出切换至主板板载显示接口（HDMI），以排除独显故障或驱动引入的异常。</li>
-<li><strong>内存最小化测试</strong>：仅保留单条内存模组进行开机验证，必要时更换插槽交叉测试，以判断是否存在内存兼容性或硬件损坏</li>
-<li><strong>主板初始化恢复</strong>：通过清除 CMOS 或恢复 BIOS 默认设置的方式，将主板恢复至出厂默认状态，排除配置问题。</li>
-</ul>
-<ol start="7">
-<li><h3 id="BIOS-重置"><a href="#BIOS-重置" class="headerlink" title="BIOS 重置"></a><strong>BIOS 重置</strong></h3></li>
-</ol>
-<ul>
-<li><p>将BIOS恢复出厂设置</p>
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
 </li>
-<li><p>使用 Rufus U 盘重新启动安装</p>
+<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
 </li>
-</ul>
-<p>故障解决，成功进入 Windows 安装界面，安装完成后可以正常开机。</p>
-<hr>
-<h2 id="四、推测根因"><a href="#四、推测根因" class="headerlink" title="四、推测根因"></a>四、推测根因</h2><p>UEFI&#x2F;CSM&#x2F;显卡 GOP（UEFI 显示初始化）阶段的兼容性问题</p>
-<ol>
-<li><h3 id="现象指向"><a href="#现象指向" class="headerlink" title="现象指向"></a><strong>现象指向</strong></h3></li>
 </ol>
-<p>所有安装方式失败都有一个共同点</p>
-<p>Windows Logo 出现 → 转圈 → 黑屏（显示器仍有背光或短暂无信号）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
+
+<p>显示如下，则说明 Nginx 安装配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
+<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
+<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
+
 <ol start="2">
-<li><h3 id="根因分析"><a href="#根因分析" class="headerlink" title="根因分析"></a>根因分析</h3></li>
+<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
 </ol>
-<p>UEFI启动流程可以分为以下7各阶段：</p>
-<p>SEC（安全验证）-&gt;PEI（EFI前期初始化）-&gt;DXE（驱动执行环境）-&gt;BDS（启动设备选择）-&gt;TSL（操作系统加载前期）-&gt;RT（系统系统运行阶段）-&gt;AL（系统灾难恢复期或关机）</p>
-<p>各阶段表现对照分析：</p>
-<table>
-<thead>
-<tr>
-<th>阶段</th>
-<th>状态</th>
-<th>是否正常</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>SEC</td>
-<td>CPU微码加载、缓存初始化、检查平台安全状态</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>PEI</td>
-<td>初始化CPU、芯片组和内存（RAM）</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>DXE</td>
-<td>枚举并加载绝大多数硬件驱动，包括 PCIe总线驱动 和 显卡的UEFI GOP驱动。此时固件绘制出BIOS设置界面</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>BDS</td>
-<td>根据启动顺序加载指定的EFI应用程序（即 <code>bootmgfw.efi</code>，Windows引导管理器）</td>
-<td>✅</td>
-</tr>
-<tr>
-<td>TSL</td>
-<td><strong>操作系统加载器（Windows Boot Manager）运行</strong>。它加载内核、HAL和初始驱动，然后<strong>调用 <code>ExitBootServices()</code> 结束固件对硬件的控制权</strong>，将控制权交给操作系统内核。</td>
-<td>⚠️ 发生故障</td>
-</tr>
-<tr>
-<td>RT</td>
-<td>操作系统完全接管硬件，驱动正常运行，用户进入桌面或安装界面。</td>
-<td>未进入</td>
-</tr>
-<tr>
-<td>AL</td>
-<td>系统遇到致命错误重启或执行关机命令</td>
-<td>无关</td>
-</tr>
-</tbody></table>
-<p><strong>故障发生点</strong>：Windows徽标出现（由Bootloader借助UEFI GOP绘制），转圈动画结束后，固件控制权刚移交给内核，<strong>内核试图加载其内置的显示驱动（Basic Display Driver）并初始化图形界面</strong>，但此时显卡未能成功响应内核的Mode-Set（模式设置）请求，导致信号中断黑屏。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
+
 <ol start="3">
-<li><h3 id="为什么是TSL-阶段出现问题"><a href="#为什么是TSL-阶段出现问题" class="headerlink" title="为什么是TSL 阶段出现问题"></a>为什么是TSL 阶段出现问题</h3></li>
+<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
 </ol>
-<p><strong>“徽标转圈”是TSL阶段的前半段</strong>：Windows的“转圈”动画，本质上是 <code>bootmgfw.efi</code> 在 <strong>UEFI 启动服务（Boot Services）</strong> 环境下，通过调用DXE阶段安装的 <strong>GOP（图形输出协议）</strong> 来绘制的。这说明固件级的显示通道是通畅的。</p>
-<p><strong>“转圈后黑屏”是TSL阶段的分水岭</strong>：转圈结束意味着 <code>bootmgfw.efi</code> 完成了内核加载，执行 <strong><code>ExitBootServices()</code></strong>。</p>
-<ul>
-<li>在此之后，UEFI固件中的GOP驱动虽然还在内存里，但已经<strong>失去了对硬件的控制权</strong>。</li>
-<li>Windows内核接管后，会立即调用自己的 <strong>Windows Basic Display Driver（基本显示驱动）</strong>，该驱动试图重新初始化显卡硬件。</li>
-<li>如果显卡的vBIOS在UEFI模式下的状态机（State Machine）无法正确响应内核发起的模式切换指令就会导致显示缓冲区挂起，输出全黑但有背光（或直接无信号）</li>
-</ul>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
 <ol start="4">
-<li><h3 id="为什么-BIOS-Reset-能修复？"><a href="#为什么-BIOS-Reset-能修复？" class="headerlink" title="为什么 BIOS Reset 能修复？"></a>为什么 BIOS Reset 能修复？</h3></li>
+<li>执行以下命令，退出 MariaDB。</li>
 </ol>
-<p>BIOS Reset 后之所以恢复，大概率是因为主板重新建立 UEFI 启动环境、GOP 显示初始化状态及相关 NVRAM 配置，同时将Secure Boot&#x2F;CSM 等策略恢复默认值，从而消除了异常显示初始化状态，使 Windows 安装程序能够正常完成显示接管并进入安装界面。</p>
-<h2 id="五、未来风险"><a href="#五、未来风险" class="headerlink" title="五、未来风险"></a>五、未来风险</h2><p>自 Windows 8 和 Windows Server 2012 起，微软在 Secure Boot 体系中使用了一组 2011 年签发的根证书，其中<strong>Microsoft UEFI CA 2011</strong> 证书即将在2026年6月27日到期，该CA证书主要对第三方引导加载程序和 EFI 应用程序进行签名。2023年之前生产的独立显卡（NVIDIA和AMD都受到影响），其VBIOS（显卡固件）中GOP模块大多都是由微软UEFI CA 2011证书签名的。如果开启安全启动（Secure Boot）并且使用UEFI重装系统时，则会在DXE阶段验证GOP失败，导致直接黑屏。</p>
-<p>现象为正常进入BIOS→ 选择UEFI启动安装盘→ 直接黑屏，如果出现此问题可以选择将Secure Boot从<strong>Windows UEFI Mode</strong>改为<strong>Other OS</strong>试一试。</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/06/23/nrqqha.webp" alt="显卡UEFI"></p>
-<p>参考链接：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
+<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，验证 PHP 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
+<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
 <ol>
-<li><p><a href="https://zhuanlan.zhihu.com/p/483888207">UEFI启动流程概览</a></p>
-</li>
-<li><p><a href="https://www.reddit.com/r/buildapc/comments/wwz8eb/trying_to_clean_install_windows_11_but_keep/?show=original">Trying to clean install windows 11 but keep getting black screen</a></p>
-</li>
-<li><p><a href="https://support.microsoft.com/zh-hk/topic/windows-%E5%AE%89%E5%85%A8%E9%96%8B%E6%A9%9F%E6%86%91%E8%AD%89%E5%88%B0%E6%9C%9F%E8%88%87-ca-%E6%9B%B4%E6%96%B0-7ff40d33-95dc-4c3c-8725-a9b95457578e">Windows 安全开机凭证到期与CA 更新</a></p>
-</li>
-<li><p><a href="https://baijiahao.baidu.com/s?id=1867864521102478474&wfr=spider&for=pc">Windows安全启动证书6月下旬开始到期：你的电脑不会变砖，但显卡可能黑屏！3分钟自查+修复指南</a></p>
-</li>
+<li>执行以下命令，创建测试文件。</li>
 </ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则说明环境配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>BIOS</tag>
-        <tag>windows</tag>
-        <tag>系统安装</tag>
-        <tag>Secure Boot</tag>
-        <tag>UEF</tag>
+        <tag>Linux</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+        <tag>LNMP环境</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>ssl证书自动续期工具——acme</title>
+    <url>/posts/e691384c.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
+<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
+<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>注意换成自己的邮箱号</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置自动升级</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>选择服务商</li>
+</ol>
+<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
+
+<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
+<ol>
+<li>创建API秘钥</li>
+</ol>
+<p>会得到SecretId和SecretKey</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>将秘钥格式化导入环境变量</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+</ol>
+<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完毕后，证书颁发成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
+<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
+<p>将证书文件复制到nginx配置的ssl证书目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>acme</tag>
+        <tag>免费证书</tag>
+        <tag>自动化申请证书</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>解析WordPress网站域名与常见问题</title>
+    <url>/posts/4c6ec737.html</url>
+    <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
+<ol>
+<li><h3 id="注册域名。"><a href="#注册域名。" class="headerlink" title="注册域名。"></a>注册域名。</h3></li>
+</ol>
+<p><a href="https://www.alibabacloud.com/help/zh/dws/user-guide/register-a-domain-name-on-alibaba-cloud#task-1830383">阿里云域名注册流程</a></p>
+<p><a href="https://cloud.tencent.com/document/product/242/9595">腾讯云域名注册流程</a></p>
+<p><a href="https://support.huaweicloud.com/usermanual-domain/domain_ug_310004.html">华为云域名注册流程</a></p>
+<ol start="2">
+<li><h3 id="备案域名。"><a href="#备案域名。" class="headerlink" title="备案域名。"></a>备案域名。</h3><p>如果您的域名指向的网站托管在中国内地节点服务器，则需要到对应云平台上进行ICP备案，时长按照备案地处理速度，一般在1-30个工作日。如果不备案可能会导致域名无法访问。</p>
+</li>
+<li><h3 id="解析域名。将域名指向实例公网IP。"><a href="#解析域名。将域名指向实例公网IP。" class="headerlink" title="解析域名。将域名指向实例公网IP。"></a>解析域名。将域名指向实例公网IP。</h3><p>域名解析是使用域名访问您的网站的必备环节。请在托管的云平台上进行解析，具体参考各云平台的文档，如需IPV6的访问请添加AAAA解析。</p>
+</li>
+</ol>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"><a href="#一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录" class="headerlink" title="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"></a>一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录</h3><p>该问题可能是因为WordPress配置文件主题或插件的权限不足，您可以参考以下步骤解决。</p>
+<ol>
+<li><p>登录搭建WordPress的服务器</p>
+</li>
+<li><p>运行以下命令，打开WordPress配置文件（wp-config.php文件位置请根据实际服务器上自定义的位置进行更换）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /usr/share/nginx/html/wordpress/wp-config.php</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>按<code>i</code>键进入编辑模式。</p>
+</li>
+<li><p>在最下方，添加如下代码。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">define(&quot;FS_METHOD&quot;,&quot;direct&quot;);</span><br><span class="line">define(&quot;FS_CHMOD_DIR&quot;, 0777);</span><br><span class="line">define(&quot;FS_CHMOD_FILE&quot;, 0777);</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li><p>按<code>Esc</code>键，输入<code>:wq</code>后按<code>Enter</code>键，保存退出配置文件。</p>
+</li>
+<li><p>返回WordPress仪表盘，刷新页面，可解决需要FTP登录凭证的问题。</p>
+<p>如果仍存在无法创建目录的问题，需再次返回登录，运行以下命令，将网站根目录的权限用户更新为Nginx对应的用户，本示例环境中为<code>www-data</code>用户。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chown -R www-data /usr/share/nginx/html/wordpress</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"><a href="#二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库" class="headerlink" title="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"></a>二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库</h3><p>操作步骤如下：</p>
+<ol>
+<li><p>登录数据库，root密码具体看配置数据库时修改的数据。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql -u root -p</span><br></pre></td></tr></table></figure>
+
+</li>
+<li><p>查寻并修改数据库</p>
+<blockquote>
+<p>本示例将域名<code>www.example1.com</code>改为<a href="http://www.example2.com./">www.example2.com。</a></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; use wordpress;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; select * from wp_options where option_value like &#x27;%www.example1.com&#x27;;</span><br><span class="line"></span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">| option_id | option_name | option_value              | autoload |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">|         2 | siteurl     | https://www.example1.com  | on       |</span><br><span class="line">|         3 | home        | https://www.example1.com  | on       |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">2 rows in set (0.046 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; update wp_options set option_value=replace(option_value, &#x27;https://www.example2.com&#x27;, &#x27;https://www.example2.com&#x27;) where option_name = &#x27;home&#x27; OR option_name = &#x27;siteurl&#x27;;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; exit;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>成功为WordPress网站设置新域名。</p>
+</li>
+</ol>
+<h3 id="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"><a href="#三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法" class="headerlink" title="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"></a>三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法</h3><p>在使用wordPress的时候，可能会遇到“您关注的链接已过期”或The link you followed has expired” 错误，一般从WordPress管理后台上传WordPress主题或插件到您的网站时，通常会发生此错误。WordPress有一个设置参数，可以控制从WordPress管理后台上传的文件的大小。</p>
+<ol>
+<li><p>登录服务器，查看配置文件位置</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ps -ef|grep php</span><br><span class="line"></span><br><span class="line">www-data 2754144 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">www-data 2754145 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">ops      2756021 2745748  0 17:22 pts/0    00:00:00 grep php</span><br><span class="line">root     3454264       1  0 Sep06 ?        00:00:40 php-fpm: master process (/etc/php/8.2/fpm/php-fpm.conf)</span><br><span class="line"></span><br><span class="line">可以确认配置文件在/etc/php/8.2/fpm/ 目录 修改该目录下的php.ini文件</span><br><span class="line">提前备份文件</span><br><span class="line">sudo cp /etc/php/8.2/fpm/php.ini /etc/php/8.2/fpm/php.ini.bak</span><br><span class="line">sudo vim /etc/php/8.2/fpm/php.ini</span><br><span class="line"></span><br><span class="line">打开文件后修改下面三行参数，保存并退出</span><br><span class="line"></span><br><span class="line">upload_max_filesize = 64M</span><br><span class="line">post_max_size = 64M</span><br><span class="line">max_execution_time = 300</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>服务重新加载配置文件</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl reload php8.2-fpm.service</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修复完成验证</p>
+<p>可以再次上传测试，限制调整为可以上传单个文件的最大大小为64M，最大执行时间为300秒。</p>
+</li>
+</ol>
+<h3 id="四、Nginx伪静态规则"><a href="#四、Nginx伪静态规则" class="headerlink" title="四、Nginx伪静态规则"></a>四、Nginx伪静态规则</h3><p>若在发布文章出现“此响应不是合法的JSON响应”，则需要检查nginx伪静态规则是否配置，具体配置如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">        try_files $uri $uri/ /index.php?$args;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>如nginx无配置，在location &#x2F;加入该配置即可。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>WordPress常见问题</tag>
+        <tag>WordPress域名</tag>
       </tags>
   </entry>
   <entry>
