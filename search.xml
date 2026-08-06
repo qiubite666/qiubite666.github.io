@@ -102,112 +102,6 @@
       </tags>
   </entry>
   <entry>
-    <title>交换机access、hybrid、trunk口的区别、特点、应用场景以及如何配置</title>
-    <url>/posts/18d22523.html</url>
-    <content><![CDATA[<p>在数据中心和大型企业网络环境中，交换机是作为局域网的核心设备。它不仅能够连接不同的网络设备，还能够通过划分虚拟局域网（VLAN）来优化网络性能和安全性。而端口模式的配置决定了交换机端口如何处理VLAN标签。</p>
-<p>下文主要讲解交换机的三种端口模式Access、Hybrid 和 Trunk，它们的特点、应用场景、如何配置以及区别。</p>
-<h2 id="交换机三种端口模式：Access、Trunk、Hybrid"><a href="#交换机三种端口模式：Access、Trunk、Hybrid" class="headerlink" title="交换机三种端口模式：Access、Trunk、Hybrid"></a>交换机三种端口模式：Access、Trunk、Hybrid</h2><p>交换机端口在二层转发时，最核心的动作就是处理 <strong>VLAN 标签（802.1Q Tag）</strong>。根据对标签的处理方式，端口被划分为三种模式。</p>
-<ol>
-<li><h3 id="Access"><a href="#Access" class="headerlink" title="Access"></a>Access</h3></li>
-</ol>
-<p>端口仅属于一个 VLAN，也就是<strong>发出的帧不带标签</strong>，<strong>收到的帧一律打上该 VLAN 标签（PVID）</strong>。通常用于接入主机、服务器等终端设备。</p>
-<p>配置命令（以VLAN10为例）：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">switchport mode access;</span><br><span class="line">switchport access vlan 10;</span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">port link-type access;</span><br><span class="line">port default vlan 10;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li><h3 id="Trunk"><a href="#Trunk" class="headerlink" title="Trunk"></a>Trunk</h3></li>
-</ol>
-<p>端口可以同时加入多个 VLAN，适用于交换机之间的链路互联。工作原理是<strong>发出的帧除 PVID外，全部带标签</strong>；<strong>收到的帧，带标签的保留，不带标签的则打上 PVID 所属标签</strong>。</p>
-<p>总结trunk的判断逻辑如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/01/sj2ixj.png" alt="交换机trunk端口判断逻辑"></p>
-<p>配置命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">interface GigabitEthernet 1/0/1</span><br><span class="line">switchport mode trunk;</span><br><span class="line">switchport trunk encapsulation dot1q;</span><br><span class="line">switchport trunk native vlan 10</span><br><span class="line">switchport trunk allowed vlan 10,11,20;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type trunk;</span><br><span class="line">port trunk pvid vlan 10;</span><br><span class="line">port trunk allow-pass vlan 10,11,20;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="3">
-<li><h3 id="Hybrid"><a href="#Hybrid" class="headerlink" title="Hybrid"></a>Hybrid</h3></li>
-</ol>
-<p>Hybrid是华为系命令厂家中交换机具备的一种额外的模式，这种模式被设计用来兼容access模式和trunk模式，Hybrid 端口允许部分 VLAN 帧不带标签（untagged），部分带标签（tagged），灵活性更高。</p>
-<p>Hybrid接口共有三个参数：</p>
-<ul>
-<li>tagged vlan（带标签 VLAN）：从该端口<strong>发出</strong>的数据帧，保留原有的 802.1Q 标签（即带着 VLAN ID 出去）。</li>
-<li>untagged vlan（不带标签 VLAN）：从该端口<strong>发出</strong>时，剥去 802.1Q 标签，变成标准以太网帧。</li>
-<li>pvid（这里的pvid与trunk的pvid不可混淆，二者有一定的区别）</li>
-</ul>
-<p>总结Hybrid的判断逻辑如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/01/x7tavz.png" alt="交换机hybrid端口判断逻辑"></p>
-<p>​     对比Trunk的判断逻辑表和Hybrid判断逻辑表，可以发现pvid在两个模式下的生效的作用略有不用。在hybrid模式下面，pvid只生效于入接口方向，在出方向上不考虑pvid，出方向只检查vlan标签被tagged&#x2F;untagged列表匹配情况。而到了Trunk接口模式下，情况就有所变化了。在入方向上，pvid的逻辑完全继承了hybrid模式的逻辑，但在出方向上，在匹配逻辑上Trunk会多考虑一个环节，就是是否匹配pvid，如果匹配上了pvid，数据帧会被脱掉vlan标签转发，而hybrid根本不检查pvid，全部都执行直接转发的动作。</p>
-<p>配置命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type hybrid;</span><br><span class="line">port hybrid pvid vlan 10;</span><br><span class="line">port hybrid untagged vlan 10;</span><br><span class="line">port hybrid tagged vlan 20</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="横向对比表与应用场景"><a href="#横向对比表与应用场景" class="headerlink" title="横向对比表与应用场景"></a>横向对比表与应用场景</h2><table>
-<thead>
-<tr>
-<th align="left">特性</th>
-<th align="left">Access</th>
-<th align="left">Trunk</th>
-<th align="left">Hybrid</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">所属 VLAN 数</td>
-<td align="left">1 个</td>
-<td align="left">多个（允许列表）</td>
-<td align="left">多个（允许列表）</td>
-</tr>
-<tr>
-<td align="left">发出帧标签规则</td>
-<td align="left">全部 Untagged</td>
-<td align="left">PVID Untagged，其他 Tagged</td>
-<td align="left">按 VLAN 手工设置 Tagged&#x2F;Untagged</td>
-</tr>
-<tr>
-<td align="left">收到无标签帧处理</td>
-<td align="left">打上所属 VLAN 标签</td>
-<td align="left">打上 PVID 标签</td>
-<td align="left">打上 PVID 标签（若该 VLAN 允许通过）</td>
-</tr>
-<tr>
-<td align="left">收到带标签帧处理</td>
-<td align="left">丢弃（VLAN 不一致则丢弃）</td>
-<td align="left">检查是否在允许列表</td>
-<td align="left">检查是否在允许列表</td>
-</tr>
-<tr>
-<td align="left">典型应用</td>
-<td align="left">终端接入</td>
-<td align="left">交换机间互联</td>
-<td align="left">灵活 VLAN 部署，如 IPTV、管理网段混传</td>
-</tr>
-</tbody></table>
-<p>参考链接：</p>
-<ol>
-<li><p><a href="https://support.huawei.com/enterprise/zh/knowledge/EKB1000060549">交换机端口与C友商模式横向对比</a></p>
-</li>
-<li><p><a href="https://cloud.tencent.com/developer/article/2502264">你知道交换机有哪三种端口工作模式吗？</a></p>
-</li>
-<li><p><a href="https://zhuanlan.zhihu.com/p/451399550">交换机三种端口模式Access、Hybrid和Trunk的理解</a></p>
-</li>
-<li><p><a href="https://zhuanlan.zhihu.com/p/714222918">交换机端口模式详解看这篇，Access、Hybrid、Trunk很清晰</a></p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>access</tag>
-        <tag>hybrid</tag>
-        <tag>trunk</tag>
-        <tag>交换机</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Windows 11 重装遇到离谱问题分析排查</title>
     <url>/posts/ebc9b05d.html</url>
     <content><![CDATA[<h2 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h2><ol>
@@ -406,71 +300,109 @@
       </tags>
   </entry>
   <entry>
-    <title>篡改猴（tampermonkey）下载安装使用教程</title>
-    <url>/posts/6cc124ac.html</url>
-    <content><![CDATA[<h1 id="一、什么是-Tampermonkey（篡改猴）？"><a href="#一、什么是-Tampermonkey（篡改猴）？" class="headerlink" title="一、什么是 Tampermonkey（篡改猴）？"></a>一、什么是 Tampermonkey（篡改猴）？</h1><p><strong>Tampermonkey</strong> 是一款免费的<strong>浏览器用户脚本管理器</strong>，俗称“篡改猴”或“油猴”。<br>它就像浏览器的“外挂平台”，允许你安装各种由 JavaScript 编写的小脚本，用来修改网页的行为、外观或功能。</p>
-<p><strong>能做什么？</strong></p>
-<ul>
-<li>屏蔽广告、解除复制限制、自动翻页</li>
-<li>下载网页视频、网盘直链提取、搜索引擎去重</li>
-<li>增强网页功能（如知乎免登录看全文、百度网盘简易下载）</li>
-<li>只要你能想到的网页修改，基本都能通过脚本实现</li>
-</ul>
-<h1 id="二、安装-Tampermonkey-扩展"><a href="#二、安装-Tampermonkey-扩展" class="headerlink" title="二、安装 Tampermonkey 扩展"></a>二、安装 Tampermonkey 扩展</h1><h2 id="1-选择你的浏览器"><a href="#1-选择你的浏览器" class="headerlink" title="1. 选择你的浏览器"></a>1. 选择你的浏览器</h2><p>Tampermonkey 支持 Chrome、Edge、Firefox、Safari、Opera 等主流浏览器。下面以 Chrome 为例，其他浏览器步骤几乎一样。</p>
-<h2 id="2-进入扩展商店"><a href="#2-进入扩展商店" class="headerlink" title="2. 进入扩展商店"></a>2. 进入扩展商店</h2><ul>
-<li><h3 id="Chrome-浏览器"><a href="#Chrome-浏览器" class="headerlink" title="Chrome 浏览器"></a><strong>Chrome 浏览器</strong></h3><p>访问 <a href="https://chrome.google.com/webstore">Chrome 网上应用店</a>，搜索 <strong>Tampermonkey</strong></p>
-</li>
-<li><h3 id="Edge-浏览器"><a href="#Edge-浏览器" class="headerlink" title="Edge 浏览器"></a><strong>Edge 浏览器</strong></h3><p>直接访问<a href="edge://extensions/">扩展页面</a>  ”edge:&#x2F;&#x2F;extensions&#x2F; “ 或从设置中进去如下图</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qmmv29.png" alt="image-20260714161011058"></p>
-</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qnv2j0.png" alt="image-20260714161221035"></p>
-<p>搜索<strong>篡改猴</strong>点击<strong>获取</strong></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qp1joq.png" alt="image-20260714161418827"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qp8320.png" alt="image-20260714161448834"></p>
-<p>安装成功后固定在<strong>工具栏</strong></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qptgsf.png" alt="image-20260714161549120"></p>
-<ul>
-<li><h3 id="无法访问扩展商店"><a href="#无法访问扩展商店" class="headerlink" title="无法访问扩展商店"></a>无法访问扩展商店</h3></li>
-</ul>
-<p>可以访问篡改猴<a href="https://www.tampermonkey.net/index.php?browser=chrome&locale=zh_CN">官方网站</a>直接下载 .crx 文件，然后开启浏览器开发者模式，拖入安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/quylh3.png" alt="image-20260714162412876"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qw4mho.png" alt="image-20260714162608688"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qvpdh2.png" alt="image-20260714162537273"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qwb2f1.png" alt="image-20260714162638660"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qwq0jd.png" alt="image-20260714162709253"></p>
-<h1 id="三、启用“允许用户脚本”扩展设置"><a href="#三、启用“允许用户脚本”扩展设置" class="headerlink" title="三、启用“允许用户脚本”扩展设置"></a>三、启用“允许用户脚本”扩展设置</h1><p>以<strong>Edge 浏览器</strong>为例，勾选<strong>允许用户脚本</strong>：</p>
-<h3 id=""><a href="#" class="headerlink" title=""></a><img src="https://image.qiubite.fun/i/1/2026/07/14/r1igom.png" alt="image-20260714163512660"></h3><p><img src="https://image.qiubite.fun/i/1/2026/07/14/r25n1d.png" alt="image-20260714163620743"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r2ccm7.png" alt="image-20260714163653182"></p>
-<h1 id="四、如何安装-JS-脚本？"><a href="#四、如何安装-JS-脚本？" class="headerlink" title="四、如何安装 JS 脚本？"></a>四、如何安装 JS 脚本？</h1><h3 id="方法一：从脚本网站一键安装"><a href="#方法一：从脚本网站一键安装" class="headerlink" title="方法一：从脚本网站一键安装"></a>方法一：从脚本网站一键安装</h3><p>最知名的用户脚本分享站是 <strong>Greasy Fork</strong>：<a href="https://greasyfork.org/zh-CN">https://greasyfork.org/zh-CN</a><br>里面所有脚本都适用于 Tampermonkey。</p>
-<p><strong>步骤：</strong></p>
+    <title>交换机access、hybrid、trunk口的区别、特点、应用场景以及如何配置</title>
+    <url>/posts/18d22523.html</url>
+    <content><![CDATA[<p>在数据中心和大型企业网络环境中，交换机是作为局域网的核心设备。它不仅能够连接不同的网络设备，还能够通过划分虚拟局域网（VLAN）来优化网络性能和安全性。而端口模式的配置决定了交换机端口如何处理VLAN标签。</p>
+<p>下文主要讲解交换机的三种端口模式Access、Hybrid 和 Trunk，它们的特点、应用场景、如何配置以及区别。</p>
+<h2 id="交换机三种端口模式：Access、Trunk、Hybrid"><a href="#交换机三种端口模式：Access、Trunk、Hybrid" class="headerlink" title="交换机三种端口模式：Access、Trunk、Hybrid"></a>交换机三种端口模式：Access、Trunk、Hybrid</h2><p>交换机端口在二层转发时，最核心的动作就是处理 <strong>VLAN 标签（802.1Q Tag）</strong>。根据对标签的处理方式，端口被划分为三种模式。</p>
 <ol>
-<li>打开 Greasy Fork，搜索你需要的功能，比如“百度网盘”、“知乎免登录”。</li>
-<li>进入脚本详情页，点击绿色的 <strong>“安装此脚本”</strong> 按钮。</li>
-<li>油猴会自动弹出安装界面，显示脚本名称、版本、包含的网址等信息。</li>
-<li>点击 <strong>“安装”</strong> 按钮，脚本即添加完成。</li>
-<li>去对应的网页刷新，脚本就会自动运行。</li>
+<li><h3 id="Access"><a href="#Access" class="headerlink" title="Access"></a>Access</h3></li>
 </ol>
-<h3 id="方法二：手动添加脚本"><a href="#方法二：手动添加脚本" class="headerlink" title="方法二：手动添加脚本"></a>方法二：手动添加脚本</h3><p>如果别人直接给了你一段 <code>.user.js</code> 代码，或者你想自己写一个小脚本，可以手动添加。</p>
-<p><strong>步骤：</strong></p>
+<p>端口仅属于一个 VLAN，也就是<strong>发出的帧不带标签</strong>，<strong>收到的帧一律打上该 VLAN 标签（PVID）</strong>。通常用于接入主机、服务器等终端设备。</p>
+<p>配置命令（以VLAN10为例）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">switchport mode access;</span><br><span class="line">switchport access vlan 10;</span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">port link-type access;</span><br><span class="line">port default vlan 10;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li><h3 id="Trunk"><a href="#Trunk" class="headerlink" title="Trunk"></a>Trunk</h3></li>
+</ol>
+<p>端口可以同时加入多个 VLAN，适用于交换机之间的链路互联。工作原理是<strong>发出的帧除 PVID外，全部带标签</strong>；<strong>收到的帧，带标签的保留，不带标签的则打上 PVID 所属标签</strong>。</p>
+<p>总结trunk的判断逻辑如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/01/sj2ixj.png" alt="交换机trunk端口判断逻辑"></p>
+<p>配置命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">interface GigabitEthernet 1/0/1</span><br><span class="line">switchport mode trunk;</span><br><span class="line">switchport trunk encapsulation dot1q;</span><br><span class="line">switchport trunk native vlan 10</span><br><span class="line">switchport trunk allowed vlan 10,11,20;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type trunk;</span><br><span class="line">port trunk pvid vlan 10;</span><br><span class="line">port trunk allow-pass vlan 10,11,20;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><h3 id="Hybrid"><a href="#Hybrid" class="headerlink" title="Hybrid"></a>Hybrid</h3></li>
+</ol>
+<p>Hybrid是华为系命令厂家中交换机具备的一种额外的模式，这种模式被设计用来兼容access模式和trunk模式，Hybrid 端口允许部分 VLAN 帧不带标签（untagged），部分带标签（tagged），灵活性更高。</p>
+<p>Hybrid接口共有三个参数：</p>
+<ul>
+<li>tagged vlan（带标签 VLAN）：从该端口<strong>发出</strong>的数据帧，保留原有的 802.1Q 标签（即带着 VLAN ID 出去）。</li>
+<li>untagged vlan（不带标签 VLAN）：从该端口<strong>发出</strong>时，剥去 802.1Q 标签，变成标准以太网帧。</li>
+<li>pvid（这里的pvid与trunk的pvid不可混淆，二者有一定的区别）</li>
+</ul>
+<p>总结Hybrid的判断逻辑如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/01/x7tavz.png" alt="交换机hybrid端口判断逻辑"></p>
+<p>​     对比Trunk的判断逻辑表和Hybrid判断逻辑表，可以发现pvid在两个模式下的生效的作用略有不用。在hybrid模式下面，pvid只生效于入接口方向，在出方向上不考虑pvid，出方向只检查vlan标签被tagged&#x2F;untagged列表匹配情况。而到了Trunk接口模式下，情况就有所变化了。在入方向上，pvid的逻辑完全继承了hybrid模式的逻辑，但在出方向上，在匹配逻辑上Trunk会多考虑一个环节，就是是否匹配pvid，如果匹配上了pvid，数据帧会被脱掉vlan标签转发，而hybrid根本不检查pvid，全部都执行直接转发的动作。</p>
+<p>配置命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type hybrid;</span><br><span class="line">port hybrid pvid vlan 10;</span><br><span class="line">port hybrid untagged vlan 10;</span><br><span class="line">port hybrid tagged vlan 20</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="横向对比表与应用场景"><a href="#横向对比表与应用场景" class="headerlink" title="横向对比表与应用场景"></a>横向对比表与应用场景</h2><table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">Access</th>
+<th align="left">Trunk</th>
+<th align="left">Hybrid</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">所属 VLAN 数</td>
+<td align="left">1 个</td>
+<td align="left">多个（允许列表）</td>
+<td align="left">多个（允许列表）</td>
+</tr>
+<tr>
+<td align="left">发出帧标签规则</td>
+<td align="left">全部 Untagged</td>
+<td align="left">PVID Untagged，其他 Tagged</td>
+<td align="left">按 VLAN 手工设置 Tagged&#x2F;Untagged</td>
+</tr>
+<tr>
+<td align="left">收到无标签帧处理</td>
+<td align="left">打上所属 VLAN 标签</td>
+<td align="left">打上 PVID 标签</td>
+<td align="left">打上 PVID 标签（若该 VLAN 允许通过）</td>
+</tr>
+<tr>
+<td align="left">收到带标签帧处理</td>
+<td align="left">丢弃（VLAN 不一致则丢弃）</td>
+<td align="left">检查是否在允许列表</td>
+<td align="left">检查是否在允许列表</td>
+</tr>
+<tr>
+<td align="left">典型应用</td>
+<td align="left">终端接入</td>
+<td align="left">交换机间互联</td>
+<td align="left">灵活 VLAN 部署，如 IPTV、管理网段混传</td>
+</tr>
+</tbody></table>
+<p>参考链接：</p>
 <ol>
-<li>单击油猴图标 → <strong>“管理面板”</strong>（或右键图标 → 选项，再进入“已安装脚本”）。</li>
-<li>把脚本拖入安装。</li>
+<li><p><a href="https://support.huawei.com/enterprise/zh/knowledge/EKB1000060549">交换机端口与C友商模式横向对比</a></p>
+</li>
+<li><p><a href="https://cloud.tencent.com/developer/article/2502264">你知道交换机有哪三种端口工作模式吗？</a></p>
+</li>
+<li><p><a href="https://zhuanlan.zhihu.com/p/451399550">交换机三种端口模式Access、Hybrid和Trunk的理解</a></p>
+</li>
+<li><p><a href="https://zhuanlan.zhihu.com/p/714222918">交换机端口模式详解看这篇，Access、Hybrid、Trunk很清晰</a></p>
+</li>
 </ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r3ikio.png" alt="image-20260714163849861"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r5p6fg.png" alt="image-20260714164215924"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r5vseq.png" alt="image-20260714164246760"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r6sqpv.png" alt="image-20260714164400048"></p>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>tampermonkey</tag>
-        <tag>油猴</tag>
-        <tag>篡改猴</tag>
-        <tag>chrome</tag>
-        <tag>js脚本</tag>
+        <tag>access</tag>
+        <tag>hybrid</tag>
+        <tag>trunk</tag>
+        <tag>交换机</tag>
       </tags>
   </entry>
   <entry>
@@ -711,6 +643,74 @@
       </tags>
   </entry>
   <entry>
+    <title>篡改猴（tampermonkey）下载安装使用教程</title>
+    <url>/posts/6cc124ac.html</url>
+    <content><![CDATA[<h1 id="一、什么是-Tampermonkey（篡改猴）？"><a href="#一、什么是-Tampermonkey（篡改猴）？" class="headerlink" title="一、什么是 Tampermonkey（篡改猴）？"></a>一、什么是 Tampermonkey（篡改猴）？</h1><p><strong>Tampermonkey</strong> 是一款免费的<strong>浏览器用户脚本管理器</strong>，俗称“篡改猴”或“油猴”。<br>它就像浏览器的“外挂平台”，允许你安装各种由 JavaScript 编写的小脚本，用来修改网页的行为、外观或功能。</p>
+<p><strong>能做什么？</strong></p>
+<ul>
+<li>屏蔽广告、解除复制限制、自动翻页</li>
+<li>下载网页视频、网盘直链提取、搜索引擎去重</li>
+<li>增强网页功能（如知乎免登录看全文、百度网盘简易下载）</li>
+<li>只要你能想到的网页修改，基本都能通过脚本实现</li>
+</ul>
+<h1 id="二、安装-Tampermonkey-扩展"><a href="#二、安装-Tampermonkey-扩展" class="headerlink" title="二、安装 Tampermonkey 扩展"></a>二、安装 Tampermonkey 扩展</h1><h2 id="1-选择你的浏览器"><a href="#1-选择你的浏览器" class="headerlink" title="1. 选择你的浏览器"></a>1. 选择你的浏览器</h2><p>Tampermonkey 支持 Chrome、Edge、Firefox、Safari、Opera 等主流浏览器。下面以 Chrome 为例，其他浏览器步骤几乎一样。</p>
+<h2 id="2-进入扩展商店"><a href="#2-进入扩展商店" class="headerlink" title="2. 进入扩展商店"></a>2. 进入扩展商店</h2><ul>
+<li><h3 id="Chrome-浏览器"><a href="#Chrome-浏览器" class="headerlink" title="Chrome 浏览器"></a><strong>Chrome 浏览器</strong></h3><p>访问 <a href="https://chrome.google.com/webstore">Chrome 网上应用店</a>，搜索 <strong>Tampermonkey</strong></p>
+</li>
+<li><h3 id="Edge-浏览器"><a href="#Edge-浏览器" class="headerlink" title="Edge 浏览器"></a><strong>Edge 浏览器</strong></h3><p>直接访问<a href="edge://extensions/">扩展页面</a>  ”edge:&#x2F;&#x2F;extensions&#x2F; “ 或从设置中进去如下图</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qmmv29.png" alt="image-20260714161011058"></p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qnv2j0.png" alt="image-20260714161221035"></p>
+<p>搜索<strong>篡改猴</strong>点击<strong>获取</strong></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qp1joq.png" alt="image-20260714161418827"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qp8320.png" alt="image-20260714161448834"></p>
+<p>安装成功后固定在<strong>工具栏</strong></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qptgsf.png" alt="image-20260714161549120"></p>
+<ul>
+<li><h3 id="无法访问扩展商店"><a href="#无法访问扩展商店" class="headerlink" title="无法访问扩展商店"></a>无法访问扩展商店</h3></li>
+</ul>
+<p>可以访问篡改猴<a href="https://www.tampermonkey.net/index.php?browser=chrome&locale=zh_CN">官方网站</a>直接下载 .crx 文件，然后开启浏览器开发者模式，拖入安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/quylh3.png" alt="image-20260714162412876"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qw4mho.png" alt="image-20260714162608688"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qvpdh2.png" alt="image-20260714162537273"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qwb2f1.png" alt="image-20260714162638660"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qwq0jd.png" alt="image-20260714162709253"></p>
+<h1 id="三、启用“允许用户脚本”扩展设置"><a href="#三、启用“允许用户脚本”扩展设置" class="headerlink" title="三、启用“允许用户脚本”扩展设置"></a>三、启用“允许用户脚本”扩展设置</h1><p>以<strong>Edge 浏览器</strong>为例，勾选<strong>允许用户脚本</strong>：</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a><img src="https://image.qiubite.fun/i/1/2026/07/14/r1igom.png" alt="image-20260714163512660"></h3><p><img src="https://image.qiubite.fun/i/1/2026/07/14/r25n1d.png" alt="image-20260714163620743"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r2ccm7.png" alt="image-20260714163653182"></p>
+<h1 id="四、如何安装-JS-脚本？"><a href="#四、如何安装-JS-脚本？" class="headerlink" title="四、如何安装 JS 脚本？"></a>四、如何安装 JS 脚本？</h1><h3 id="方法一：从脚本网站一键安装"><a href="#方法一：从脚本网站一键安装" class="headerlink" title="方法一：从脚本网站一键安装"></a>方法一：从脚本网站一键安装</h3><p>最知名的用户脚本分享站是 <strong>Greasy Fork</strong>：<a href="https://greasyfork.org/zh-CN">https://greasyfork.org/zh-CN</a><br>里面所有脚本都适用于 Tampermonkey。</p>
+<p><strong>步骤：</strong></p>
+<ol>
+<li>打开 Greasy Fork，搜索你需要的功能，比如“百度网盘”、“知乎免登录”。</li>
+<li>进入脚本详情页，点击绿色的 <strong>“安装此脚本”</strong> 按钮。</li>
+<li>油猴会自动弹出安装界面，显示脚本名称、版本、包含的网址等信息。</li>
+<li>点击 <strong>“安装”</strong> 按钮，脚本即添加完成。</li>
+<li>去对应的网页刷新，脚本就会自动运行。</li>
+</ol>
+<h3 id="方法二：手动添加脚本"><a href="#方法二：手动添加脚本" class="headerlink" title="方法二：手动添加脚本"></a>方法二：手动添加脚本</h3><p>如果别人直接给了你一段 <code>.user.js</code> 代码，或者你想自己写一个小脚本，可以手动添加。</p>
+<p><strong>步骤：</strong></p>
+<ol>
+<li>单击油猴图标 → <strong>“管理面板”</strong>（或右键图标 → 选项，再进入“已安装脚本”）。</li>
+<li>把脚本拖入安装。</li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r3ikio.png" alt="image-20260714163849861"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r5p6fg.png" alt="image-20260714164215924"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r5vseq.png" alt="image-20260714164246760"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r6sqpv.png" alt="image-20260714164400048"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>tampermonkey</tag>
+        <tag>油猴</tag>
+        <tag>篡改猴</tag>
+        <tag>chrome</tag>
+        <tag>js脚本</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
     <url>/posts/9b071109.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
@@ -911,74 +911,68 @@
       </tags>
   </entry>
   <entry>
-    <title>Linux初始化以及系统性能调优</title>
-    <url>/posts/b4a62efd.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
-<p>本文主要以debian为例针对CPU、硬盘、内核等操作系统参数进行优化。</p>
-<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><h3 id="关闭cpu节能"><a href="#关闭cpu节能" class="headerlink" title="关闭cpu节能"></a>关闭cpu节能</h3><p>随着CPU的发展，Intel出现了EIST技术，它可以动态的调整CPU的频率。当CPU使用率地下或者接近0时候,能降低CPU频率并且降压，从而降低功耗和发热。当检测到CPU使用率增高，它会马上回到原始工作频率，但是你必须考虑CPU被唤醒的时间，并且确保它会再次100％运行。这一系列的过程通常被称为“C-states”或“C-modes”,它是从C0开始的。</p>
-<p>关闭CPU节能方式如下：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;intel_idle.max_cstate=0 intel_pstate=disable processor.max_cstate=1&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出，更新grub</span></span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>intel_idle.max_cstate&#x3D;0</li>
-</ul>
-<p>这个参数用于 Intel 平台，指定禁用 intel_idle 驱动，让系统退回使用通用的 acpi_idle 驱动。这样 acpi_idle 驱动会遵循 processor.max_cstate 参数的设置，从而限制 CPU 只能使用浅层 C-state（C1）。</p>
-<ul>
-<li>intel_pstate&#x3D;disable</li>
-</ul>
-<p>禁用Intel处理器的动态频率调节驱动（P-state），改用传统ACPI <code>cpufreq</code>驱动管理CPU频率‌。</p>
-<ul>
-<li>processor.max_cstate&#x3D;1</li>
-</ul>
-<p>限制Intel处理器的空闲状态最大为C1，禁止进入更深层节能状态（如C2&#x2F;C3），减少唤醒延迟‌。与设置为processor.max_cstate&#x3D;0等效</p>
-<h2 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h2><h3 id="网络接口命名规则"><a href="#网络接口命名规则" class="headerlink" title="网络接口命名规则"></a>网络接口命名规则</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;net.ifnames=0 biosdevname=0&quot;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>net.ifnames&#x3D;0</li>
-</ul>
-<p>禁用可预测的网络接口命名（如<code>ens33</code>），恢复传统命名方式（如<code>eth0</code>）‌。</p>
-<ul>
-<li>biosdevname&#x3D;0</li>
-</ul>
-<p>关闭基于BIOS设备名的网络接口命名规则（如<code>em1</code>），需与<code>net.ifnames=0</code>配合生效‌。</p>
-<h3 id="网络优化配置"><a href="#网络优化配置" class="headerlink" title="网络优化配置"></a>网络优化配置</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看当前队列</span></span><br><span class="line">ethtool -l eth0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置队列数量</span></span><br><span class="line">sudo ethtool -L eth0 combined 8</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="硬盘"><a href="#硬盘" class="headerlink" title="硬盘"></a>硬盘</h2><h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">NVME设置调度策略为none</span></span><br><span class="line">echo none | sudo tee /sys/block/nvme0n1/queue/scheduler</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">机械硬盘设置调度策略为deadline</span></span><br><span class="line">echo deadline | sudo tee /sys/block/sda/queue/scheduler</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-
-
-<ul>
-<li>mq-deadline</li>
-</ul>
-<p><code>mq-deadline</code> 调度程序将排队的 I&#x2F;O 请求分为读取或写入批处理，然后调度它们以增加逻辑块寻址 (LBA) 顺序执行。默认情况下，读取批处理的优先级高于写入批处理，因为应用程序更有可能阻止读 I&#x2F;O 操作。在 <code>mq-deadline</code> 批处理后，它会检查写操作在处理器时间耗尽的时间，并根据情况调度下一个读取或写入批处理。</p>
-<p>这个调度程序适用于大多数用例，特别是那些写入操作是异步的。</p>
-<ul>
-<li>none</li>
-</ul>
-<p>所有进程的io请求都进入<a href="https://so.csdn.net/so/search?q=FIFO&spm=1001.2101.3001.7020">FIFO</a>队列，完全按照队列的顺序进行io的读取，适合于ssd，因为io请求饥饿以及每次请求都需要寻道，ssd不存在传统hdd的寻道时间。</p>
-<h3 id="文件系统优化"><a href="#文件系统优化" class="headerlink" title="文件系统优化"></a>文件系统优化</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/fstab 添加挂载参数</span></span><br><span class="line">noatime,nodiratime</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>noatime: 不更新文件的最后访问时间，减少磁盘 I&#x2F;O。</li>
-<li>nodiratime: 不更新目录的访问时间，进一步减少磁盘 I&#x2F;O。</li>
-</ul>
-<p>参考链接：</p>
-<ol>
-<li><a href="https://www.cnblogs.com/kanie/p/15252921.html">mq-deadline调度器原理及源码分析</a></li>
-<li><a href="https://documentation.suse.com/zh-cn/sled/15-SP5/html/SLED-all/cha-tuning-io.html">微调 I&#x2F;O 性能</a></li>
-<li><a href="https://www.phoronix.com/review/linux-56-nvme/2">Linux 5.6 I&#x2F;O Scheduler Benchmarks: None, Kyber, BFQ, MQ-Deadline</a></li>
+    <title>Nginx编译nginx-module-vts并动态加载</title>
+    <url>/posts/f0115bb7.html</url>
+    <content><![CDATA[<p>最近想要监控 nginx 的流量状态，尤其是状态码的监控，发现了一个功能强大的模块<strong>nginx-module-vts</strong>。他并不是官方的模块，需要手动编译后加载。Nginx安装时自动打开了动态模块加载功能，可以在添加第三方模块时不用重新编译nginx。</p>
+<h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><ol>
+<li><h2 id="模块加载"><a href="#模块加载" class="headerlink" title="模块加载"></a>模块加载</h2></li>
 </ol>
+<p>Nginx 官方模块分为两类：</p>
+<ul>
+<li><strong>静态模块</strong>：在编译 Nginx 时直接链接进二进制，无法在不重新编译整个 Nginx 的情况下增删。</li>
+<li><strong>动态模块</strong>：编译为独立的 <code>.so</code> 文件，运行时通过 <code>load_module</code> 指令加载，<strong>无需重装或重启整个 Nginx</strong>。</li>
+</ul>
+<p>生产环境中，我们通常使用发行版（apt&#x2F;yum）或官方预编译包安装的 Nginx。如果只想加一个 <code>nginx-module-vts</code> 监控模块，重编译整个 Nginx 风险高、代价大。动态模块让我们可以在<strong>不改动原有 Nginx 二进制</strong>的前提下，单独编译这个模块并热加载。</p>
+<ol start="2">
+<li><h2 id="安装环境"><a href="#安装环境" class="headerlink" title="安装环境"></a>安装环境</h2></li>
+</ol>
+<ul>
+<li>Linux：debian13.6</li>
+<li>Nginx：1.26.3</li>
+<li>nginx-module-vts：0.2.6</li>
+</ul>
+<h1 id="二、动态编译与加载步骤"><a href="#二、动态编译与加载步骤" class="headerlink" title="二、动态编译与加载步骤"></a>二、动态编译与加载步骤</h1><p>整体流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">获取 Nginx 源码 → 获取模块源码 → 编译模块(.so) → 加载模块 → 配置并验证</span><br></pre></td></tr></table></figure>
+
+<h2 id="步骤-1：获取-Nginx-源码"><a href="#步骤-1：获取-Nginx-源码" class="headerlink" title="步骤 1：获取 Nginx 源码"></a>步骤 1：获取 Nginx 源码</h2><p>先确认当前运行的 Nginx 版本，再到<a href="https://nginx.org/download/">官网</a>下载<strong>完全相同版本</strong>的源码。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">确认运行版本</span></span><br><span class="line">sudo nginx -v</span><br><span class="line">nginx version: nginx/1.26.3</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">下载并解压同版本源码</span></span><br><span class="line">wget https://nginx.org/download/nginx-1.26.3.tar.gz</span><br><span class="line">tar -xf nginx-1.26.3.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h2 id="步骤-2：获取模块源码"><a href="#步骤-2：获取模块源码" class="headerlink" title="步骤 2：获取模块源码"></a>步骤 2：获取模块源码</h2><p> 从github下载 <a href="https://github.com/vozlt/nginx-module-vts">nginx-module-vts</a> 模块的源码：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v0.2.6.tar.gz -O nginx-module-vts-0.2.6.tar.gz</span><br><span class="line">tar -zxvf nginx-module-vts-0.2.6.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h2 id="步骤-3：编译模块"><a href="#步骤-3：编译模块" class="headerlink" title="步骤 3：编译模块"></a>步骤 3：编译模块</h2><p><strong>核心点</strong>：<code>./configure</code> 必须包含原 Nginx 的全部参数。</p>
+<h3 id="3-1-取出原-Nginx-的-configure-参数"><a href="#3-1-取出原-Nginx-的-configure-参数" class="headerlink" title="3.1 取出原 Nginx 的 configure 参数"></a>3.1 取出原 Nginx 的 configure 参数</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -V</span><br><span class="line">nginx version: nginx/1.26.3</span><br><span class="line">built with OpenSSL 3.5.6 7 Apr 2026</span><br><span class="line">TLS SNI support enabled</span><br><span class="line">configure arguments: --with-cc-opt=&#x27;-g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/build/reproducible-path/nginx-1.26.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fPIC -Wdate-time -D_FORTIFY_SOURCE=2&#x27; --with-ld-opt=&#x27;-Wl,-z,relro -Wl,-z,now -fPIC&#x27; --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --http-log-path=/var/log/nginx/access.log --error-log-path=stderr --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-compat --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_v3_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_secure_link_module --with-http_sub_module --with-mail_ssl_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-stream_realip_module --with-http_geoip_module=dynamic --with-http_image_filter_module=dynamic --with-http_perl_module=dynamic --with-http_xslt_module=dynamic --with-mail=dynamic --with-stream=dynamic --with-stream_geoip_module=dynamic</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-配置并编译模块"><a href="#3-2-配置并编译模块" class="headerlink" title="3.2 配置并编译模块"></a>3.2 配置并编译模块</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install -y build-essential</span><br><span class="line">cd nginx-1.26.3/</span><br><span class="line"></span><br><span class="line">编译方法一（目前所有nginx版本通用）：</span><br><span class="line"></span><br><span class="line">./configure --with-cc-opt=&#x27;-g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/build/reproducible-path/nginx-1.26.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fPIC -Wdate-time -D_FORTIFY_SOURCE=2&#x27; --with-ld-opt=&#x27;-Wl,-z,relro -Wl,-z,now -fPIC&#x27; --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --http-log-path=/var/log/nginx/access.log --error-log-path=stderr --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-compat --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_v3_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_secure_link_module --with-http_sub_module --with-mail_ssl_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-stream_realip_module --with-http_geoip_module=dynamic --with-http_image_filter_module=dynamic --with-http_perl_module=dynamic --with-http_xslt_module=dynamic --with-mail=dynamic --with-stream=dynamic --with-stream_geoip_module=dynamic --add-dynamic-module=/home/ops/nginx-module-vts-0.2.6</span><br><span class="line">make modules</span><br><span class="line"></span><br><span class="line">其中最后的--add-dynamic-module=注意改成自己vts的目录</span><br><span class="line"></span><br><span class="line">编译方法二（nginx 1.23及以后得版本可以用）：</span><br><span class="line">cd nginx-1.26.3</span><br><span class="line">./configure --with-compat --add-dynamic-module=/home/ops/nginx-module-vts-0.2.6</span><br><span class="line">make modules</span><br></pre></td></tr></table></figure>
+
+<p>编译成功后，模块文件出现在：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">nginx-1.26.3/objs/ngx_http_vhost_traffic_status_module.so</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-常见编译报错"><a href="#3-3-常见编译报错" class="headerlink" title="3.3 常见编译报错"></a>3.3 常见编译报错</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">报错1：</span><br><span class="line">./configure: error: the HTTP rewrite module requires the PCRE library.</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y libpcre2-dev</span><br><span class="line"></span><br><span class="line">如果要是用编译方法一，可以将相关依赖都安装上</span><br><span class="line">sudo apt install -y build-essential libpcre2-dev zlib1g-dev libssl-dev libxslt1-dev libgd-dev libgeoip-dev</span><br><span class="line"></span><br><span class="line">报错2：</span><br><span class="line">./configure: error: C compiler cc is not found</span><br><span class="line"></span><br><span class="line">sudo apt install -y build-essential</span><br><span class="line">安装编译相关依赖，并检查磁盘空间是否耗尽</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-4-复制到模块目录"><a href="#3-4-复制到模块目录" class="headerlink" title="3.4 复制到模块目录"></a>3.4 复制到模块目录</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看原 Nginx 的 modules 路径（来自上面的 configure 输出，通常是 /etc/nginx/modules 或 /usr/lib/nginx/modules）</span></span><br><span class="line">sudo nginx -V 2&gt;&amp;1 | grep -o &#x27;\-\-modules-path=[^ ]*&#x27; | cut -d= -f2</span><br><span class="line">/usr/lib/nginx/modules</span><br><span class="line"></span><br><span class="line">sudo cp ~/nginx-1.26.3/objs/ngx_http_vhost_traffic_status_module.so /usr/lib/nginx/modules</span><br></pre></td></tr></table></figure>
+
+<h2 id="步骤-4：加载模块（-so-文件）"><a href="#步骤-4：加载模块（-so-文件）" class="headerlink" title="步骤 4：加载模块（.so 文件）"></a>步骤 4：加载模块（.so 文件）</h2><p>编辑主配置文件 <code>nginx.conf</code>，在**最顶部（events&#x2F;http 块之外）**加入 <code>load_module</code>：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/nginx.conf</span><br><span class="line"></span><br><span class="line">load_module modules/ngx_http_vhost_traffic_status_module.so;</span><br></pre></td></tr></table></figure>
+
+<p>⚠️ <code>load_module</code> 必须出现在 <code>events {}</code> 和 <code>http {}</code> <strong>之前</strong>，否则配置检查会失败。</p>
+<h2 id="步骤-5：配置vts"><a href="#步骤-5：配置vts" class="headerlink" title="步骤 5：配置vts"></a>步骤 5：配置vts</h2><p>在 <code>http {}</code> 块内启用统计区，在需要暴露的 <code>server {}</code> 块内配置展示路由：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/nginx.conf</span><br><span class="line"></span><br><span class="line">http &#123;     </span><br><span class="line"></span><br><span class="line">	# 启用流量统计共享内存区</span><br><span class="line">    vhost_traffic_status_zone;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">sudo vim /etc/nginx/sites-enabled/default</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name _;</span><br><span class="line"></span><br><span class="line">        # 状态页（建议加访问控制）</span><br><span class="line">        location /vts &#123;</span><br><span class="line">            vhost_traffic_status_display;</span><br><span class="line">            vhost_traffic_status_display_format html;</span><br><span class="line"></span><br><span class="line">            # 安全加固：仅允许内网或指定 IP 访问</span><br><span class="line">            # allow 10.0.0.0/8;</span><br><span class="line">            # deny all;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤-6：校验并加载"><a href="#步骤-6：校验并加载" class="headerlink" title="步骤 6：校验并加载"></a>步骤 6：校验并加载</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 配置语法检查</span></span><br><span class="line">nginx -t</span><br><span class="line"><span class="comment"># 输出 nginx: configuration file /etc/nginx/nginx.conf test is successful</span></span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 平滑重载（不中断连接）</span></span><br><span class="line">nginx -s reload</span><br></pre></td></tr></table></figure>
+
+<p>打开浏览器访问 <code>http://&lt;your-server&gt;/vts</code>，应看到流量状态页。</p>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
-        <tag>初始化</tag>
-        <tag>GRUB</tag>
-        <tag>性能调优</tag>
+        <tag>nginx</tag>
+        <tag>流量监控</tag>
+        <tag>linux</tag>
+        <tag>动态加载模块</tag>
       </tags>
   </entry>
   <entry>
@@ -1057,6 +1051,77 @@
         <tag>acme</tag>
         <tag>免费证书</tag>
         <tag>自动化申请证书</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Linux初始化以及系统性能调优</title>
+    <url>/posts/b4a62efd.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
+<p>本文主要以debian为例针对CPU、硬盘、内核等操作系统参数进行优化。</p>
+<h2 id="CPU"><a href="#CPU" class="headerlink" title="CPU"></a>CPU</h2><h3 id="关闭cpu节能"><a href="#关闭cpu节能" class="headerlink" title="关闭cpu节能"></a>关闭cpu节能</h3><p>随着CPU的发展，Intel出现了EIST技术，它可以动态的调整CPU的频率。当CPU使用率地下或者接近0时候,能降低CPU频率并且降压，从而降低功耗和发热。当检测到CPU使用率增高，它会马上回到原始工作频率，但是你必须考虑CPU被唤醒的时间，并且确保它会再次100％运行。这一系列的过程通常被称为“C-states”或“C-modes”,它是从C0开始的。</p>
+<p>关闭CPU节能方式如下：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;intel_idle.max_cstate=0 intel_pstate=disable processor.max_cstate=1&quot;</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">保存退出，更新grub</span></span><br><span class="line">sudo update-grub</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>intel_idle.max_cstate&#x3D;0</li>
+</ul>
+<p>这个参数用于 Intel 平台，指定禁用 intel_idle 驱动，让系统退回使用通用的 acpi_idle 驱动。这样 acpi_idle 驱动会遵循 processor.max_cstate 参数的设置，从而限制 CPU 只能使用浅层 C-state（C1）。</p>
+<ul>
+<li>intel_pstate&#x3D;disable</li>
+</ul>
+<p>禁用Intel处理器的动态频率调节驱动（P-state），改用传统ACPI <code>cpufreq</code>驱动管理CPU频率‌。</p>
+<ul>
+<li>processor.max_cstate&#x3D;1</li>
+</ul>
+<p>限制Intel处理器的空闲状态最大为C1，禁止进入更深层节能状态（如C2&#x2F;C3），减少唤醒延迟‌。与设置为processor.max_cstate&#x3D;0等效</p>
+<h2 id="网卡"><a href="#网卡" class="headerlink" title="网卡"></a>网卡</h2><h3 id="网络接口命名规则"><a href="#网络接口命名规则" class="headerlink" title="网络接口命名规则"></a>网络接口命名规则</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">修改 grub 文件（注意备份）</span> </span><br><span class="line">sudo vim /etc/default/grub</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">在GRUB_CMDLINE_LINUX_DEFAULT 中添加参数</span></span><br><span class="line">GRUB_CMDLINE_LINUX_DEFAULT=&quot;net.ifnames=0 biosdevname=0&quot;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>net.ifnames&#x3D;0</li>
+</ul>
+<p>禁用可预测的网络接口命名（如<code>ens33</code>），恢复传统命名方式（如<code>eth0</code>）‌。</p>
+<ul>
+<li>biosdevname&#x3D;0</li>
+</ul>
+<p>关闭基于BIOS设备名的网络接口命名规则（如<code>em1</code>），需与<code>net.ifnames=0</code>配合生效‌。</p>
+<h3 id="网络优化配置"><a href="#网络优化配置" class="headerlink" title="网络优化配置"></a>网络优化配置</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看当前队列</span></span><br><span class="line">ethtool -l eth0</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">设置队列数量</span></span><br><span class="line">sudo ethtool -L eth0 combined 8</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="硬盘"><a href="#硬盘" class="headerlink" title="硬盘"></a>硬盘</h2><h3 id="调度策略"><a href="#调度策略" class="headerlink" title="调度策略"></a>调度策略</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">NVME设置调度策略为none</span></span><br><span class="line">echo none | sudo tee /sys/block/nvme0n1/queue/scheduler</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">机械硬盘设置调度策略为deadline</span></span><br><span class="line">echo deadline | sudo tee /sys/block/sda/queue/scheduler</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<ul>
+<li>mq-deadline</li>
+</ul>
+<p><code>mq-deadline</code> 调度程序将排队的 I&#x2F;O 请求分为读取或写入批处理，然后调度它们以增加逻辑块寻址 (LBA) 顺序执行。默认情况下，读取批处理的优先级高于写入批处理，因为应用程序更有可能阻止读 I&#x2F;O 操作。在 <code>mq-deadline</code> 批处理后，它会检查写操作在处理器时间耗尽的时间，并根据情况调度下一个读取或写入批处理。</p>
+<p>这个调度程序适用于大多数用例，特别是那些写入操作是异步的。</p>
+<ul>
+<li>none</li>
+</ul>
+<p>所有进程的io请求都进入<a href="https://so.csdn.net/so/search?q=FIFO&spm=1001.2101.3001.7020">FIFO</a>队列，完全按照队列的顺序进行io的读取，适合于ssd，因为io请求饥饿以及每次请求都需要寻道，ssd不存在传统hdd的寻道时间。</p>
+<h3 id="文件系统优化"><a href="#文件系统优化" class="headerlink" title="文件系统优化"></a>文件系统优化</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">/etc/fstab 添加挂载参数</span></span><br><span class="line">noatime,nodiratime</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>noatime: 不更新文件的最后访问时间，减少磁盘 I&#x2F;O。</li>
+<li>nodiratime: 不更新目录的访问时间，进一步减少磁盘 I&#x2F;O。</li>
+</ul>
+<p>参考链接：</p>
+<ol>
+<li><a href="https://www.cnblogs.com/kanie/p/15252921.html">mq-deadline调度器原理及源码分析</a></li>
+<li><a href="https://documentation.suse.com/zh-cn/sled/15-SP5/html/SLED-all/cha-tuning-io.html">微调 I&#x2F;O 性能</a></li>
+<li><a href="https://www.phoronix.com/review/linux-56-nvme/2">Linux 5.6 I&#x2F;O Scheduler Benchmarks: None, Kyber, BFQ, MQ-Deadline</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>初始化</tag>
+        <tag>GRUB</tag>
+        <tag>性能调优</tag>
       </tags>
   </entry>
   <entry>
@@ -1296,6 +1361,181 @@
       </tags>
   </entry>
   <entry>
+    <title>Linux启动流程</title>
+    <url>/posts/ae574090.html</url>
+    <content><![CDATA[<p>系统的启动流程可分为以下几个关键阶段，综合硬件初始化、引导加载、内核加载及用户空间初始化等过程。</p>
+<p>‌流程图简化：</p>
+<blockquote>
+<p>BIOS&#x2F;UEFI → GRUB → 内核 → systemd → 目标状态 → 用户登录</p>
+</blockquote>
+<h2 id="BIOS-UEFI-初始化"><a href="#BIOS-UEFI-初始化" class="headerlink" title="BIOS&#x2F;UEFI 初始化"></a>BIOS&#x2F;UEFI 初始化</h2><ol>
+<li><h3 id="硬件自检（POST）"><a href="#硬件自检（POST）" class="headerlink" title="硬件自检（POST）"></a>硬件自检（POST）</h3></li>
+</ol>
+<p>计算机加电后，BIOS&#x2F;UEFI 首先执行硬件自检（Power-On Self Test），检测 CPU、内存、存储设备等核心硬件状态‌</p>
+<ol start="2">
+<li><h3 id="‌选择启动设备"><a href="#‌选择启动设备" class="headerlink" title="‌选择启动设备"></a>‌选择启动设备</h3></li>
+</ol>
+<p>根据 BIOS&#x2F;UEFI 配置的启动顺序（如硬盘、USB、网络等），加载目标设备的引导扇区代码（如 MBR 或 UEFI 分区）‌</p>
+<h2 id="GRUB-引导加载程序"><a href="#GRUB-引导加载程序" class="headerlink" title="GRUB 引导加载程序"></a>GRUB 引导加载程序</h2><ol>
+<li><h3 id="加载-GRUB-菜单"><a href="#加载-GRUB-菜单" class="headerlink" title="加载 GRUB 菜单"></a>加载 GRUB 菜单</h3></li>
+</ol>
+<p>BIOS&#x2F;UEFI 将控制权移交至 GRUB（Grand Unified Bootloader），读取 <code>/boot/grub/grub.cfg</code> 配置文件并显示可引导的操作系统选项菜单‌</p>
+<ol start="2">
+<li><h3 id="‌内核与-initrd-加载"><a href="#‌内核与-initrd-加载" class="headerlink" title="‌内核与 initrd 加载"></a>‌内核与 initrd 加载</h3></li>
+</ol>
+<p>用户选择 Debian 启动项后，GRUB 将 Linux 内核（如 <code>vmlinuz</code>）和初始内存磁盘镜像（<code>initrd.img</code>）加载至内存，启动内核执行‌</p>
+<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><ol>
+<li><h3 id="硬件驱动加载"><a href="#硬件驱动加载" class="headerlink" title="硬件驱动加载"></a>硬件驱动加载</h3></li>
+</ol>
+<p>内核初始化硬件设备（如磁盘控制器、网络接口），并挂载根文件系统‌</p>
+<ol start="2">
+<li><h3 id="启动-systemd-进程"><a href="#启动-systemd-进程" class="headerlink" title="启动 systemd 进程"></a>启动 <code>systemd</code> 进程</h3></li>
+</ol>
+<p>内核调用首个用户空间进程 <code>systemd</code>（PID&#x3D;1），取代传统的 SysV init 作为初始化系统‌</p>
+<h2 id="用户空间初始化"><a href="#用户空间初始化" class="headerlink" title="用户空间初始化"></a>用户空间初始化</h2><ol>
+<li><h3 id="‌目标状态（Target）管理"><a href="#‌目标状态（Target）管理" class="headerlink" title="‌目标状态（Target）管理"></a>‌目标状态（Target）管理</h3></li>
+</ol>
+<p><code>systemd</code> 根据默认目标（如 <code>multi-user.target</code> 或 <code>graphical.target</code>）激活基础服务（如网络、日志、定时任务）‌</p>
+<ol start="2">
+<li><h3 id="‌运行级别兼容"><a href="#‌运行级别兼容" class="headerlink" title="‌运行级别兼容"></a>‌运行级别兼容</h3></li>
+</ol>
+<ul>
+<li>级别 0 → <code>poweroff.target</code>（关机）</li>
+<li>级别 1 → <code>rescue.target</code>（单用户维护模式）</li>
+<li>级别 2-5 → <code>multi-user.target</code>（多用户模式）</li>
+<li>级别 6 → <code>reboot.target</code>（重启）‌</li>
+</ul>
+<h2 id="用户登录"><a href="#用户登录" class="headerlink" title="用户登录"></a>用户登录</h2><ol>
+<li><h3 id="显示管理器启动‌"><a href="#显示管理器启动‌" class="headerlink" title="显示管理器启动‌"></a>显示管理器启动‌</h3></li>
+</ol>
+<p>若目标为图形界面（<code>graphical.target</code>），<code>systemd</code> 启动显示管理器（如 GDM），进入登录界面‌</p>
+<ol start="2">
+<li><h3 id="‌Shell或桌面环境加载"><a href="#‌Shell或桌面环境加载" class="headerlink" title="‌Shell或桌面环境加载"></a>‌Shell或桌面环境加载</h3></li>
+</ol>
+<p>用户认证通过后，启动桌面环境（如 GNOME）或命令行 Shell‌</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>BIOS</tag>
+        <tag>Linux</tag>
+        <tag>GRUB</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>手动搭建LNMP环境</title>
+    <url>/posts/9d5ca845.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
+<ul>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
+<li>确认源文件正常，执行以下命令。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令，安装 nginx。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
+
+<p>显示如下，则说明 Nginx 安装配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
+<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
+<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
+<ol start="4">
+<li>执行以下命令，退出 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
+<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，验证 PHP 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
+<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
+<ol>
+<li>执行以下命令，创建测试文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则说明环境配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>LNMP环境</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>手动搭建 WordPress 个人站点(Linux)</title>
     <url>/posts/c171e9f0.html</url>
     <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
@@ -1420,161 +1660,11 @@
       </categories>
       <tags>
         <tag>Linux</tag>
-        <tag>手动搭建 WordPress</tag>
         <tag>Nginx</tag>
         <tag>MySQL</tag>
         <tag>PHP</tag>
         <tag>wordpress</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Linux启动流程</title>
-    <url>/posts/ae574090.html</url>
-    <content><![CDATA[<p>系统的启动流程可分为以下几个关键阶段，综合硬件初始化、引导加载、内核加载及用户空间初始化等过程。</p>
-<p>‌流程图简化：</p>
-<blockquote>
-<p>BIOS&#x2F;UEFI → GRUB → 内核 → systemd → 目标状态 → 用户登录</p>
-</blockquote>
-<h2 id="BIOS-UEFI-初始化"><a href="#BIOS-UEFI-初始化" class="headerlink" title="BIOS&#x2F;UEFI 初始化"></a>BIOS&#x2F;UEFI 初始化</h2><ol>
-<li><h3 id="硬件自检（POST）"><a href="#硬件自检（POST）" class="headerlink" title="硬件自检（POST）"></a>硬件自检（POST）</h3></li>
-</ol>
-<p>计算机加电后，BIOS&#x2F;UEFI 首先执行硬件自检（Power-On Self Test），检测 CPU、内存、存储设备等核心硬件状态‌</p>
-<ol start="2">
-<li><h3 id="‌选择启动设备"><a href="#‌选择启动设备" class="headerlink" title="‌选择启动设备"></a>‌选择启动设备</h3></li>
-</ol>
-<p>根据 BIOS&#x2F;UEFI 配置的启动顺序（如硬盘、USB、网络等），加载目标设备的引导扇区代码（如 MBR 或 UEFI 分区）‌</p>
-<h2 id="GRUB-引导加载程序"><a href="#GRUB-引导加载程序" class="headerlink" title="GRUB 引导加载程序"></a>GRUB 引导加载程序</h2><ol>
-<li><h3 id="加载-GRUB-菜单"><a href="#加载-GRUB-菜单" class="headerlink" title="加载 GRUB 菜单"></a>加载 GRUB 菜单</h3></li>
-</ol>
-<p>BIOS&#x2F;UEFI 将控制权移交至 GRUB（Grand Unified Bootloader），读取 <code>/boot/grub/grub.cfg</code> 配置文件并显示可引导的操作系统选项菜单‌</p>
-<ol start="2">
-<li><h3 id="‌内核与-initrd-加载"><a href="#‌内核与-initrd-加载" class="headerlink" title="‌内核与 initrd 加载"></a>‌内核与 initrd 加载</h3></li>
-</ol>
-<p>用户选择 Debian 启动项后，GRUB 将 Linux 内核（如 <code>vmlinuz</code>）和初始内存磁盘镜像（<code>initrd.img</code>）加载至内存，启动内核执行‌</p>
-<h2 id="内核初始化"><a href="#内核初始化" class="headerlink" title="内核初始化"></a>内核初始化</h2><ol>
-<li><h3 id="硬件驱动加载"><a href="#硬件驱动加载" class="headerlink" title="硬件驱动加载"></a>硬件驱动加载</h3></li>
-</ol>
-<p>内核初始化硬件设备（如磁盘控制器、网络接口），并挂载根文件系统‌</p>
-<ol start="2">
-<li><h3 id="启动-systemd-进程"><a href="#启动-systemd-进程" class="headerlink" title="启动 systemd 进程"></a>启动 <code>systemd</code> 进程</h3></li>
-</ol>
-<p>内核调用首个用户空间进程 <code>systemd</code>（PID&#x3D;1），取代传统的 SysV init 作为初始化系统‌</p>
-<h2 id="用户空间初始化"><a href="#用户空间初始化" class="headerlink" title="用户空间初始化"></a>用户空间初始化</h2><ol>
-<li><h3 id="‌目标状态（Target）管理"><a href="#‌目标状态（Target）管理" class="headerlink" title="‌目标状态（Target）管理"></a>‌目标状态（Target）管理</h3></li>
-</ol>
-<p><code>systemd</code> 根据默认目标（如 <code>multi-user.target</code> 或 <code>graphical.target</code>）激活基础服务（如网络、日志、定时任务）‌</p>
-<ol start="2">
-<li><h3 id="‌运行级别兼容"><a href="#‌运行级别兼容" class="headerlink" title="‌运行级别兼容"></a>‌运行级别兼容</h3></li>
-</ol>
-<ul>
-<li>级别 0 → <code>poweroff.target</code>（关机）</li>
-<li>级别 1 → <code>rescue.target</code>（单用户维护模式）</li>
-<li>级别 2-5 → <code>multi-user.target</code>（多用户模式）</li>
-<li>级别 6 → <code>reboot.target</code>（重启）‌</li>
-</ul>
-<h2 id="用户登录"><a href="#用户登录" class="headerlink" title="用户登录"></a>用户登录</h2><ol>
-<li><h3 id="显示管理器启动‌"><a href="#显示管理器启动‌" class="headerlink" title="显示管理器启动‌"></a>显示管理器启动‌</h3></li>
-</ol>
-<p>若目标为图形界面（<code>graphical.target</code>），<code>systemd</code> 启动显示管理器（如 GDM），进入登录界面‌</p>
-<ol start="2">
-<li><h3 id="‌Shell或桌面环境加载"><a href="#‌Shell或桌面环境加载" class="headerlink" title="‌Shell或桌面环境加载"></a>‌Shell或桌面环境加载</h3></li>
-</ol>
-<p>用户认证通过后，启动桌面环境（如 GNOME）或命令行 Shell‌</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>BIOS</tag>
-        <tag>Linux</tag>
-        <tag>GRUB</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>解析WordPress网站域名与常见问题</title>
-    <url>/posts/4c6ec737.html</url>
-    <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
-<ol>
-<li><h3 id="注册域名。"><a href="#注册域名。" class="headerlink" title="注册域名。"></a>注册域名。</h3></li>
-</ol>
-<p><a href="https://www.alibabacloud.com/help/zh/dws/user-guide/register-a-domain-name-on-alibaba-cloud#task-1830383">阿里云域名注册流程</a></p>
-<p><a href="https://cloud.tencent.com/document/product/242/9595">腾讯云域名注册流程</a></p>
-<p><a href="https://support.huaweicloud.com/usermanual-domain/domain_ug_310004.html">华为云域名注册流程</a></p>
-<ol start="2">
-<li><h3 id="备案域名。"><a href="#备案域名。" class="headerlink" title="备案域名。"></a>备案域名。</h3><p>如果您的域名指向的网站托管在中国内地节点服务器，则需要到对应云平台上进行ICP备案，时长按照备案地处理速度，一般在1-30个工作日。如果不备案可能会导致域名无法访问。</p>
-</li>
-<li><h3 id="解析域名。将域名指向实例公网IP。"><a href="#解析域名。将域名指向实例公网IP。" class="headerlink" title="解析域名。将域名指向实例公网IP。"></a>解析域名。将域名指向实例公网IP。</h3><p>域名解析是使用域名访问您的网站的必备环节。请在托管的云平台上进行解析，具体参考各云平台的文档，如需IPV6的访问请添加AAAA解析。</p>
-</li>
-</ol>
-<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"><a href="#一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录" class="headerlink" title="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"></a>一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录</h3><p>该问题可能是因为WordPress配置文件主题或插件的权限不足，您可以参考以下步骤解决。</p>
-<ol>
-<li><p>登录搭建WordPress的服务器</p>
-</li>
-<li><p>运行以下命令，打开WordPress配置文件（wp-config.php文件位置请根据实际服务器上自定义的位置进行更换）</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /usr/share/nginx/html/wordpress/wp-config.php</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>按<code>i</code>键进入编辑模式。</p>
-</li>
-<li><p>在最下方，添加如下代码。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">define(&quot;FS_METHOD&quot;,&quot;direct&quot;);</span><br><span class="line">define(&quot;FS_CHMOD_DIR&quot;, 0777);</span><br><span class="line">define(&quot;FS_CHMOD_FILE&quot;, 0777);</span><br></pre></td></tr></table></figure>
-
-<ol start="5">
-<li><p>按<code>Esc</code>键，输入<code>:wq</code>后按<code>Enter</code>键，保存退出配置文件。</p>
-</li>
-<li><p>返回WordPress仪表盘，刷新页面，可解决需要FTP登录凭证的问题。</p>
-<p>如果仍存在无法创建目录的问题，需再次返回登录，运行以下命令，将网站根目录的权限用户更新为Nginx对应的用户，本示例环境中为<code>www-data</code>用户。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chown -R www-data /usr/share/nginx/html/wordpress</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"><a href="#二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库" class="headerlink" title="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"></a>二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库</h3><p>操作步骤如下：</p>
-<ol>
-<li><p>登录数据库，root密码具体看配置数据库时修改的数据。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql -u root -p</span><br></pre></td></tr></table></figure>
-
-</li>
-<li><p>查寻并修改数据库</p>
-<blockquote>
-<p>本示例将域名<code>www.example1.com</code>改为<a href="http://www.example2.com./">www.example2.com。</a></p>
-</blockquote>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; use wordpress;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; select * from wp_options where option_value like &#x27;%www.example1.com&#x27;;</span><br><span class="line"></span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">| option_id | option_name | option_value              | autoload |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">|         2 | siteurl     | https://www.example1.com  | on       |</span><br><span class="line">|         3 | home        | https://www.example1.com  | on       |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">2 rows in set (0.046 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; update wp_options set option_value=replace(option_value, &#x27;https://www.example2.com&#x27;, &#x27;https://www.example2.com&#x27;) where option_name = &#x27;home&#x27; OR option_name = &#x27;siteurl&#x27;;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; exit;</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>成功为WordPress网站设置新域名。</p>
-</li>
-</ol>
-<h3 id="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"><a href="#三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法" class="headerlink" title="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"></a>三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法</h3><p>在使用wordPress的时候，可能会遇到“您关注的链接已过期”或The link you followed has expired” 错误，一般从WordPress管理后台上传WordPress主题或插件到您的网站时，通常会发生此错误。WordPress有一个设置参数，可以控制从WordPress管理后台上传的文件的大小。</p>
-<ol>
-<li><p>登录服务器，查看配置文件位置</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ps -ef|grep php</span><br><span class="line"></span><br><span class="line">www-data 2754144 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">www-data 2754145 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">ops      2756021 2745748  0 17:22 pts/0    00:00:00 grep php</span><br><span class="line">root     3454264       1  0 Sep06 ?        00:00:40 php-fpm: master process (/etc/php/8.2/fpm/php-fpm.conf)</span><br><span class="line"></span><br><span class="line">可以确认配置文件在/etc/php/8.2/fpm/ 目录 修改该目录下的php.ini文件</span><br><span class="line">提前备份文件</span><br><span class="line">sudo cp /etc/php/8.2/fpm/php.ini /etc/php/8.2/fpm/php.ini.bak</span><br><span class="line">sudo vim /etc/php/8.2/fpm/php.ini</span><br><span class="line"></span><br><span class="line">打开文件后修改下面三行参数，保存并退出</span><br><span class="line"></span><br><span class="line">upload_max_filesize = 64M</span><br><span class="line">post_max_size = 64M</span><br><span class="line">max_execution_time = 300</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>服务重新加载配置文件</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl reload php8.2-fpm.service</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>修复完成验证</p>
-<p>可以再次上传测试，限制调整为可以上传单个文件的最大大小为64M，最大执行时间为300秒。</p>
-</li>
-</ol>
-<h3 id="四、Nginx伪静态规则"><a href="#四、Nginx伪静态规则" class="headerlink" title="四、Nginx伪静态规则"></a>四、Nginx伪静态规则</h3><p>若在发布文章出现“此响应不是合法的JSON响应”，则需要检查nginx伪静态规则是否配置，具体配置如下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">        try_files $uri $uri/ /index.php?$args;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-
-<p>如nginx无配置，在location &#x2F;加入该配置即可。</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>WordPress常见问题</tag>
-        <tag>WordPress域名</tag>
+        <tag>手动搭建 WordPress</tag>
       </tags>
   </entry>
   <entry>
@@ -1693,115 +1783,90 @@
       </tags>
   </entry>
   <entry>
-    <title>手动搭建LNMP环境</title>
-    <url>/posts/9d5ca845.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
-<ul>
-<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
-<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
-<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
-<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
-</ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
-<li>确认源文件正常，执行以下命令。</li>
+    <title>解析WordPress网站域名与常见问题</title>
+    <url>/posts/4c6ec737.html</url>
+    <content><![CDATA[<h2 id="解析WordPress网站域名"><a href="#解析WordPress网站域名" class="headerlink" title="解析WordPress网站域名"></a>解析WordPress网站域名</h2><p>通过公网IP地址直接访问您的WordPress网站会降低服务端的安全性。如果您已有域名或者想为WordPress网站注册一个域名，可以参考以下步骤。</p>
+<ol>
+<li><h3 id="注册域名。"><a href="#注册域名。" class="headerlink" title="注册域名。"></a>注册域名。</h3></li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
-
+<p><a href="https://www.alibabacloud.com/help/zh/dws/user-guide/register-a-domain-name-on-alibaba-cloud#task-1830383">阿里云域名注册流程</a></p>
+<p><a href="https://cloud.tencent.com/document/product/242/9595">腾讯云域名注册流程</a></p>
+<p><a href="https://support.huaweicloud.com/usermanual-domain/domain_ug_310004.html">华为云域名注册流程</a></p>
 <ol start="2">
-<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+<li><h3 id="备案域名。"><a href="#备案域名。" class="headerlink" title="备案域名。"></a>备案域名。</h3><p>如果您的域名指向的网站托管在中国内地节点服务器，则需要到对应云平台上进行ICP备案，时长按照备案地处理速度，一般在1-30个工作日。如果不备案可能会导致域名无法访问。</p>
 </li>
-<li><p>执行以下命令，安装 nginx。</p>
+<li><h3 id="解析域名。将域名指向实例公网IP。"><a href="#解析域名。将域名指向实例公网IP。" class="headerlink" title="解析域名。将域名指向实例公网IP。"></a>解析域名。将域名指向实例公网IP。</h3><p>域名解析是使用域名访问您的网站的必备环节。请在托管的云平台上进行解析，具体参考各云平台的文档，如需IPV6的访问请添加AAAA解析。</p>
 </li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
+<h2 id="常见问题"><a href="#常见问题" class="headerlink" title="常见问题"></a>常见问题</h2><h3 id="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"><a href="#一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录" class="headerlink" title="一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录"></a>一、WordPress中更新版本、上传主题或插件时，提示需要FTP登录凭证或无法创建目录</h3><p>该问题可能是因为WordPress配置文件主题或插件的权限不足，您可以参考以下步骤解决。</p>
+<ol>
+<li><p>登录搭建WordPress的服务器</p>
+</li>
+<li><p>运行以下命令，打开WordPress配置文件（wp-config.php文件位置请根据实际服务器上自定义的位置进行更换）</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /usr/share/nginx/html/wordpress/wp-config.php</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>按<code>i</code>键进入编辑模式。</p>
+</li>
+<li><p>在最下方，添加如下代码。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">define(&quot;FS_METHOD&quot;,&quot;direct&quot;);</span><br><span class="line">define(&quot;FS_CHMOD_DIR&quot;, 0777);</span><br><span class="line">define(&quot;FS_CHMOD_FILE&quot;, 0777);</span><br></pre></td></tr></table></figure>
 
 <ol start="5">
-<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
-
-<ol start="6">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+<li><p>按<code>Esc</code>键，输入<code>:wq</code>后按<code>Enter</code>键，保存退出配置文件。</p>
 </li>
-<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
+<li><p>返回WordPress仪表盘，刷新页面，可解决需要FTP登录凭证的问题。</p>
+<p>如果仍存在无法创建目录的问题，需再次返回登录，运行以下命令，将网站根目录的权限用户更新为Nginx对应的用户，本示例环境中为<code>www-data</code>用户。</p>
 </li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo chown -R www-data /usr/share/nginx/html/wordpress</span><br></pre></td></tr></table></figure>
 
-<ol start="8">
-<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
 
-<p>显示如下，则说明 Nginx 安装配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
-<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
-<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
 
-<ol start="2">
-<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
-<ol start="4">
-<li>执行以下命令，退出 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
-
-<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
-<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
-
-<ol start="2">
-<li>执行以下命令，验证 PHP 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
-<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
+<h3 id="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"><a href="#二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库" class="headerlink" title="二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库"></a>二、如果在设置过程中域名改错造成网站无法访问或需要将之前的公网IP换成新域名需要直接修改数据库</h3><p>操作步骤如下：</p>
 <ol>
-<li>执行以下命令，创建测试文件。</li>
+<li><p>登录数据库，root密码具体看配置数据库时修改的数据。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql -u root -p</span><br></pre></td></tr></table></figure>
+
+</li>
+<li><p>查寻并修改数据库</p>
+<blockquote>
+<p>本示例将域名<code>www.example1.com</code>改为<a href="http://www.example2.com./">www.example2.com。</a></p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; use wordpress;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; select * from wp_options where option_value like &#x27;%www.example1.com&#x27;;</span><br><span class="line"></span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">| option_id | option_name | option_value              | autoload |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">|         2 | siteurl     | https://www.example1.com  | on       |</span><br><span class="line">|         3 | home        | https://www.example1.com  | on       |</span><br><span class="line">+-----------+-------------+---------------------------+----------+</span><br><span class="line">2 rows in set (0.046 sec)</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; update wp_options set option_value=replace(option_value, &#x27;https://www.example2.com&#x27;, &#x27;https://www.example2.com&#x27;) where option_name = &#x27;home&#x27; OR option_name = &#x27;siteurl&#x27;;</span><br><span class="line"></span><br><span class="line">MariaDB [wordpress]&gt; exit;</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>成功为WordPress网站设置新域名。</p>
+</li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+<h3 id="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"><a href="#三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法" class="headerlink" title="三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法"></a>三、WordPress上传安装主题提示“您所关注的链接已过期”解决办法</h3><p>在使用wordPress的时候，可能会遇到“您关注的链接已过期”或The link you followed has expired” 错误，一般从WordPress管理后台上传WordPress主题或插件到您的网站时，通常会发生此错误。WordPress有一个设置参数，可以控制从WordPress管理后台上传的文件的大小。</p>
+<ol>
+<li><p>登录服务器，查看配置文件位置</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ps -ef|grep php</span><br><span class="line"></span><br><span class="line">www-data 2754144 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">www-data 2754145 3454264  0 17:16 ?        00:00:01 php-fpm: pool www</span><br><span class="line">ops      2756021 2745748  0 17:22 pts/0    00:00:00 grep php</span><br><span class="line">root     3454264       1  0 Sep06 ?        00:00:40 php-fpm: master process (/etc/php/8.2/fpm/php-fpm.conf)</span><br><span class="line"></span><br><span class="line">可以确认配置文件在/etc/php/8.2/fpm/ 目录 修改该目录下的php.ini文件</span><br><span class="line">提前备份文件</span><br><span class="line">sudo cp /etc/php/8.2/fpm/php.ini /etc/php/8.2/fpm/php.ini.bak</span><br><span class="line">sudo vim /etc/php/8.2/fpm/php.ini</span><br><span class="line"></span><br><span class="line">打开文件后修改下面三行参数，保存并退出</span><br><span class="line"></span><br><span class="line">upload_max_filesize = 64M</span><br><span class="line">post_max_size = 64M</span><br><span class="line">max_execution_time = 300</span><br></pre></td></tr></table></figure>
 
 
-
-<ol start="2">
-<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
+</li>
+<li><p>服务重新加载配置文件</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl reload php8.2-fpm.service</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>修复完成验证</p>
+<p>可以再次上传测试，限制调整为可以上传单个文件的最大大小为64M，最大执行时间为300秒。</p>
+</li>
 </ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+<h3 id="四、Nginx伪静态规则"><a href="#四、Nginx伪静态规则" class="headerlink" title="四、Nginx伪静态规则"></a>四、Nginx伪静态规则</h3><p>若在发布文章出现“此响应不是合法的JSON响应”，则需要检查nginx伪静态规则是否配置，具体配置如下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">        try_files $uri $uri/ /index.php?$args;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
-<p>显示结果如下，则说明环境配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
+
+
+<p>如nginx无配置，在location &#x2F;加入该配置即可。</p>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
-        <tag>Nginx</tag>
-        <tag>MySQL</tag>
-        <tag>PHP</tag>
-        <tag>wordpress</tag>
-        <tag>LNMP环境</tag>
+        <tag>WordPress常见问题</tag>
+        <tag>WordPress域名</tag>
       </tags>
   </entry>
   <entry>
