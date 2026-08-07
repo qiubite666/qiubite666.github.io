@@ -1,6 +1,312 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
+    <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
+    <url>/posts/9b071109.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
+<p>本文将详细介绍如何基于DeepSeek R1+Ollama+Cherry Studio+Page Assist实现本地化部署，帮助您轻松搭建并使用DeepSeek服务。通过Web UI界面，您可以直接与模型进行交互式对话；同时，借助功能强大的交互平台架构，打造属于自己的专属AI聊天室变得轻而易举。</p>
+<h2 id="一、基础环境搭建"><a href="#一、基础环境搭建" class="headerlink" title="一、基础环境搭建"></a>一、基础环境搭建</h2><ol>
+<li><h3 id="什么是Ollama"><a href="#什么是Ollama" class="headerlink" title="什么是Ollama"></a>什么是Ollama</h3></li>
+</ol>
+<p>​	Ollama 是一个可以在本地轻松部署开源大语言模型（LLM）的工具框架，它允许开发者在本地环境中方便地运行和测试不同的语言模型，如 DeepSeek、Llama等。</p>
+<p>​	官网地址：<a href="https://ollama.com/">https://ollama.com/</a></p>
+<p>​	github地址：<a href="https://github.com/ollama/ollama">https://github.com/ollama/ollama</a></p>
+<ol start="2">
+<li><h3 id="安装Ollama"><a href="#安装Ollama" class="headerlink" title="安装Ollama"></a>安装Ollama</h3></li>
+</ol>
+<ul>
+<li><p>访问<a href="https://ollama.com/download">Ollama官网</a>下载对应操作系统的安装包（Windows&#x2F;macOS&#x2F;Linux），完成一键安装‌</p>
+<p>我这里以windows为例：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zjil1y-1.png" alt="image-20250228214909456"></p>
+<p>  下载完成后进行安装：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zmm92z-1.png" alt="image-20250228215430924"></p>
+</li>
+<li><p>安装验证</p>
+<p>安装完成后，在powershell中输入ollama -v，如果显示版本号即安装成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zp2wi8-1.png" alt="image-20250228215845649"></p>
+</li>
+</ul>
+<ol start="3">
+<li><h3 id="选择模型"><a href="#选择模型" class="headerlink" title="选择模型"></a>选择模型</h3></li>
+</ol>
+<p>各型号特性与硬件需求如下：</p>
+<table>
+<thead>
+<tr>
+<th>型号</th>
+<th>CPU</th>
+<th>内存</th>
+<th>显卡（显存要求）</th>
+<th>存储</th>
+<th>适用场景</th>
+<th>成本参考</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>‌1.5B‌</td>
+<td>4核（Intel i5&#x2F;Ryzen 5）</td>
+<td>≥8GB</td>
+<td>核显或低端独显（≥4GB）</td>
+<td>≥20GB SSD</td>
+<td>简单文本生成、轻量开发</td>
+<td>个人级（2k-5k）</td>
+</tr>
+<tr>
+<td>‌7B‌</td>
+<td>8核（i7&#x2F;Ryzen 7）</td>
+<td>≥16GB</td>
+<td>中端独显（RTX 3060，≥8GB）</td>
+<td>≥50GB NVMe</td>
+<td>代码生成、数据分析</td>
+<td>入门级（5k-1.5w）</td>
+</tr>
+<tr>
+<td>‌8B‌</td>
+<td>8核（i7&#x2F;Ryzen 7）</td>
+<td>≥16GB</td>
+<td>中高端独显（RTX 4060，≥10GB）</td>
+<td>≥50GB NVMe</td>
+<td>逻辑推理、轻量高精度任务</td>
+<td>进阶级（1w-3w）</td>
+</tr>
+<tr>
+<td>‌14B‌</td>
+<td>12核（i9&#x2F;Ryzen 9）</td>
+<td>≥32GB</td>
+<td>高端独显（RTX 4090，≥16GB）</td>
+<td>≥100GB NVMe</td>
+<td>复杂任务（合同分析、长文本）</td>
+<td>企业级（3w-8w）</td>
+</tr>
+<tr>
+<td>‌32B‌</td>
+<td>16核（服务器级）</td>
+<td>≥64GB</td>
+<td>专业卡（A100 40GB）</td>
+<td>≥200GB NVMe</td>
+<td>多模态处理、专业领域咨询</td>
+<td>高性能级（8w-15w）</td>
+</tr>
+<tr>
+<td>‌70B‌</td>
+<td>32核（双路Xeon&#x2F;EPYC）</td>
+<td>≥128GB</td>
+<td>多卡集群（2x A100&#x2F;H100）</td>
+<td>≥500GB NVMe</td>
+<td>科研级推理、大规模生成</td>
+<td>科研级（15w-50w）</td>
+</tr>
+<tr>
+<td>‌671B‌</td>
+<td>多节点服务器</td>
+<td>≥512GB ECC</td>
+<td>分布式GPU集群（8x H100）</td>
+<td>≥1TB NVMe</td>
+<td>超大规模训练、AGI探索</td>
+<td>顶尖级（50w+）</td>
+</tr>
+</tbody></table>
+<ol start="4">
+<li><h3 id="下载模型"><a href="#下载模型" class="headerlink" title="下载模型"></a>下载模型</h3></li>
+</ol>
+<p>根据选择好的模型进行拉取，详情可见ollama官网Models中的<a href="https://ollama.com/library/deepseek-r1">deepseek-r1</a>，命令如下：</p>
+<p><strong>DeepSeek-R1-Distill-Qwen-1.5B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:1.5b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-7B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:7b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Llama-8B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:8b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-14B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:14b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Qwen-32B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:32b</span><br></pre></td></tr></table></figure>
+
+<p><strong>DeepSeek-R1-Distill-Llama-70B</strong></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:70b</span><br></pre></td></tr></table></figure>
+
+
+
+<p>​	若出现success，则拉取完成，会自动启用该模型。如下图：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12ja0hy-1.png" alt="image-20250228233009280"></p>
+<ol start="5">
+<li><h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3></li>
+</ol>
+<p>​	博主的配置是4080ti显卡，32G内存，i7 8086k CPU，使用的是deepseek-r1:14b，思考速度大约15s左右，CPU使用率80%左右，内存使用率40%，GPU 使用率54%，显存使用率92%。ollama全部加载在GPU中。可供各位小伙伴选择模型时参考。</p>
+<p>CPU使用率：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1ziuyn-1.png" alt="image-20250228233855506"></p>
+<p>GPU使用率：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yf0a0-1.png" alt="image-20250228235552545"></p>
+<p>ollama完全使用GPU：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yyjbb-1.png" alt="image-20250228235643561"></p>
+<p>在升级至DeepSeek-R1:32B这类专业级模型时，需配置显存更高且专业的显卡，由于模型参数量达320亿级别，显存不足会导致用户界面响应会出现明显卡顿，系统将自动调用大量系统内存进行补偿，单次任务处理时长普遍超过200秒。</p>
+<p>各个版本占用的空间如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/51smj-1.png" alt="image-20250301000848810"></p>
+<h2 id="二、打造专属DeepSeek"><a href="#二、打造专属DeepSeek" class="headerlink" title="二、打造专属DeepSeek"></a>二、打造专属DeepSeek</h2><ol>
+<li><h3 id="安装Cherry-Studio"><a href="#安装Cherry-Studio" class="headerlink" title="安装Cherry Studio"></a>安装Cherry Studio</h3></li>
+</ol>
+<p>​	前往<a href="https://cherry-ai.com/">Cherry Studio 官方网站</a>，根据你的操作系统下载安装。</p>
+<ol start="2">
+<li><h3 id="配置Cherry-Studio"><a href="#配置Cherry-Studio" class="headerlink" title="配置Cherry Studio"></a>配置Cherry Studio</h3></li>
+</ol>
+<p>​	打开 Cherry Studio，在设置中找到模型服务</p>
+<ul>
+<li>从模型列表中的Ollama选择与你本地部署的 DeepSeek-R1 模型版本对应的选项</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/i6msp-1.png" alt="image-20250301003054702"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/j8vq7-1.png" alt="image-20250301003232975"></p>
+<ul>
+<li><p>默认模型中选择本地部署对应的模型</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/m60qk-1.png" alt="image-20250301003723515"></p>
+</li>
+<li><p>目前新版的Cherry Studio已支持网络搜索，在网络搜索中可以注册Tavily并设置api秘钥，注册账号可以用github或google</p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/nub35-1.png" alt="image-20250301004004172"></p>
+<ol start="3">
+<li><h3 id="使用Cherry-Studio"><a href="#使用Cherry-Studio" class="headerlink" title="使用Cherry Studio"></a>使用Cherry Studio</h3></li>
+</ol>
+<p>​	配置到这里就可以开始使用专属自己的DeepSeek了，如需使用网络搜索，可在助手页面点开“开启网络搜索”。智能体内也有一些预设的提示词可供食用。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/v7lke-1.png" alt="image-20250301005242312"></p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/vkryc-1.png" alt="image-20250301005303173"></p>
+<h2 id="三、配置使用Web-UI"><a href="#三、配置使用Web-UI" class="headerlink" title="三、配置使用Web UI"></a>三、配置使用Web UI</h2><ol>
+<li><h3 id="Page-Assist是什么"><a href="#Page-Assist是什么" class="headerlink" title="Page Assist是什么"></a>Page Assist是什么</h3></li>
+</ol>
+<p>​	Page Assist 是一款开源浏览器扩展程序，主要用于提升用户在网页浏览过程中与本地 AI 模型的交互效率，提供类似 ChatGPT 的 Web UI 界面，且支持用户与本地运行的 AI 模型（如 Ollama、Gemini Nano、DeepSeek 等）进行多轮对话‌。</p>
+<ol start="2">
+<li><h3 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a><strong>安装与配置</strong></h3></li>
+</ol>
+<p>Github 官网：<a href="https://github.com/n4ze3m/page-assist">https://github.com/n4ze3m/page-assist</a></p>
+<p>首先打开Chrome浏览器，进入应用商店，搜索<a href="https://chromewebstore.google.com/detail/jfgfiigpkhlkbnfnbobbkinehhfdhndo?utm_source=item-share-cp">Page Assist</a>，点击添加至Chrome：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1q260d-1.png" alt="image-20250301010423793"></p>
+<p>添加后在浏览器右上角的扩展程序图标中打开它即可看到Web UI界面了：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1qr26r-1.png" alt="image-20250301010539620"></p>
+<p>点击右上角设置，可以修改语音识别语言和界面显示语言：</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1rvrkk-1.png" alt="image-20250301010730076"></p>
+<p>选择好本地搭建好的模型后即开始使用，并且可以开启搜索网络。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1t4goy-1.png" alt="image-20250301010939030"></p>
+]]></content>
+      <categories>
+        <category>AIGC</category>
+      </categories>
+      <tags>
+        <tag>DeepSeek本地部署</tag>
+        <tag>ollama</tag>
+        <tag>Cherry Studio</tag>
+        <tag>LLM交互平台</tag>
+        <tag>Page Assist</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>交换机access、hybrid、trunk口的区别、特点、应用场景以及如何配置</title>
+    <url>/posts/18d22523.html</url>
+    <content><![CDATA[<p>在数据中心和大型企业网络环境中，交换机是作为局域网的核心设备。它不仅能够连接不同的网络设备，还能够通过划分虚拟局域网（VLAN）来优化网络性能和安全性。而端口模式的配置决定了交换机端口如何处理VLAN标签。</p>
+<p>下文主要讲解交换机的三种端口模式Access、Hybrid 和 Trunk，它们的特点、应用场景、如何配置以及区别。</p>
+<h2 id="交换机三种端口模式：Access、Trunk、Hybrid"><a href="#交换机三种端口模式：Access、Trunk、Hybrid" class="headerlink" title="交换机三种端口模式：Access、Trunk、Hybrid"></a>交换机三种端口模式：Access、Trunk、Hybrid</h2><p>交换机端口在二层转发时，最核心的动作就是处理 <strong>VLAN 标签（802.1Q Tag）</strong>。根据对标签的处理方式，端口被划分为三种模式。</p>
+<ol>
+<li><h3 id="Access"><a href="#Access" class="headerlink" title="Access"></a>Access</h3></li>
+</ol>
+<p>端口仅属于一个 VLAN，也就是<strong>发出的帧不带标签</strong>，<strong>收到的帧一律打上该 VLAN 标签（PVID）</strong>。通常用于接入主机、服务器等终端设备。</p>
+<p>配置命令（以VLAN10为例）：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">switchport mode access;</span><br><span class="line">switchport access vlan 10;</span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">port link-type access;</span><br><span class="line">port default vlan 10;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li><h3 id="Trunk"><a href="#Trunk" class="headerlink" title="Trunk"></a>Trunk</h3></li>
+</ol>
+<p>端口可以同时加入多个 VLAN，适用于交换机之间的链路互联。工作原理是<strong>发出的帧除 PVID外，全部带标签</strong>；<strong>收到的帧，带标签的保留，不带标签的则打上 PVID 所属标签</strong>。</p>
+<p>总结trunk的判断逻辑如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/01/sj2ixj.png" alt="交换机trunk端口判断逻辑"></p>
+<p>配置命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">interface GigabitEthernet 1/0/1</span><br><span class="line">switchport mode trunk;</span><br><span class="line">switchport trunk encapsulation dot1q;</span><br><span class="line">switchport trunk native vlan 10</span><br><span class="line">switchport trunk allowed vlan 10,11,20;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type trunk;</span><br><span class="line">port trunk pvid vlan 10;</span><br><span class="line">port trunk allow-pass vlan 10,11,20;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><h3 id="Hybrid"><a href="#Hybrid" class="headerlink" title="Hybrid"></a>Hybrid</h3></li>
+</ol>
+<p>Hybrid是华为系命令厂家中交换机具备的一种额外的模式，这种模式被设计用来兼容access模式和trunk模式，Hybrid 端口允许部分 VLAN 帧不带标签（untagged），部分带标签（tagged），灵活性更高。</p>
+<p>Hybrid接口共有三个参数：</p>
+<ul>
+<li>tagged vlan（带标签 VLAN）：从该端口<strong>发出</strong>的数据帧，保留原有的 802.1Q 标签（即带着 VLAN ID 出去）。</li>
+<li>untagged vlan（不带标签 VLAN）：从该端口<strong>发出</strong>时，剥去 802.1Q 标签，变成标准以太网帧。</li>
+<li>pvid（这里的pvid与trunk的pvid不可混淆，二者有一定的区别）</li>
+</ul>
+<p>总结Hybrid的判断逻辑如下：</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/01/x7tavz.png" alt="交换机hybrid端口判断逻辑"></p>
+<p>​     对比Trunk的判断逻辑表和Hybrid判断逻辑表，可以发现pvid在两个模式下的生效的作用略有不用。在hybrid模式下面，pvid只生效于入接口方向，在出方向上不考虑pvid，出方向只检查vlan标签被tagged&#x2F;untagged列表匹配情况。而到了Trunk接口模式下，情况就有所变化了。在入方向上，pvid的逻辑完全继承了hybrid模式的逻辑，但在出方向上，在匹配逻辑上Trunk会多考虑一个环节，就是是否匹配pvid，如果匹配上了pvid，数据帧会被脱掉vlan标签转发，而hybrid根本不检查pvid，全部都执行直接转发的动作。</p>
+<p>配置命令：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type hybrid;</span><br><span class="line">port hybrid pvid vlan 10;</span><br><span class="line">port hybrid untagged vlan 10;</span><br><span class="line">port hybrid tagged vlan 20</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="横向对比表与应用场景"><a href="#横向对比表与应用场景" class="headerlink" title="横向对比表与应用场景"></a>横向对比表与应用场景</h2><table>
+<thead>
+<tr>
+<th align="left">特性</th>
+<th align="left">Access</th>
+<th align="left">Trunk</th>
+<th align="left">Hybrid</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">所属 VLAN 数</td>
+<td align="left">1 个</td>
+<td align="left">多个（允许列表）</td>
+<td align="left">多个（允许列表）</td>
+</tr>
+<tr>
+<td align="left">发出帧标签规则</td>
+<td align="left">全部 Untagged</td>
+<td align="left">PVID Untagged，其他 Tagged</td>
+<td align="left">按 VLAN 手工设置 Tagged&#x2F;Untagged</td>
+</tr>
+<tr>
+<td align="left">收到无标签帧处理</td>
+<td align="left">打上所属 VLAN 标签</td>
+<td align="left">打上 PVID 标签</td>
+<td align="left">打上 PVID 标签（若该 VLAN 允许通过）</td>
+</tr>
+<tr>
+<td align="left">收到带标签帧处理</td>
+<td align="left">丢弃（VLAN 不一致则丢弃）</td>
+<td align="left">检查是否在允许列表</td>
+<td align="left">检查是否在允许列表</td>
+</tr>
+<tr>
+<td align="left">典型应用</td>
+<td align="left">终端接入</td>
+<td align="left">交换机间互联</td>
+<td align="left">灵活 VLAN 部署，如 IPTV、管理网段混传</td>
+</tr>
+</tbody></table>
+<p>参考链接：</p>
+<ol>
+<li><p><a href="https://support.huawei.com/enterprise/zh/knowledge/EKB1000060549">交换机端口与C友商模式横向对比</a></p>
+</li>
+<li><p><a href="https://cloud.tencent.com/developer/article/2502264">你知道交换机有哪三种端口工作模式吗？</a></p>
+</li>
+<li><p><a href="https://zhuanlan.zhihu.com/p/451399550">交换机三种端口模式Access、Hybrid和Trunk的理解</a></p>
+</li>
+<li><p><a href="https://zhuanlan.zhihu.com/p/714222918">交换机端口模式详解看这篇，Access、Hybrid、Trunk很清晰</a></p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>access</tag>
+        <tag>hybrid</tag>
+        <tag>trunk</tag>
+        <tag>交换机</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>windows 11 安装教程</title>
     <url>/posts/50cbde44.html</url>
     <content><![CDATA[<h2 id="第一步：准备一个U盘"><a href="#第一步：准备一个U盘" class="headerlink" title="第一步：准备一个U盘"></a><strong>第一步：准备一个U盘</strong></h2><p>建议容量8G以上，注意，在制作系统盘时会格式化U盘，所以最好准备个空U盘，防止资料丢失。</p>
@@ -99,6 +405,161 @@
       <tags>
         <tag>windows</tag>
         <tag>系统安装</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Prometheus+Grafana+Alertmanager部署</title>
+    <url>/posts/c03992dd.html</url>
+    <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
+<h3 id="Pushgateway"><a href="#Pushgateway" class="headerlink" title="Pushgateway"></a><strong>Pushgateway</strong></h3><p><strong>Pushgateway</strong> 是 Prometheus 生态系统中的一个工具，专门用来处理短期任务或批处理作业的指标。这些短期任务通常是无法直接通过 Prometheus 的 pull 模型抓取的，因此 Pushgateway 可以接收来自这些任务的指标数据并将其保存在 Prometheus 可抓取的形式中。<br>主要功能：</p>
+<ul>
+<li>允许临时的、短期任务将其指标推送到 Pushgateway。</li>
+<li>支持长期运行的指标的暴露，适合批处理任务的场景。</li>
+</ul>
+<h3 id="Node-Exporter"><a href="#Node-Exporter" class="headerlink" title="Node Exporter"></a><strong>Node Exporter</strong></h3><p><strong>Node Exporter</strong> 是 Prometheus 生态系统中用于收集 Linux&#x2F;Unix 系统层面指标的组件。它暴露系统硬件和操作系统的运行状况，例如：</p>
+<ul>
+<li>CPU 使用率</li>
+<li>内存使用情况</li>
+<li>磁盘 I&#x2F;O</li>
+<li>网络流量</li>
+</ul>
+<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a><strong>Grafana</strong></h3><p><strong>Grafana</strong> 是一个开源的数据可视化工具，能够与 Prometheus 等数据源集成。它通过直观的图表、仪表盘（dashboard）展示时间序列数据，方便用户监控系统性能和运行状态。<br>主要功能：</p>
+<ul>
+<li>支持多种数据源（包括 Prometheus、Elasticsearch、MySQL 等）</li>
+<li>自定义仪表盘和报警</li>
+<li>提供丰富的插件以扩展功能</li>
+</ul>
+<h3 id="Alertmanager"><a href="#Alertmanager" class="headerlink" title="Alertmanager"></a><strong>Alertmanager</strong></h3><p><strong>Alertmanager</strong> 是 Prometheus 的报警管理组件，用于处理来自 Prometheus 服务器的报警。它能够根据预定义的规则分组、路由、抑制和消除报警。Alertmanager 可以将报警发送到各种通知渠道，如邮件、Slack、PagerDuty 等。<br>主要功能：</p>
+<ul>
+<li>灵活的报警管理和路由规则</li>
+<li>报警抑制与分组</li>
+<li>支持多种通知方式</li>
+</ul>
+<p>这些组件结合在一起，形成一个强大的监控系统，Prometheus 负责收集和存储数据，Pushgateway 用于处理无法直接拉取的任务，Node Exporter 提供系统层面的指标，Grafana 实现数据的可视化，Alertmanager 管理报警。</p>
+<h2 id="实例环境与下载"><a href="#实例环境与下载" class="headerlink" title="实例环境与下载"></a>实例环境与下载</h2><h3 id="实例环境"><a href="#实例环境" class="headerlink" title="实例环境"></a>实例环境</h3><p>本文搭建的环境软件组成版本及说明如下：</p>
+<ul>
+<li><p>Linux：Linux 操作系统，本文以 debian 12.6 为例。</p>
+</li>
+<li><p>prometheus：本文以  prometheus 3.4.0 为例。</p>
+</li>
+<li><p>pushgateway：本文以 pushgateway 1.11.1 为例。</p>
+</li>
+<li><p>node-exporter：本文以 node-exporter 1.9.1 为例。</p>
+</li>
+<li><p>Grafana：本文以 Grafana 12.0.0 为例。</p>
+</li>
+<li><p>Alertmanager：本文以 Alertmanager 0.28.1 为例。</p>
+</li>
+</ul>
+<h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p>部分软件有国内加速下载请根据需求选择下载方式，下载地址如下：</p>
+<blockquote>
+<p>prometheus以及相关套件可见官网：<a href="https://prometheus.io/download/">https://prometheus.io/download/</a></p>
+<p>下载地址：</p>
+<p>prometheus：<a href="https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz">https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</a></p>
+<p>Alertmanager：<a href="https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz">https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</a></p>
+<p>node-exporter：<a href="https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz">https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</a></p>
+<p>pushgateway：<a href="https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz">https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</a></p>
+<p>Grafana：</p>
+<p>​	华为源：<a href="https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb">https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</a></p>
+</blockquote>
+<blockquote>
+<p>注意：由于各软件会升级迭代，请根据实际情况调整下载地址</p>
+</blockquote>
+<p>进入服务器，执行如下命令下载并解压：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt</span><br><span class="line">mkdir prometheus_env</span><br><span class="line">cd prometheus_env</span><br><span class="line">wget https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line">wget https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line">tar -zxvf prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y adduser libfontconfig1 musl</span><br><span class="line">sudo dpkg -i grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//修改文件名去掉版本号</span><br><span class="line">cd /opt/prometheus_env</span><br><span class="line">for i in `ls -l|awk &#x27;&#123;print $9&#125;&#x27;`;do new_name=$(echo &quot;$i&quot; | awk -F &#x27;-&#x27; &#x27;&#123;print $1&#125;&#x27;);mv &quot;$i&quot; &quot;$new_name&quot;;done</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="服务配置"><a href="#服务配置" class="headerlink" title="服务配置"></a>服务配置</h2><h3 id="修改prometheus-yml-配置文件"><a href="#修改prometheus-yml-配置文件" class="headerlink" title="修改prometheus.yml 配置文件"></a>修改prometheus.yml 配置文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/prometheus</span><br><span class="line">vi prometheus.yml</span><br></pre></td></tr></table></figure>
+
+<p>内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># my global config</span><br><span class="line">global:</span><br><span class="line">  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.</span><br><span class="line">  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.</span><br><span class="line">  # scrape_timeout is set to the global default (10s).</span><br><span class="line"></span><br><span class="line"># Alertmanager configuration</span><br><span class="line">alerting:</span><br><span class="line">  alertmanagers:</span><br><span class="line">    - static_configs:</span><br><span class="line">        - targets:</span><br><span class="line">           - 127.0.0.1:9093</span><br><span class="line"></span><br><span class="line"># Load rules once and periodically evaluate them according to the global &#x27;evaluation_interval&#x27;.</span><br><span class="line">rule_files:</span><br><span class="line">   - &quot;alarm_rules.yml&quot;</span><br><span class="line"></span><br><span class="line"># A scrape configuration containing exactly one endpoint to scrape:</span><br><span class="line"># Here it&#x27;s Prometheus itself.</span><br><span class="line">scrape_configs:</span><br><span class="line">  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br><span class="line">  - job_name: &quot;prometheus&quot;</span><br><span class="line"></span><br><span class="line">    # metrics_path defaults to &#x27;/metrics&#x27;</span><br><span class="line">    # scheme defaults to &#x27;http&#x27;.</span><br><span class="line"></span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&quot;localhost:9090&quot;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;prometheus&#x27;</span><br><span class="line">  - job_name: &#x27;linux&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9100&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;localhost&#x27;</span><br><span class="line">  - job_name: &#x27;pushgateway&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9091&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;pushgateway&#x27;</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="配置解析："><a href="#配置解析：" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="全局配置（global）："><a href="#全局配置（global）：" class="headerlink" title="全局配置（global）："></a><strong>全局配置（global）</strong>：</h5><ul>
+<li><code>scrape_interval</code> 和 <code>evaluation_interval</code> 设置为 15 秒，意味着每 15 秒抓取一次指标数据并评估报警规则。</li>
+</ul>
+<h5 id="报警管理（alerting）："><a href="#报警管理（alerting）：" class="headerlink" title="报警管理（alerting）："></a><strong>报警管理（alerting）</strong>：</h5><ul>
+<li>配置 Alertmanager 的地址（<code>127.0.0.1:9093</code>），确保 Alertmanager 正在该地址上运行。</li>
+</ul>
+<h5 id="规则文件（rule-files）："><a href="#规则文件（rule-files）：" class="headerlink" title="规则文件（rule_files）："></a><strong>规则文件（rule_files）</strong>：</h5><ul>
+<li>指向 alarm_rules.yml，请确保该文件存在且格式正确。</li>
+</ul>
+<h5 id="抓取配置（scrape-configs）："><a href="#抓取配置（scrape-configs）：" class="headerlink" title="抓取配置（scrape_configs）："></a><strong>抓取配置（scrape_configs）</strong>：</h5><ul>
+<li><strong>Prometheus 本身</strong>：抓取自身的指标，目标为 <code>127.0.0.1:9090</code>。</li>
+<li><strong>Linux 监控</strong>：通过 Node Exporter 抓取本地系统指标，目标为 <code>127.0.0.1:9100</code>。</li>
+<li><strong>Pushgateway</strong>：监控 Pushgateway 的指标，目标为 <code>127.0.0.1:9091</code>。</li>
+</ul>
+<p>根据需要调整 <code>scrape_interval</code> 和 <code>evaluation_interval</code>，如果你希望更频繁地抓取数据，可以将其缩短。如果有多个实例，可以考虑使用服务发现机制。</p>
+<h3 id="新增alarm-rules-yml-文件"><a href="#新增alarm-rules-yml-文件" class="headerlink" title="新增alarm_rules.yml 文件"></a>新增alarm_rules.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim alarm_rules.yml</span><br><span class="line"></span><br><span class="line">groups:</span><br><span class="line">- name: node</span><br><span class="line">  rules:</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: up&#123;&#125; == 0 </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 挂了&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: 100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes) &gt; 40     </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 内存大于50%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: (1 - avg(rate(node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;[2m])) by (instance)) * 100 &gt; 70  </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; CPU使用率大于70%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;        </span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: max((node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;) *100/(node_filesystem_avail_bytes &#123;fstype=~&quot;ext.?|xfs&quot;&#125;+(node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;)))by(instance) &gt; 80  </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 分区使用率大于80%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="修改alertmanager-yml-文件"><a href="#修改alertmanager-yml-文件" class="headerlink" title="修改alertmanager.yml 文件"></a>修改alertmanager.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/alertmanager</span><br><span class="line">vim alertmanager.yml </span><br></pre></td></tr></table></figure>
+
+<p>内容如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">global:</span><br><span class="line">  resolve_timeout: 5m</span><br><span class="line">  smtp_smarthost: &#x27;smtp.163.com:25&#x27; # 定义163邮箱服务器端</span><br><span class="line">  smtp_from: &#x27;yourmail@163.com&#x27;  #来自哪个邮箱发的</span><br><span class="line">  smtp_auth_username: &#x27;yourmail@163.com&#x27; #邮箱验证</span><br><span class="line">  smtp_auth_password: &#x27;1111aaaa&#x27;   # 邮箱授权码，不是登录密码</span><br><span class="line">  smtp_require_tls: true   # 是否启用tls</span><br><span class="line">route:</span><br><span class="line">  group_by: [&#x27;alertname&#x27;]</span><br><span class="line">  group_wait: 10s</span><br><span class="line">  group_interval: 10s</span><br><span class="line">  repeat_interval: 3m</span><br><span class="line">  receiver: &#x27;email&#x27;</span><br><span class="line">receivers:</span><br><span class="line">  - name: &#x27;email&#x27;</span><br><span class="line">    email_configs:</span><br><span class="line">      - to: &#x27;yourmail@qq.com&#x27;</span><br><span class="line">#inhibit_rules:</span><br><span class="line">#  - source_match:</span><br><span class="line">#      severity: &#x27;critical&#x27;</span><br><span class="line">#    target_match:</span><br><span class="line">#      severity: &#x27;warning&#x27;</span><br><span class="line">#    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]</span><br></pre></td></tr></table></figure>
+
+<h4 id="配置解析：-1"><a href="#配置解析：-1" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="global"><a href="#global" class="headerlink" title="global"></a>global</h5><ul>
+<li><strong>resolve_timeout</strong>: 设置告警的解决时间，5分钟内未解决则会被视为已解决。</li>
+<li><strong>smtp_smarthost</strong>: 定义 SMTP 服务器的地址和端口。</li>
+<li><strong>smtp_from</strong>: 指定发送邮件时显示的发件人邮箱地址。</li>
+<li><strong>smtp_auth_username</strong>: SMTP 认证的用户名，一般是完整的邮箱地址。</li>
+<li><strong>smtp_auth_password</strong>: 邮箱的授权码，而不是登录密码，需要在邮箱设置中生成。</li>
+<li><strong>smtp_require_tls</strong>: 是否要求使用 TLS 进行加密传输。</li>
+</ul>
+<h5 id="route"><a href="#route" class="headerlink" title="route"></a>route</h5><ul>
+<li><strong>group_by</strong>: 定义在同一组内如何聚合告警，这里按 <code>alertname</code> 聚合。</li>
+<li><strong>group_wait</strong>: 在发送组告警前的等待时间，10秒。</li>
+<li><strong>group_interval</strong>: 组内告警发送的最小间隔，10秒。</li>
+<li><strong>repeat_interval</strong>: 如果告警没有解决，重复发送告警的最小时间间隔，这里设置为 3 分钟。</li>
+<li><strong>receiver</strong>: 指定告警的接收者，这里是 <code>mail</code>。</li>
+</ul>
+<h5 id="receivers"><a href="#receivers" class="headerlink" title="receivers"></a>receivers</h5><ul>
+<li><strong>name</strong>: 定义接收者的名称，这里为 <code>mail</code>，与 <code>route</code> 中的接收者一致。</li>
+<li>email_configs:邮件发送的配置。<ul>
+<li><strong>to</strong>: 接收邮件的地址，可以列出多个邮箱地址，使用换行分隔。</li>
+</ul>
+</li>
+</ul>
+<h3 id="修改defaults-ini文件"><a href="#修改defaults-ini文件" class="headerlink" title="修改defaults.ini文件"></a>修改defaults.ini文件</h3><p>修改grafana的defaults.ini文件将界面可以匿名访问</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/grafana/grafana.ini</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">################################### Anonymous Auth ######################</span></span></span><br><span class="line">[auth.anonymous]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="built_in">enable</span> anonymous access</span></span><br><span class="line">enabled = true</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="新增systemd的service"><a href="#新增systemd的service" class="headerlink" title="新增systemd的service"></a>新增systemd的service</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
+
+<h4 id="pushgateway-service文件"><a href="#pushgateway-service文件" class="headerlink" title="pushgateway.service文件"></a>pushgateway.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Push Gateway</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/pushgateway/pushgateway</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="node-exporter-service文件"><a href="#node-exporter-service文件" class="headerlink" title="node_exporter.service文件"></a>node_exporter.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Node Exporter</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/node_exporter/node_exporter</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="prometheus-service文件"><a href="#prometheus-service文件" class="headerlink" title="prometheus.service文件"></a>prometheus.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus</span><br><span class="line">Documentation=https://prometheus.io/</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Type设置为notify时，服务会不断重启</span></span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/home/ops/prometheus/prometheus \</span><br><span class="line">--config.file=/home/ops/prometheus/prometheus.yml \</span><br><span class="line">--web.read-timeout=5m  \</span><br><span class="line">--web.max-connections=10 \</span><br><span class="line">--query.max-concurrency=20 \</span><br><span class="line">--storage.tsdb.path=/home/ops/prometheus/data \</span><br><span class="line">--storage.tsdb.retention.time=30d \</span><br><span class="line">--query.timeout=2m</span><br><span class="line">Restart=on-failure</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+<h4 id="alertmanager-service文件"><a href="#alertmanager-service文件" class="headerlink" title="alertmanager.service文件"></a>alertmanager.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus alertmanager</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/alertmanager/alertmanager \</span><br><span class="line">--storage.path=/opt/prometheus_env/alertmanager/data \</span><br><span class="line">--config.file=/opt/prometheus_env/alertmanager/alertmanager.yml</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">重载配置：</span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">开启服务：</span><br><span class="line">systemctl start pushgateway</span><br><span class="line">systemctl start node_exporter</span><br><span class="line">systemctl start prometheus</span><br><span class="line">systemctl start grafana</span><br><span class="line">systemctl start alertmanager</span><br><span class="line"></span><br><span class="line">设置开机启动：</span><br><span class="line">systemctl enable pushgateway</span><br><span class="line">systemctl enable node_exporter</span><br><span class="line">systemctl enable prometheus</span><br><span class="line">systemctl enable grafana</span><br><span class="line">systemctl enable alertmanager</span><br><span class="line"></span><br><span class="line">查看服务状态:</span><br><span class="line">systemctl status pushgateway</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Prometheus</tag>
+        <tag>Grafana</tag>
+        <tag>Alertmanager</tag>
+        <tag>监控部署</tag>
+        <tag>Prometheus部署</tag>
       </tags>
   </entry>
   <entry>
@@ -300,909 +761,6 @@
       </tags>
   </entry>
   <entry>
-    <title>交换机access、hybrid、trunk口的区别、特点、应用场景以及如何配置</title>
-    <url>/posts/18d22523.html</url>
-    <content><![CDATA[<p>在数据中心和大型企业网络环境中，交换机是作为局域网的核心设备。它不仅能够连接不同的网络设备，还能够通过划分虚拟局域网（VLAN）来优化网络性能和安全性。而端口模式的配置决定了交换机端口如何处理VLAN标签。</p>
-<p>下文主要讲解交换机的三种端口模式Access、Hybrid 和 Trunk，它们的特点、应用场景、如何配置以及区别。</p>
-<h2 id="交换机三种端口模式：Access、Trunk、Hybrid"><a href="#交换机三种端口模式：Access、Trunk、Hybrid" class="headerlink" title="交换机三种端口模式：Access、Trunk、Hybrid"></a>交换机三种端口模式：Access、Trunk、Hybrid</h2><p>交换机端口在二层转发时，最核心的动作就是处理 <strong>VLAN 标签（802.1Q Tag）</strong>。根据对标签的处理方式，端口被划分为三种模式。</p>
-<ol>
-<li><h3 id="Access"><a href="#Access" class="headerlink" title="Access"></a>Access</h3></li>
-</ol>
-<p>端口仅属于一个 VLAN，也就是<strong>发出的帧不带标签</strong>，<strong>收到的帧一律打上该 VLAN 标签（PVID）</strong>。通常用于接入主机、服务器等终端设备。</p>
-<p>配置命令（以VLAN10为例）：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">switchport mode access;</span><br><span class="line">switchport access vlan 10;</span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">port link-type access;</span><br><span class="line">port default vlan 10;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li><h3 id="Trunk"><a href="#Trunk" class="headerlink" title="Trunk"></a>Trunk</h3></li>
-</ol>
-<p>端口可以同时加入多个 VLAN，适用于交换机之间的链路互联。工作原理是<strong>发出的帧除 PVID外，全部带标签</strong>；<strong>收到的帧，带标签的保留，不带标签的则打上 PVID 所属标签</strong>。</p>
-<p>总结trunk的判断逻辑如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/01/sj2ixj.png" alt="交换机trunk端口判断逻辑"></p>
-<p>配置命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">Cisco：</span><br><span class="line">interface GigabitEthernet 1/0/1</span><br><span class="line">switchport mode trunk;</span><br><span class="line">switchport trunk encapsulation dot1q;</span><br><span class="line">switchport trunk native vlan 10</span><br><span class="line">switchport trunk allowed vlan 10,11,20;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type trunk;</span><br><span class="line">port trunk pvid vlan 10;</span><br><span class="line">port trunk allow-pass vlan 10,11,20;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="3">
-<li><h3 id="Hybrid"><a href="#Hybrid" class="headerlink" title="Hybrid"></a>Hybrid</h3></li>
-</ol>
-<p>Hybrid是华为系命令厂家中交换机具备的一种额外的模式，这种模式被设计用来兼容access模式和trunk模式，Hybrid 端口允许部分 VLAN 帧不带标签（untagged），部分带标签（tagged），灵活性更高。</p>
-<p>Hybrid接口共有三个参数：</p>
-<ul>
-<li>tagged vlan（带标签 VLAN）：从该端口<strong>发出</strong>的数据帧，保留原有的 802.1Q 标签（即带着 VLAN ID 出去）。</li>
-<li>untagged vlan（不带标签 VLAN）：从该端口<strong>发出</strong>时，剥去 802.1Q 标签，变成标准以太网帧。</li>
-<li>pvid（这里的pvid与trunk的pvid不可混淆，二者有一定的区别）</li>
-</ul>
-<p>总结Hybrid的判断逻辑如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/01/x7tavz.png" alt="交换机hybrid端口判断逻辑"></p>
-<p>​     对比Trunk的判断逻辑表和Hybrid判断逻辑表，可以发现pvid在两个模式下的生效的作用略有不用。在hybrid模式下面，pvid只生效于入接口方向，在出方向上不考虑pvid，出方向只检查vlan标签被tagged&#x2F;untagged列表匹配情况。而到了Trunk接口模式下，情况就有所变化了。在入方向上，pvid的逻辑完全继承了hybrid模式的逻辑，但在出方向上，在匹配逻辑上Trunk会多考虑一个环节，就是是否匹配pvid，如果匹配上了pvid，数据帧会被脱掉vlan标签转发，而hybrid根本不检查pvid，全部都执行直接转发的动作。</p>
-<p>配置命令：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">华为：</span><br><span class="line">interface GigabitEthernet0/24;</span><br><span class="line">port link-type hybrid;</span><br><span class="line">port hybrid pvid vlan 10;</span><br><span class="line">port hybrid untagged vlan 10;</span><br><span class="line">port hybrid tagged vlan 20</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="横向对比表与应用场景"><a href="#横向对比表与应用场景" class="headerlink" title="横向对比表与应用场景"></a>横向对比表与应用场景</h2><table>
-<thead>
-<tr>
-<th align="left">特性</th>
-<th align="left">Access</th>
-<th align="left">Trunk</th>
-<th align="left">Hybrid</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left">所属 VLAN 数</td>
-<td align="left">1 个</td>
-<td align="left">多个（允许列表）</td>
-<td align="left">多个（允许列表）</td>
-</tr>
-<tr>
-<td align="left">发出帧标签规则</td>
-<td align="left">全部 Untagged</td>
-<td align="left">PVID Untagged，其他 Tagged</td>
-<td align="left">按 VLAN 手工设置 Tagged&#x2F;Untagged</td>
-</tr>
-<tr>
-<td align="left">收到无标签帧处理</td>
-<td align="left">打上所属 VLAN 标签</td>
-<td align="left">打上 PVID 标签</td>
-<td align="left">打上 PVID 标签（若该 VLAN 允许通过）</td>
-</tr>
-<tr>
-<td align="left">收到带标签帧处理</td>
-<td align="left">丢弃（VLAN 不一致则丢弃）</td>
-<td align="left">检查是否在允许列表</td>
-<td align="left">检查是否在允许列表</td>
-</tr>
-<tr>
-<td align="left">典型应用</td>
-<td align="left">终端接入</td>
-<td align="left">交换机间互联</td>
-<td align="left">灵活 VLAN 部署，如 IPTV、管理网段混传</td>
-</tr>
-</tbody></table>
-<p>参考链接：</p>
-<ol>
-<li><p><a href="https://support.huawei.com/enterprise/zh/knowledge/EKB1000060549">交换机端口与C友商模式横向对比</a></p>
-</li>
-<li><p><a href="https://cloud.tencent.com/developer/article/2502264">你知道交换机有哪三种端口工作模式吗？</a></p>
-</li>
-<li><p><a href="https://zhuanlan.zhihu.com/p/451399550">交换机三种端口模式Access、Hybrid和Trunk的理解</a></p>
-</li>
-<li><p><a href="https://zhuanlan.zhihu.com/p/714222918">交换机端口模式详解看这篇，Access、Hybrid、Trunk很清晰</a></p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>access</tag>
-        <tag>hybrid</tag>
-        <tag>trunk</tag>
-        <tag>交换机</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>服务器、交换机的链路聚合和负载均衡配置详解</title>
-    <url>/posts/49d033bd.html</url>
-    <content><![CDATA[<h1 id="一-什么是-Bond-聚合链路？有什么优点？"><a href="#一-什么是-Bond-聚合链路？有什么优点？" class="headerlink" title="一. 什么是 Bond 聚合链路？有什么优点？"></a>一. 什么是 Bond 聚合链路？有什么优点？</h1><p>Bond就是把多张物理网卡捆绑成一张逻辑网卡，实现冗余和负载均衡。Bond接口对上层网络栈呈现一个虚拟网卡，多条物理网线同时参与转发。</p>
-<p>核心优点：</p>
-<ul>
-<li><strong>冗余备份</strong>：物理链路或网卡故障时，业务流量自动切换到其他健康链路，业务无感知。</li>
-<li><strong>带宽聚合</strong>：多链路并行承载流量，提升总体吞吐（取决于模式和流量类型）。例如2条10Gbps链路可在支持负载均衡时达到近20Gbp带宽。</li>
-<li><strong>负载均衡</strong>：据哈希算法分散流量到不同链路，减轻单链路压力。</li>
-</ul>
-<h1 id="二-Bond的工作模式"><a href="#二-Bond的工作模式" class="headerlink" title="二. Bond的工作模式"></a>二. Bond的工作模式</h1><p>Linux 内核 Bonding 提供了 7 种模式（mode），数字 0~6，各模式适用不同场景。</p>
-<ul>
-<li><strong>mode&#x3D;0 (balance-rr)</strong>：轮询分发数据包，所有链路都干活，带宽叠加效果好。<strong>缺点</strong>：包可能乱序，且<strong>交换机必须做静态链路聚合</strong>。</li>
-<li><strong>mode&#x3D;1 (active-backup)</strong>：主备模式，仅有一块被称为主网卡（Primary）的物理成员接口处于 Active 状态，用于承载全部的出入站网络流量，其余物理网卡全部处于待命（Backup）状态，不收发任何业务数据。<strong>交换机无需配置</strong>，简单可靠，但不加带宽。</li>
-<li><strong>mode&#x3D;2 (balance-xor)</strong>：默认使用源 MAC 地址与目的 MAC 地址进行 XOR 计算并取模。相同的 MAC 对所产生的数据流始终落入固定的网卡中，属于流级负载均衡，完美避免了 Mode 0 的乱序报文问题。<strong>交换机需配静态聚合。</strong></li>
-<li><strong>mode&#x3D;3 (broadcast)</strong>：每个包都向所有接口发送，做到完全冗余，但是接收端需要进行大量的去重过滤极其消耗主机的 CPU 与总线带宽资源，用于极特殊场景。<strong>交换机需配静态聚合。</strong></li>
-<li><strong>mode&#x3D;4 (802.3ad &#x2F; LACP)</strong>：动态链路聚合，服务器与交换机会协商聚合，自动管理链路增减，带宽叠加且故障自愈。<strong>交换机必须启用 LACP</strong>。</li>
-<li><strong>mode&#x3D;5 (balance-tlb)</strong>：自适应发送负载均衡，出站流量根据每个成员物理网卡的实时负载大小（以及协商速率）进行动态散列分发。入站流量则固定由当前指定的 Active 主网卡来接收。<strong>交换机无需配置</strong>。</li>
-<li><strong>mode&#x3D;6 (balance-alb)</strong>：在 mode 5 基础上增加了接收负载均衡。其核心原理是通过 ARP 欺骗与拦截机制实现的。当本地服务器向外发送 ARP 响应（ARP Reply）时，Bonding 驱动会强行拦截这些报文，并用不同的物理成员网卡的硬件 MAC 地址来重写 ARP 报文中的源 MAC 地址，从而使外部不同的网络客户端（Clients）在进行 ARP 缓存时，将该服务器的 IP 地址映射到不同的物理网卡 MAC 上。在复杂的虚拟机桥接、容器网络等场景下，MAC 重写会导致严重的网络寻址混乱，建议谨慎使用。<strong>交换机无需配置</strong></li>
-</ul>
-<blockquote>
-<p><strong>生产环境主流选择</strong>：追求带宽与标准化的场景用 <code>mode=4 (LACP)</code>；设备不支持 LACP 时可以用 <code>mode=1</code> 做纯冗余；想要高吞吐和冗余且设备不支持LACP可以做<code>mode=0</code>。</p>
-</blockquote>
-<table>
-<thead>
-<tr>
-<th>模式编号</th>
-<th>模式名称</th>
-<th>交换机配置要求</th>
-<th>负载均衡方向</th>
-<th>乱序风险</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Mode 0</td>
-<td>balance-rr</td>
-<td>必须配置静态 Trunk</td>
-<td>双向包级</td>
-<td>高（易导致 TCP 性能退化）</td>
-</tr>
-<tr>
-<td>Mode 1</td>
-<td>active-backup</td>
-<td>无任何要求</td>
-<td>无（仅单网卡承载）</td>
-<td>无</td>
-</tr>
-<tr>
-<td>Mode 2</td>
-<td>balance-xor</td>
-<td>必须配置静态 Trunk</td>
-<td>出站流级</td>
-<td>无</td>
-</tr>
-<tr>
-<td>Mode 3</td>
-<td>broadcast</td>
-<td>必须配置静态 Trunk</td>
-<td>双向广播（无分流）</td>
-<td>无</td>
-</tr>
-<tr>
-<td>Mode 4</td>
-<td>802.3ad</td>
-<td>必须配置动态 LACP</td>
-<td>双向流级</td>
-<td>无</td>
-</tr>
-<tr>
-<td>Mode 5</td>
-<td>balance-tlb</td>
-<td>无任何要求</td>
-<td>仅出站流级</td>
-<td>无</td>
-</tr>
-<tr>
-<td>Mode 6</td>
-<td>balance-alb</td>
-<td>无任何要求</td>
-<td>双向流级</td>
-<td>无</td>
-</tr>
-</tbody></table>
-<h1 id="三-LACP-配置模式"><a href="#三-LACP-配置模式" class="headerlink" title="三. LACP 配置模式"></a>三. LACP 配置模式</h1><p>LACP（链路聚合控制协议）是 mode&#x3D;4 背后的标准协议，它能自动检测链路状态并协商聚合。</p>
-<ul>
-<li><strong>动态 LACP（主动&#x2F;被动）</strong>：服务器与交换机自动握手。通常我们设置服务器端为 <strong>active</strong> 模式（主动发出协商包LACPDU ），交换机侧设为 <strong>active</strong> 或 <strong>passive</strong>，<strong>只要有一端是 active 就能协商成功</strong>。</li>
-<li><strong>静态 LACP</strong>：其实是不协商的“静态聚合”（即 mode&#x3D;0&#x2F;2 需要的交换机配置）。它没有协议数据单元(PDU)交互，全靠管理配置“强制捆绑”。</li>
-</ul>
-<p>在 Linux bond 配置中，mode&#x3D;4 要求交换机接口启用 LACP，我们需要关注 <code>lacp_rate</code> 参数（慢速每30秒发一次，快速每秒发一次，通常设 fast）。</p>
-<h2 id="LACP选举机制"><a href="#LACP选举机制" class="headerlink" title="LACP选举机制"></a>LACP选举机制</h2><p>LACP的选举机制是链路聚合功能的核心，决定了聚合组中哪些成员端口成为活动端口、如何选举主动端以及如何实现链路故障时的快速切换。</p>
-<h3 id="LACP优先级"><a href="#LACP优先级" class="headerlink" title="LACP优先级"></a>LACP优先级</h3><p>LACP优先级分为<strong>系统LACP优先级</strong>和<strong>接口LACP优先级</strong>两个层面，二者分工不同：</p>
-<p><strong>系统LACP优先级</strong>是为了区分链路聚合两端设备优先级的高低而配置的参数。系统优先级高的设备将被选作主动端（Actor），由它来决定两端设备的活动接口。在两端设备中选择系统LACP优先级较小一端作为主动端，如果系统LACP优先级相同（缺省均为32768）则选择<strong>MAC地址较小</strong>的一端作为主动端。</p>
-<p><strong>接口LACP优先级</strong>可以通过配置接口LACP优先级（缺省为32768）来区分不同接口被选为活动接口的优先程度，优先级高的接口将优先被选为活动接口。当聚合组中的成员接口数量超过最大活动接口数上限（通常为8个）时，系统依据接口优先级来选择哪些接口成为活动接口。接口优先级<strong>数值越小，优先级越高</strong>。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">配置系统LACP优先级（系统视图）：</span><br><span class="line"></span><br><span class="line">system-view</span><br><span class="line">lacp priority 100</span><br><span class="line"></span><br><span class="line">配置接口LACP优先级（接口视图）</span><br><span class="line">interface gigabitethernet 0/0/1</span><br><span class="line">lacp priority 100</span><br><span class="line">配置前需保证接口已加入到LACP模式的Eth-Trunk中</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="LACP抢占"><a href="#LACP抢占" class="headerlink" title="LACP抢占"></a>LACP抢占</h3><p><strong>LACP抢占</strong>功能可以保持接口LACP优先级最高的接口为活动接口。例如：当一条高优先级的接口因故障切换为非活动状态而后又恢复时，如果配置了抢占，则高优先级的接口将重新成为活动接口；如果未配置抢占，该接口不能重新成为活动接口。</p>
-<p><strong>抢占延时</strong>即抢占等待时间，是指在LACP模式的Eth-Trunk中非活动接口切换为活动接口需要等待的时间。配置抢占延时可以避免由于某些链路状态频繁变化而导致Eth-Trunk数据传输不稳定的情况。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">interface eth-trunk 1</span><br><span class="line">lacp preempt enable   //缺省情况下，优先级抢占处于禁止状态</span><br><span class="line">lacp preempt delay 20  //配置抢占等待时间前，必须保证当前Eth-Trunk已使能优先级抢占，否则配置不生效</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="LACP报文超时时间"><a href="#LACP报文超时时间" class="headerlink" title="LACP报文超时时间"></a>LACP报文超时时间</h3><p>LACP协议通过定期发送LACPDU报文来检测成员链路的通断状态。<strong>LACP报文超时时间</strong>是指本端成员接口在未收到对端LACPDU的情况下，等待多长时间后将链路标记为Down状态。</p>
-<p>LACP超时时间分为两种模式：</p>
-<table>
-<thead>
-<tr>
-<th align="left">模式</th>
-<th align="left">对端发送LACPDU周期</th>
-<th align="left">本端超时时间</th>
-<th align="left">特点</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="left"><strong>fast</strong></td>
-<td align="left">1秒</td>
-<td align="left">3秒</td>
-<td align="left">响应快，占用系统资源较多</td>
-</tr>
-<tr>
-<td align="left"><strong>slow</strong></td>
-<td align="left">30秒</td>
-<td align="left">90秒</td>
-<td align="left">资源消耗少，响应较慢</td>
-</tr>
-</tbody></table>
-<p>缺省情况下，Eth-Trunk接口接收报文的超时时间是90秒。</p>
-<p>链路聚合组的每个成员接口每秒最多处理20个LACP协议报文，设备全局每秒最多处理100个LACP协议报文，超过的协议报文将会被丢弃。</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">配置方法：</span><br><span class="line"></span><br><span class="line">interface eth-trunk 1</span><br><span class="line">mode lacp-static</span><br><span class="line">lacp timeout fast</span><br><span class="line"></span><br><span class="line">或配置为slow模式：</span><br><span class="line">lacp timeout slow</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="华为交换机LACP配置实例"><a href="#华为交换机LACP配置实例" class="headerlink" title="华为交换机LACP配置实例"></a>华为交换机LACP配置实例</h2><p><strong>场景1：静态聚合（配合服务器 bond mode 0）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">interface Eth-Trunk1</span><br><span class="line"> mode manual load-balance   # 手工负载分担模式，不协商LACP</span><br><span class="line"> load-balance src-dst-ip    # 负载分担算法建议选基于源目IP</span><br><span class="line"></span><br><span class="line">interface 10GE1/0/1</span><br><span class="line"> eth-trunk 1</span><br><span class="line"></span><br><span class="line">interface 10GE1/0/2</span><br><span class="line"> eth-trunk 1</span><br></pre></td></tr></table></figure>
-
-
-
-<p><strong>场景2：LACP 动态聚合（配合服务器 bond mode 4）</strong></p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">interface Eth-Trunk1</span><br><span class="line"> mode lacp-dynamic             # LACP动态模式</span><br><span class="line"> lacp timeout fast             # 设置快速超时（需与服务器 lacp_rate=fast 匹配）</span><br><span class="line"> load-balance src-dst-ip       # 哈希算法</span><br><span class="line"></span><br><span class="line">interface 10GE1/0/1</span><br><span class="line"> eth-trunk 1</span><br><span class="line"></span><br><span class="line">interface 10GE1/0/2</span><br><span class="line"> eth-trunk 1</span><br></pre></td></tr></table></figure>
-
-
-
-<h1 id="四-服务器bond参数与配置"><a href="#四-服务器bond参数与配置" class="headerlink" title="四. 服务器bond参数与配置"></a>四. 服务器bond参数与配置</h1><h2 id="Bond-配置参数"><a href="#Bond-配置参数" class="headerlink" title="Bond 配置参数"></a>Bond 配置参数</h2><table>
-<thead>
-<tr>
-<th>参数</th>
-<th>含义</th>
-<th>常用值&#x2F;建议</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>miimon</td>
-<td>链路监测周期(毫秒)</td>
-<td>100 (每100ms检查一次MII状态)</td>
-</tr>
-<tr>
-<td>arp_interval</td>
-<td>miimon的替代，使用 ARP 监控的间隔(毫秒)，需配合arp_ip_target</td>
-<td>可设 1000</td>
-</tr>
-<tr>
-<td>arp_ip_target</td>
-<td>ARP 监控的目标IP(通常为网关)</td>
-<td>网关例如192.168.0.1</td>
-</tr>
-<tr>
-<td>updelay</td>
-<td>检测到链路恢复后，延迟多少毫秒才启用接口</td>
-<td>200 (防止频繁抖动)，默认0</td>
-</tr>
-<tr>
-<td>downdelay</td>
-<td>检测到链路中断后，延迟多少毫秒才断开接口</td>
-<td>200，默认0</td>
-</tr>
-<tr>
-<td>primary</td>
-<td>指定主接口（仅 mode&#x3D;1 有效），主接口恢复后会切回</td>
-<td>例如eth1</td>
-</tr>
-<tr>
-<td>primary_reselect</td>
-<td>主接口恢复后的重新选择策略</td>
-<td>always (总是切回), better, failure(绝不切回)</td>
-</tr>
-<tr>
-<td>lacp_rate</td>
-<td>LACP 协议报文发送速率 (mode&#x3D;4)</td>
-<td>fast (每秒1个), slow (30秒1个)</td>
-</tr>
-<tr>
-<td>xmit_hash_policy</td>
-<td>发送时选择链路的哈希策略</td>
-<td>layer3+4, layer2+3, layer2 (和交换机保持一致建议 layer2+3)</td>
-</tr>
-</tbody></table>
-<p><strong>最佳实践</strong>：生产环境优先用 <code>miimon</code> 做链路监控，简单可靠。<code>mode=4</code> 时设置 <code>xmit_hash_policy=layer2+3</code>,<code> bond_updelay=200  bond_downdelay=200</code> 。</p>
-<h2 id="服务器配置bond"><a href="#服务器配置bond" class="headerlink" title="服务器配置bond"></a>服务器配置bond</h2><p>以debian配置bond4为例：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /etc/network/interfaces</span><br><span class="line">    </span><br><span class="line">auto bond0</span><br><span class="line">iface bond0 inet static</span><br><span class="line">address 10.170.175.24</span><br><span class="line">netmask 255.255.255.224</span><br><span class="line">gateway 10.170.175.1</span><br><span class="line">slaves eth0 eth1</span><br><span class="line">bond_mode 802.3ad</span><br><span class="line">bond_xmit_hash_policy layer2+3</span><br><span class="line">bond_miimon 100</span><br><span class="line">bond_updelay 200</span><br><span class="line">bond_downdelay 200</span><br><span class="line"></span><br></pre></td></tr></table></figure>
-
-<h2 id="服务器-Bond-的验证"><a href="#服务器-Bond-的验证" class="headerlink" title="服务器 Bond 的验证"></a>服务器 Bond 的验证</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 1. 查看bond状态、成员接口、模式、哈希策略</span><br><span class="line">cat /proc/net/bonding/bond0</span><br><span class="line"></span><br><span class="line"># 2. 查看网卡统计</span><br><span class="line">ethtool -S bond0</span><br></pre></td></tr></table></figure>
-
-
-
-<h1 id="五-负载算法"><a href="#五-负载算法" class="headerlink" title="五. 负载算法"></a>五. 负载算法</h1><h2 id="交换机的负载均衡方式"><a href="#交换机的负载均衡方式" class="headerlink" title="交换机的负载均衡方式"></a>交换机的负载均衡方式</h2><ul>
-<li><strong>dst-ip</strong>（目的IP地址）模式：根据目的IP地址进行负载分担。</li>
-<li><strong>dst-mac</strong>（目的MAC地址）模式：根据目的MAC地址进行负载分担。</li>
-<li><strong>src-ip</strong>（源IP地址）模式：根据源IP地址进行负载分担。</li>
-<li><strong>src-mac</strong>（源MAC地址）模式：根据源MAC地址进行负载分担。</li>
-<li><strong>src-dst-ip</strong>（源IP地址异或目的IP地址）模式：根据源IP异或目的IP地址的结果进行负载分担。</li>
-<li><strong>src-dst-mac</strong>（源MAC地址异或目的MAC地址）模式：根据源MAC异或目的MAC地址的结果进行负载分担。</li>
-</ul>
-<p>实际业务中用户需要根据业务流量特征选择配置合适的负载分担方式。业务流量中某种参数变化越频繁，选择与此参数相关的负载分担方式就越容易实现负载均衡。例如，如果报文的IP地址变化较频繁，那么选择基于<strong>dst-ip</strong>、<strong>src-ip</strong>或<strong>src-dst-ip</strong>的负载分担模式更有利于流量在各物理链路间合理的负载分担；如果报文的MAC地址变化较频繁，IP地址比较固定，那么选择基于<strong>dst-mac</strong>、<strong>src-mac</strong>或<strong>src-dst-mac</strong>的负载分担模式更有利于流量在各物理链路间合理的负载分担。</p>
-<h2 id="服务器bond的负载均衡方式"><a href="#服务器bond的负载均衡方式" class="headerlink" title="服务器bond的负载均衡方式"></a>服务器bond的负载均衡方式</h2><ul>
-<li><strong>layer2</strong>：仅以源&#x2F;目的MAC地址（XOR）加上类型字段哈希，是默认且802.3ad兼容。所有发往同一对MAC地址的流始终走同一路径。适合局域网中主要是MAC地址唯一性的场景。</li>
-<li><strong>layer3+4</strong>：使用IP地址和TCP&#x2F;UDP端口做哈希，可使针对同一目标IP的不同会话分布到不同端口，提高并行度（单连接依旧固定）。此策略不完全符合802.3ad规范（可能出现数据包乱序）但常用于服务器到多客户端的场景。</li>
-<li><strong>layer2+3</strong>：结合MAC和IP信息进行哈希。对非IP流采用layer2策略，对IP流则加入IP地址，能够在一定程度上兼顾IP路由场景的均衡性。802.3ad兼容。</li>
-<li><strong>encap2+3&#x2F;encap3+4</strong>：对隧道流量（如VXLAN）友好，哈希使用隧道内层地址（需要内核skb_flow_dissect支持）。当主机有大量隧道封装流量时，可考虑启用这些策略提高均衡性。</li>
-</ul>
-<p>通常生产环境建议交换机选择<strong>src-dst-ip</strong>，服务器选择配置<strong>layer2+3</strong>。</p>
-<p>参考链接：</p>
-<ol>
-<li><a href="https://support.huawei.com/enterprise/zh/doc/EDOC1000178154/49db9f05">配置指南-以太网交换</a></li>
-</ol>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>交换机</tag>
-        <tag>bond</tag>
-        <tag>服务器</tag>
-        <tag>链路聚合</tag>
-        <tag>负载均衡</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>DeepSeek R1本地化部署+web端访问+LLM交互平台</title>
-    <url>/posts/9b071109.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>针对DeepSeek高频次服务繁忙问题，本地化部署已成为用户实现稳定、高效AI交互的主流方案。通过本地部署，用户可在终端设备上构建私有化知识库系统，实现‌<strong>离线运行、数据隐私保护、低延迟响应</strong>‌等核心需求‌</p>
-<p>本文将详细介绍如何基于DeepSeek R1+Ollama+Cherry Studio+Page Assist实现本地化部署，帮助您轻松搭建并使用DeepSeek服务。通过Web UI界面，您可以直接与模型进行交互式对话；同时，借助功能强大的交互平台架构，打造属于自己的专属AI聊天室变得轻而易举。</p>
-<h2 id="一、基础环境搭建"><a href="#一、基础环境搭建" class="headerlink" title="一、基础环境搭建"></a>一、基础环境搭建</h2><ol>
-<li><h3 id="什么是Ollama"><a href="#什么是Ollama" class="headerlink" title="什么是Ollama"></a>什么是Ollama</h3></li>
-</ol>
-<p>​	Ollama 是一个可以在本地轻松部署开源大语言模型（LLM）的工具框架，它允许开发者在本地环境中方便地运行和测试不同的语言模型，如 DeepSeek、Llama等。</p>
-<p>​	官网地址：<a href="https://ollama.com/">https://ollama.com/</a></p>
-<p>​	github地址：<a href="https://github.com/ollama/ollama">https://github.com/ollama/ollama</a></p>
-<ol start="2">
-<li><h3 id="安装Ollama"><a href="#安装Ollama" class="headerlink" title="安装Ollama"></a>安装Ollama</h3></li>
-</ol>
-<ul>
-<li><p>访问<a href="https://ollama.com/download">Ollama官网</a>下载对应操作系统的安装包（Windows&#x2F;macOS&#x2F;Linux），完成一键安装‌</p>
-<p>我这里以windows为例：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zjil1y-1.png" alt="image-20250228214909456"></p>
-<p>  下载完成后进行安装：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zmm92z-1.png" alt="image-20250228215430924"></p>
-</li>
-<li><p>安装验证</p>
-<p>安装完成后，在powershell中输入ollama -v，如果显示版本号即安装成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/zp2wi8-1.png" alt="image-20250228215845649"></p>
-</li>
-</ul>
-<ol start="3">
-<li><h3 id="选择模型"><a href="#选择模型" class="headerlink" title="选择模型"></a>选择模型</h3></li>
-</ol>
-<p>各型号特性与硬件需求如下：</p>
-<table>
-<thead>
-<tr>
-<th>型号</th>
-<th>CPU</th>
-<th>内存</th>
-<th>显卡（显存要求）</th>
-<th>存储</th>
-<th>适用场景</th>
-<th>成本参考</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>‌1.5B‌</td>
-<td>4核（Intel i5&#x2F;Ryzen 5）</td>
-<td>≥8GB</td>
-<td>核显或低端独显（≥4GB）</td>
-<td>≥20GB SSD</td>
-<td>简单文本生成、轻量开发</td>
-<td>个人级（2k-5k）</td>
-</tr>
-<tr>
-<td>‌7B‌</td>
-<td>8核（i7&#x2F;Ryzen 7）</td>
-<td>≥16GB</td>
-<td>中端独显（RTX 3060，≥8GB）</td>
-<td>≥50GB NVMe</td>
-<td>代码生成、数据分析</td>
-<td>入门级（5k-1.5w）</td>
-</tr>
-<tr>
-<td>‌8B‌</td>
-<td>8核（i7&#x2F;Ryzen 7）</td>
-<td>≥16GB</td>
-<td>中高端独显（RTX 4060，≥10GB）</td>
-<td>≥50GB NVMe</td>
-<td>逻辑推理、轻量高精度任务</td>
-<td>进阶级（1w-3w）</td>
-</tr>
-<tr>
-<td>‌14B‌</td>
-<td>12核（i9&#x2F;Ryzen 9）</td>
-<td>≥32GB</td>
-<td>高端独显（RTX 4090，≥16GB）</td>
-<td>≥100GB NVMe</td>
-<td>复杂任务（合同分析、长文本）</td>
-<td>企业级（3w-8w）</td>
-</tr>
-<tr>
-<td>‌32B‌</td>
-<td>16核（服务器级）</td>
-<td>≥64GB</td>
-<td>专业卡（A100 40GB）</td>
-<td>≥200GB NVMe</td>
-<td>多模态处理、专业领域咨询</td>
-<td>高性能级（8w-15w）</td>
-</tr>
-<tr>
-<td>‌70B‌</td>
-<td>32核（双路Xeon&#x2F;EPYC）</td>
-<td>≥128GB</td>
-<td>多卡集群（2x A100&#x2F;H100）</td>
-<td>≥500GB NVMe</td>
-<td>科研级推理、大规模生成</td>
-<td>科研级（15w-50w）</td>
-</tr>
-<tr>
-<td>‌671B‌</td>
-<td>多节点服务器</td>
-<td>≥512GB ECC</td>
-<td>分布式GPU集群（8x H100）</td>
-<td>≥1TB NVMe</td>
-<td>超大规模训练、AGI探索</td>
-<td>顶尖级（50w+）</td>
-</tr>
-</tbody></table>
-<ol start="4">
-<li><h3 id="下载模型"><a href="#下载模型" class="headerlink" title="下载模型"></a>下载模型</h3></li>
-</ol>
-<p>根据选择好的模型进行拉取，详情可见ollama官网Models中的<a href="https://ollama.com/library/deepseek-r1">deepseek-r1</a>，命令如下：</p>
-<p><strong>DeepSeek-R1-Distill-Qwen-1.5B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:1.5b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Qwen-7B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:7b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Llama-8B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:8b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Qwen-14B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:14b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Qwen-32B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:32b</span><br></pre></td></tr></table></figure>
-
-<p><strong>DeepSeek-R1-Distill-Llama-70B</strong></p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">ollama run deepseek-r1:70b</span><br></pre></td></tr></table></figure>
-
-
-
-<p>​	若出现success，则拉取完成，会自动启用该模型。如下图：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12ja0hy-1.png" alt="image-20250228233009280"></p>
-<ol start="5">
-<li><h3 id="最佳实践"><a href="#最佳实践" class="headerlink" title="最佳实践"></a>最佳实践</h3></li>
-</ol>
-<p>​	博主的配置是4080ti显卡，32G内存，i7 8086k CPU，使用的是deepseek-r1:14b，思考速度大约15s左右，CPU使用率80%左右，内存使用率40%，GPU 使用率54%，显存使用率92%。ollama全部加载在GPU中。可供各位小伙伴选择模型时参考。</p>
-<p>CPU使用率：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1ziuyn-1.png" alt="image-20250228233855506"></p>
-<p>GPU使用率：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yf0a0-1.png" alt="image-20250228235552545"></p>
-<p>ollama完全使用GPU：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/02/28/12yyjbb-1.png" alt="image-20250228235643561"></p>
-<p>在升级至DeepSeek-R1:32B这类专业级模型时，需配置显存更高且专业的显卡，由于模型参数量达320亿级别，显存不足会导致用户界面响应会出现明显卡顿，系统将自动调用大量系统内存进行补偿，单次任务处理时长普遍超过200秒。</p>
-<p>各个版本占用的空间如下：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/51smj-1.png" alt="image-20250301000848810"></p>
-<h2 id="二、打造专属DeepSeek"><a href="#二、打造专属DeepSeek" class="headerlink" title="二、打造专属DeepSeek"></a>二、打造专属DeepSeek</h2><ol>
-<li><h3 id="安装Cherry-Studio"><a href="#安装Cherry-Studio" class="headerlink" title="安装Cherry Studio"></a>安装Cherry Studio</h3></li>
-</ol>
-<p>​	前往<a href="https://cherry-ai.com/">Cherry Studio 官方网站</a>，根据你的操作系统下载安装。</p>
-<ol start="2">
-<li><h3 id="配置Cherry-Studio"><a href="#配置Cherry-Studio" class="headerlink" title="配置Cherry Studio"></a>配置Cherry Studio</h3></li>
-</ol>
-<p>​	打开 Cherry Studio，在设置中找到模型服务</p>
-<ul>
-<li>从模型列表中的Ollama选择与你本地部署的 DeepSeek-R1 模型版本对应的选项</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/i6msp-1.png" alt="image-20250301003054702"></p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/j8vq7-1.png" alt="image-20250301003232975"></p>
-<ul>
-<li><p>默认模型中选择本地部署对应的模型</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/m60qk-1.png" alt="image-20250301003723515"></p>
-</li>
-<li><p>目前新版的Cherry Studio已支持网络搜索，在网络搜索中可以注册Tavily并设置api秘钥，注册账号可以用github或google</p>
-</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/nub35-1.png" alt="image-20250301004004172"></p>
-<ol start="3">
-<li><h3 id="使用Cherry-Studio"><a href="#使用Cherry-Studio" class="headerlink" title="使用Cherry Studio"></a>使用Cherry Studio</h3></li>
-</ol>
-<p>​	配置到这里就可以开始使用专属自己的DeepSeek了，如需使用网络搜索，可在助手页面点开“开启网络搜索”。智能体内也有一些预设的提示词可供食用。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/v7lke-1.png" alt="image-20250301005242312"></p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/vkryc-1.png" alt="image-20250301005303173"></p>
-<h2 id="三、配置使用Web-UI"><a href="#三、配置使用Web-UI" class="headerlink" title="三、配置使用Web UI"></a>三、配置使用Web UI</h2><ol>
-<li><h3 id="Page-Assist是什么"><a href="#Page-Assist是什么" class="headerlink" title="Page Assist是什么"></a>Page Assist是什么</h3></li>
-</ol>
-<p>​	Page Assist 是一款开源浏览器扩展程序，主要用于提升用户在网页浏览过程中与本地 AI 模型的交互效率，提供类似 ChatGPT 的 Web UI 界面，且支持用户与本地运行的 AI 模型（如 Ollama、Gemini Nano、DeepSeek 等）进行多轮对话‌。</p>
-<ol start="2">
-<li><h3 id="安装与配置"><a href="#安装与配置" class="headerlink" title="安装与配置"></a><strong>安装与配置</strong></h3></li>
-</ol>
-<p>Github 官网：<a href="https://github.com/n4ze3m/page-assist">https://github.com/n4ze3m/page-assist</a></p>
-<p>首先打开Chrome浏览器，进入应用商店，搜索<a href="https://chromewebstore.google.com/detail/jfgfiigpkhlkbnfnbobbkinehhfdhndo?utm_source=item-share-cp">Page Assist</a>，点击添加至Chrome：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1q260d-1.png" alt="image-20250301010423793"></p>
-<p>添加后在浏览器右上角的扩展程序图标中打开它即可看到Web UI界面了：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1qr26r-1.png" alt="image-20250301010539620"></p>
-<p>点击右上角设置，可以修改语音识别语言和界面显示语言：</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1rvrkk-1.png" alt="image-20250301010730076"></p>
-<p>选择好本地搭建好的模型后即开始使用，并且可以开启搜索网络。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/01/1t4goy-1.png" alt="image-20250301010939030"></p>
-]]></content>
-      <categories>
-        <category>AIGC</category>
-      </categories>
-      <tags>
-        <tag>DeepSeek本地部署</tag>
-        <tag>ollama</tag>
-        <tag>Cherry Studio</tag>
-        <tag>LLM交互平台</tag>
-        <tag>Page Assist</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>AOC AG275UXM2 vs HKC 领航M8 4K QD-MiniLED显示器参数对比推荐</title>
-    <url>/posts/9bb8c48e.html</url>
-    <content><![CDATA[<h1 id="双旗舰对决：AOC-AG275UXM2-vs-HKC-领航-M8（MG27K33US）"><a href="#双旗舰对决：AOC-AG275UXM2-vs-HKC-领航-M8（MG27K33US）" class="headerlink" title="双旗舰对决：AOC AG275UXM2 vs HKC 领航 M8（MG27K33US）"></a>双旗舰对决：AOC AG275UXM2 vs HKC 领航 M8（MG27K33US）</h1><blockquote>
-<p>对比时间：2026-08-07｜数据来源：AOC 官网参数页、HKC 官方&#x2F;百科、京东商品页、中关村在线及评测机构实测<br>两款均为 27 英寸、原生 4K（3840×2160）、<strong>QD-MiniLED（2304 分区）</strong> 旗舰显示器，画质层级相同，真正拉开差距的是色准、接口与价格。本文先给结论，再逐维度拆解。</p>
-</blockquote>
-<hr>
-<h2 id="一、一句话定位"><a href="#一、一句话定位" class="headerlink" title="一、一句话定位"></a>一、一句话定位</h2><table>
-<thead>
-<tr>
-<th>机型</th>
-<th>一句话定位</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>AOC AG275UXM2</strong></td>
-<td>AOC 爱攻（AGON）<strong>QD-MiniLED 全能旗舰</strong>，2304 分区 + <strong>出厂 ΔE&lt;1</strong>，电竞与创作通吃。</td>
-</tr>
-<tr>
-<td><strong>HKC 领航 M8（MG27K33US）</strong></td>
-<td>HKC 高端 <strong>QD-MiniLED 旗舰</strong>，2304 分区 + <strong>玄墨低反屏 + 满血 DP2.1 + 90W 一线连</strong>，接口与做工最豪华。</td>
-</tr>
-</tbody></table>
-<p><strong>最关键的差异</strong>：两款画质硬件几乎一致（同 2304 分区、同 HDR1400、同 98% DCI-P3），核心分野在三点——</p>
-<p><strong>①色准：AG275UXM2 出厂 ΔE&lt;1，领航 M8 仅 ΔE&lt;2；</strong></p>
-<p><strong>②Type-C 功率：AG275UXM2 65W，领航 M8 90W；</strong></p>
-<p><strong>③DP 带宽：AG275UXM2 是 DP1.4，领航 M8 是满血 DP2.1</strong>。</p>
-<hr>
-<h2 id="二、核心参数总表"><a href="#二、核心参数总表" class="headerlink" title="二、核心参数总表"></a>二、核心参数总表</h2><table>
-<thead>
-<tr>
-<th>参数维度</th>
-<th>AOC AG275UXM2</th>
-<th>HKC 领航 M8（MG27K33US）</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><strong>屏幕尺寸</strong></td>
-<td>27″（16:9）</td>
-<td>27″（16:9）</td>
-</tr>
-<tr>
-<td><strong>分辨率</strong></td>
-<td>3840×2160（原生 4K）</td>
-<td>3840×2160（原生 4K）</td>
-</tr>
-<tr>
-<td><strong>面板类型</strong></td>
-<td>Fast IPS + <strong>QD-MiniLED（2304 分区）</strong></td>
-<td>Fast IPS 玄墨屏 + <strong>QD-MiniLED（2304 分区）</strong></td>
-</tr>
-<tr>
-<td><strong>刷新率</strong></td>
-<td>4K@160Hz &#x2F; FHD@320Hz 双模</td>
-<td>4K@160Hz &#x2F; FHD@320Hz 双模</td>
-</tr>
-<tr>
-<td><strong>响应时间</strong></td>
-<td>1ms GTG（0.5ms MPRT）</td>
-<td>1ms GTG</td>
-</tr>
-<tr>
-<td><strong>亮度</strong></td>
-<td>HDR 峰值 1400 尼特（HDR1400）</td>
-<td>1400 cd&#x2F;m²（峰值，HDR1400）</td>
-</tr>
-<tr>
-<td><strong>对比度</strong></td>
-<td>动态 8000 万:1（MiniLED 控光）</td>
-<td>静态 1300:1 &#x2F; 动态 100 万:1</td>
-</tr>
-<tr>
-<td><strong>色域覆盖</strong></td>
-<td>98% DCI-P3 &#x2F; 96.9% Adobe RGB</td>
-<td>100% sRGB &#x2F; 98% DCI-P3 &#x2F; 99% Adobe RGB</td>
-</tr>
-<tr>
-<td><strong>色深</strong></td>
-<td>10bit</td>
-<td>10bit（8bit+FRC）</td>
-</tr>
-<tr>
-<td><strong>色准 ΔE</strong></td>
-<td><strong>出厂 &lt;1</strong>（评测实测）</td>
-<td><strong>&lt;2</strong>（官方&#x2F;评测一致）</td>
-</tr>
-<tr>
-<td><strong>HDR 支持</strong></td>
-<td><strong>HDR1400</strong></td>
-<td><strong>HDR1400</strong></td>
-</tr>
-<tr>
-<td><strong>视频接口</strong></td>
-<td>HDMI2.1×2、DP1.4×1</td>
-<td><strong>满血 DP2.1×1</strong>、HDMI2.1×2</td>
-</tr>
-<tr>
-<td><strong>Type-C</strong></td>
-<td>USB-C 65W</td>
-<td><strong>USB-C 90W</strong>（DP Alt）</td>
-</tr>
-<tr>
-<td><strong>USB 扩展</strong></td>
-<td>USB 集线器</td>
-<td>USB 3.2×2</td>
-</tr>
-<tr>
-<td><strong>特色功能</strong></td>
-<td>六轴校色、RGB 灯效、耳机挂钩、DC 调光、莱茵低蓝光、出厂校色报告</td>
-<td>玄墨低反屏（反射率 1.8%）、KVM、PIP&#x2F;PBP、六轴校色、DIC SYNC、AI 抗闪、满血 DP2.1 无 DSC</td>
-</tr>
-<tr>
-<td><strong>支架调节</strong></td>
-<td>150mm 升降 &#x2F; ±20° 旋转 &#x2F; ±90° 竖屏</td>
-<td>130mm 升降 &#x2F; ±30° 旋转 &#x2F; ±90° 竖屏</td>
-</tr>
-<tr>
-<td><strong>参考到手价</strong></td>
-<td><strong>¥2799</strong>（京东自营 30 天低，历史低 ¥2639）</td>
-<td><strong>¥2899–3199</strong>（历史低 ¥2899）</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="三、分维度深度对比"><a href="#三、分维度深度对比" class="headerlink" title="三、分维度深度对比"></a>三、分维度深度对比</h2><h3 id="1-面板与画质：起点相同，细节有别"><a href="#1-面板与画质：起点相同，细节有别" class="headerlink" title="1. 面板与画质：起点相同，细节有别"></a>1. 面板与画质：起点相同，细节有别</h3><p>两款都是 <strong>2304 分区 QD-MiniLED</strong>，能独立控光上千个区域，配合量子点广色域，峰值亮度冲到 <strong>1400 尼特（HDR1400）</strong>，明暗对比与 HDR 光影是同代旗舰水准，远超普通 IPS。</p>
-<p>细微差别在于<strong>领航 M8 多了「玄墨低反屏」</strong>（纳米抗反射涂层，反射率仅 1.8%），在窗边 &#x2F; 亮厅环境抗眩光更强、暗场更「黑」；AG275UXM2 则是爱攻电竞风（RGB 灯效、耳机挂钩），视觉氛围更游戏化。</p>
-<blockquote>
-<p>结论：纯画质硬件两款打平；常年在明亮环境使用、介意眩光，领航 M8 的玄墨屏是加分项。</p>
-</blockquote>
-<h3 id="2-刷新率与响应：完全同档"><a href="#2-刷新率与响应：完全同档" class="headerlink" title="2. 刷新率与响应：完全同档"></a>2. 刷新率与响应：完全同档</h3><ul>
-<li>两款均为 4K@<strong>160Hz</strong>、双模切 FHD@<strong>320Hz</strong>，响应均为 <strong>1ms GTG</strong>。</li>
-<li>这一维度两者完全一致，电竞体感无差别；320Hz 双模对 FPS 玩家友好，1ms 拖影控制到位。</li>
-</ul>
-<h3 id="3-色彩与色准：专业级只此一家"><a href="#3-色彩与色准：专业级只此一家" class="headerlink" title="3. 色彩与色准：专业级只此一家"></a>3. 色彩与色准：专业级只此一家</h3><ul>
-<li><strong>AG275UXM2 是唯一标称「出厂 ΔE&lt;1」</strong> 的机型（中关村在线评测实测确认），达到专业修图 &#x2F; 调色门槛；96.9% Adobe RGB 覆盖对印刷 &#x2F; 摄影后期也很友好。</li>
-<li><strong>领航 M8 为 ΔE&lt;2</strong>：日常设计与观影完全够用，但严格专业校色场景差半档。</li>
-<li>两款色域都在 98% DCI-P3 上下，观感鲜艳度接近；领航 M8 的 99% Adobe RGB 略胜一筹，但色准精度上 AG275UXM2 更稳。</li>
-</ul>
-<h3 id="4-接口与扩展：领航-M8-全面占优"><a href="#4-接口与扩展：领航-M8-全面占优" class="headerlink" title="4. 接口与扩展：领航 M8 全面占优"></a>4. 接口与扩展：领航 M8 全面占优</h3><ul>
-<li><strong>Type-C 供电</strong>：领航 M8 是 <strong>90W</strong>，一根线给笔记本供电 + 显示绰绰有余；AG275UXM2 只有 <strong>65W</strong>，给轻薄本够用、给游戏本略勉强。</li>
-<li><strong>DP 带宽</strong>：领航 M8 是 <strong>满血 DP2.1</strong>（13.5G×4，无需 DSC 压缩即可无损传输 4K 160Hz）；AG275UXM2 是 DP1.4（需 DSC）。接次世代主机 &#x2F; 高端显卡，领航 M8 前瞻性最好。</li>
-<li><strong>KVM &#x2F; PIP-PBP</strong>：两款都支持，多设备（台式 + 笔记本 &#x2F; Mac）用户友好。</li>
-</ul>
-<h3 id="5-HDR：并列旗舰"><a href="#5-HDR：并列旗舰" class="headerlink" title="5. HDR：并列旗舰"></a>5. HDR：并列旗舰</h3><p>两款均为 <strong>HDR1400</strong>（峰值 1400 尼特 + 千级分区），HDR 电影 &#x2F; 游戏光影表现同属天花板级别，无差距。</p>
-<hr>
-<h2 id="四、各自优势与适用场景"><a href="#四、各自优势与适用场景" class="headerlink" title="四、各自优势与适用场景"></a>四、各自优势与适用场景</h2><h3 id="✅-AOC-AG275UXM2-——-电竞-创作的「性价比全能旗舰」"><a href="#✅-AOC-AG275UXM2-——-电竞-创作的「性价比全能旗舰」" class="headerlink" title="✅ AOC AG275UXM2 —— 电竞 + 创作的「性价比全能旗舰」"></a>✅ AOC AG275UXM2 —— 电竞 + 创作的「性价比全能旗舰」</h3><ul>
-<li><strong>优势</strong>：两款里<strong>唯一 ΔE&lt;1 出厂校色</strong>（专业色准）、2304 分区 QD-MiniLED、HDR1400、160Hz&#x2F;320Hz 双模，AOC售后更好。</li>
-<li><strong>适用</strong>：既要打游戏又要剪片 &#x2F; 修图的「双修」用户、内容创作者、对色准有硬要求的设计师、预算卡在 3000 内想买旗舰画质者。</li>
-<li><strong>不适合</strong>：需要 90W 以上 Type-C 供电的笔电重度用户（仅 65W）。</li>
-</ul>
-<h3 id="✅-HKC-领航-M8（MG27K33US）——-高端电竞-抗反光旗舰"><a href="#✅-HKC-领航-M8（MG27K33US）——-高端电竞-抗反光旗舰" class="headerlink" title="✅ HKC 领航 M8（MG27K33US）—— 高端电竞 + 抗反光旗舰"></a>✅ HKC 领航 M8（MG27K33US）—— 高端电竞 + 抗反光旗舰</h3><ul>
-<li><strong>优势</strong>：<strong>满血 DP2.1 + 90W Type-C</strong>、玄墨低反屏（亮厅不晃眼）、2304 分区 QD-MiniLED + HDR1400、DIC SYNC 动态模糊消除、AI 抗闪；接口与做工最豪华。</li>
-<li><strong>适用</strong>：预算充裕、明亮环境使用、追求接口前瞻性与抗反光、兼顾电竞与创作的用户。</li>
-<li><strong>不适合</strong>：对 ΔE&lt;1 有执念者（它仅 ΔE&lt;2）。</li>
-</ul>
-<hr>
-<h2 id="五、选购速查表"><a href="#五、选购速查表" class="headerlink" title="五、选购速查表"></a>五、选购速查表</h2><table>
-<thead>
-<tr>
-<th>你的核心诉求</th>
-<th>首选</th>
-<th>理由</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>要专业色准（ΔE&lt;1）+ MiniLED 旗舰画质</td>
-<td><strong>AG275UXM2</strong></td>
-<td>唯一 ΔE&lt;1，¥2799 性价比最高</td>
-</tr>
-<tr>
-<td>要满血 DP2.1 + 90W 一线连 + 抗反光</td>
-<td><strong>领航 M8</strong></td>
-<td>DP2.1 + 玄墨屏 + 90W，旗舰做工</td>
-</tr>
-<tr>
-<td>预算敏感但要旗舰画质</td>
-<td><strong>AG275UXM2</strong></td>
-<td>比领航 M8 便宜约 ¥100–400</td>
-</tr>
-<tr>
-<td>明亮环境 &#x2F; 窗户旁使用</td>
-<td><strong>领航 M8</strong></td>
-<td>玄墨低反屏抗眩光</td>
-</tr>
-<tr>
-<td>纯打 FPS 高刷</td>
-<td>两者均可</td>
-<td>同 320Hz 双模 + 1ms</td>
-</tr>
-</tbody></table>
-<hr>
-<h2 id="六、价格参考（截至-2026-08-07）"><a href="#六、价格参考（截至-2026-08-07）" class="headerlink" title="六、价格参考（截至 2026-08-07）"></a>六、价格参考（截至 2026-08-07）</h2><table>
-<thead>
-<tr>
-<th>机型</th>
-<th>最低到手</th>
-<th>常卖价</th>
-<th>主要渠道</th>
-</tr>
-</thead>
-<tbody><tr>
-<td><a href="https://item.jd.com/100171732889.html">AOC AG275UXM2</a></td>
-<td>¥2799（30 天低）</td>
-<td>¥3299</td>
-<td>京东自营（历史低 ¥2639）</td>
-</tr>
-<tr>
-<td><a href="https://item.jd.com/100301825002.html">HKC 领航 M8（MG27K33US）</a></td>
-<td>¥2899（历史低）</td>
-<td>¥3199</td>
-<td>京东&#x2F;天猫（部分渠道到手 ¥2679）</td>
-</tr>
-</tbody></table>
-<blockquote>
-<p>提示：显示器促销波动大，部分型号原价与到手价差超 1000 元；下单前确认是否可叠国补&#x2F;以旧换新，MiniLED 机型建议优先官方自营渠道以保障售后换新。</p>
-</blockquote>
-]]></content>
-      <categories>
-        <category>生活</category>
-      </categories>
-      <tags>
-        <tag>显示器</tag>
-        <tag>AG275UXM2</tag>
-        <tag>MG27K33US</tag>
-        <tag>AOC</tag>
-        <tag>HKC</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>篡改猴（tampermonkey）下载安装使用教程</title>
-    <url>/posts/6cc124ac.html</url>
-    <content><![CDATA[<h1 id="一、什么是-Tampermonkey（篡改猴）？"><a href="#一、什么是-Tampermonkey（篡改猴）？" class="headerlink" title="一、什么是 Tampermonkey（篡改猴）？"></a>一、什么是 Tampermonkey（篡改猴）？</h1><p><strong>Tampermonkey</strong> 是一款免费的<strong>浏览器用户脚本管理器</strong>，俗称“篡改猴”或“油猴”。<br>它就像浏览器的“外挂平台”，允许你安装各种由 JavaScript 编写的小脚本，用来修改网页的行为、外观或功能。</p>
-<p><strong>能做什么？</strong></p>
-<ul>
-<li>屏蔽广告、解除复制限制、自动翻页</li>
-<li>下载网页视频、网盘直链提取、搜索引擎去重</li>
-<li>增强网页功能（如知乎免登录看全文、百度网盘简易下载）</li>
-<li>只要你能想到的网页修改，基本都能通过脚本实现</li>
-</ul>
-<h1 id="二、安装-Tampermonkey-扩展"><a href="#二、安装-Tampermonkey-扩展" class="headerlink" title="二、安装 Tampermonkey 扩展"></a>二、安装 Tampermonkey 扩展</h1><h2 id="1-选择你的浏览器"><a href="#1-选择你的浏览器" class="headerlink" title="1. 选择你的浏览器"></a>1. 选择你的浏览器</h2><p>Tampermonkey 支持 Chrome、Edge、Firefox、Safari、Opera 等主流浏览器。下面以 Chrome 为例，其他浏览器步骤几乎一样。</p>
-<h2 id="2-进入扩展商店"><a href="#2-进入扩展商店" class="headerlink" title="2. 进入扩展商店"></a>2. 进入扩展商店</h2><ul>
-<li><h3 id="Chrome-浏览器"><a href="#Chrome-浏览器" class="headerlink" title="Chrome 浏览器"></a><strong>Chrome 浏览器</strong></h3><p>访问 <a href="https://chrome.google.com/webstore">Chrome 网上应用店</a>，搜索 <strong>Tampermonkey</strong></p>
-</li>
-<li><h3 id="Edge-浏览器"><a href="#Edge-浏览器" class="headerlink" title="Edge 浏览器"></a><strong>Edge 浏览器</strong></h3><p>直接访问<a href="edge://extensions/">扩展页面</a>  ”edge:&#x2F;&#x2F;extensions&#x2F; “ 或从设置中进去如下图</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qmmv29.png" alt="image-20260714161011058"></p>
-</li>
-</ul>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qnv2j0.png" alt="image-20260714161221035"></p>
-<p>搜索<strong>篡改猴</strong>点击<strong>获取</strong></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qp1joq.png" alt="image-20260714161418827"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qp8320.png" alt="image-20260714161448834"></p>
-<p>安装成功后固定在<strong>工具栏</strong></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qptgsf.png" alt="image-20260714161549120"></p>
-<ul>
-<li><h3 id="无法访问扩展商店"><a href="#无法访问扩展商店" class="headerlink" title="无法访问扩展商店"></a>无法访问扩展商店</h3></li>
-</ul>
-<p>可以访问篡改猴<a href="https://www.tampermonkey.net/index.php?browser=chrome&locale=zh_CN">官方网站</a>直接下载 .crx 文件，然后开启浏览器开发者模式，拖入安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/quylh3.png" alt="image-20260714162412876"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qw4mho.png" alt="image-20260714162608688"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qvpdh2.png" alt="image-20260714162537273"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qwb2f1.png" alt="image-20260714162638660"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qwq0jd.png" alt="image-20260714162709253"></p>
-<h1 id="三、启用“允许用户脚本”扩展设置"><a href="#三、启用“允许用户脚本”扩展设置" class="headerlink" title="三、启用“允许用户脚本”扩展设置"></a>三、启用“允许用户脚本”扩展设置</h1><p>以<strong>Edge 浏览器</strong>为例，勾选<strong>允许用户脚本</strong>：</p>
-<h3 id=""><a href="#" class="headerlink" title=""></a><img src="https://image.qiubite.fun/i/1/2026/07/14/r1igom.png" alt="image-20260714163512660"></h3><p><img src="https://image.qiubite.fun/i/1/2026/07/14/r25n1d.png" alt="image-20260714163620743"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r2ccm7.png" alt="image-20260714163653182"></p>
-<h1 id="四、如何安装-JS-脚本？"><a href="#四、如何安装-JS-脚本？" class="headerlink" title="四、如何安装 JS 脚本？"></a>四、如何安装 JS 脚本？</h1><h3 id="方法一：从脚本网站一键安装"><a href="#方法一：从脚本网站一键安装" class="headerlink" title="方法一：从脚本网站一键安装"></a>方法一：从脚本网站一键安装</h3><p>最知名的用户脚本分享站是 <strong>Greasy Fork</strong>：<a href="https://greasyfork.org/zh-CN">https://greasyfork.org/zh-CN</a><br>里面所有脚本都适用于 Tampermonkey。</p>
-<p><strong>步骤：</strong></p>
-<ol>
-<li>打开 Greasy Fork，搜索你需要的功能，比如“百度网盘”、“知乎免登录”。</li>
-<li>进入脚本详情页，点击绿色的 <strong>“安装此脚本”</strong> 按钮。</li>
-<li>油猴会自动弹出安装界面，显示脚本名称、版本、包含的网址等信息。</li>
-<li>点击 <strong>“安装”</strong> 按钮，脚本即添加完成。</li>
-<li>去对应的网页刷新，脚本就会自动运行。</li>
-</ol>
-<h3 id="方法二：手动添加脚本"><a href="#方法二：手动添加脚本" class="headerlink" title="方法二：手动添加脚本"></a>方法二：手动添加脚本</h3><p>如果别人直接给了你一段 <code>.user.js</code> 代码，或者你想自己写一个小脚本，可以手动添加。</p>
-<p><strong>步骤：</strong></p>
-<ol>
-<li>单击油猴图标 → <strong>“管理面板”</strong>（或右键图标 → 选项，再进入“已安装脚本”）。</li>
-<li>把脚本拖入安装。</li>
-</ol>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r3ikio.png" alt="image-20260714163849861"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r5p6fg.png" alt="image-20260714164215924"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r5vseq.png" alt="image-20260714164246760"></p>
-<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r6sqpv.png" alt="image-20260714164400048"></p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>tampermonkey</tag>
-        <tag>油猴</tag>
-        <tag>篡改猴</tag>
-        <tag>chrome</tag>
-        <tag>js脚本</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>Nginx编译nginx-module-vts并动态加载</title>
-    <url>/posts/f0115bb7.html</url>
-    <content><![CDATA[<p>最近想要监控 nginx 的流量状态，尤其是状态码的监控，发现了一个功能强大的模块<strong>nginx-module-vts</strong>。他并不是官方的模块，需要手动编译后加载。Nginx安装时自动打开了动态模块加载功能，可以在添加第三方模块时不用重新编译nginx。</p>
-<h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><ol>
-<li><h2 id="模块加载"><a href="#模块加载" class="headerlink" title="模块加载"></a>模块加载</h2></li>
-</ol>
-<p>Nginx 官方模块分为两类：</p>
-<ul>
-<li><strong>静态模块</strong>：在编译 Nginx 时直接链接进二进制，无法在不重新编译整个 Nginx 的情况下增删。</li>
-<li><strong>动态模块</strong>：编译为独立的 <code>.so</code> 文件，运行时通过 <code>load_module</code> 指令加载，<strong>无需重装或重启整个 Nginx</strong>。</li>
-</ul>
-<p>生产环境中，我们通常使用发行版（apt&#x2F;yum）或官方预编译包安装的 Nginx。如果只想加一个 <code>nginx-module-vts</code> 监控模块，重编译整个 Nginx 风险高、代价大。动态模块让我们可以在<strong>不改动原有 Nginx 二进制</strong>的前提下，单独编译这个模块并热加载。</p>
-<ol start="2">
-<li><h2 id="安装环境"><a href="#安装环境" class="headerlink" title="安装环境"></a>安装环境</h2></li>
-</ol>
-<ul>
-<li>Linux：debian13.6</li>
-<li>Nginx：1.26.3</li>
-<li>nginx-module-vts：0.2.6</li>
-</ul>
-<h1 id="二、动态编译与加载步骤"><a href="#二、动态编译与加载步骤" class="headerlink" title="二、动态编译与加载步骤"></a>二、动态编译与加载步骤</h1><p>整体流程：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">获取 Nginx 源码 → 获取模块源码 → 编译模块(.so) → 加载模块 → 配置并验证</span><br></pre></td></tr></table></figure>
-
-<h2 id="步骤-1：获取-Nginx-源码"><a href="#步骤-1：获取-Nginx-源码" class="headerlink" title="步骤 1：获取 Nginx 源码"></a>步骤 1：获取 Nginx 源码</h2><p>先确认当前运行的 Nginx 版本，再到<a href="https://nginx.org/download/">官网</a>下载<strong>完全相同版本</strong>的源码。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">确认运行版本</span></span><br><span class="line">sudo nginx -v</span><br><span class="line">nginx version: nginx/1.26.3</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">下载并解压同版本源码</span></span><br><span class="line">wget https://nginx.org/download/nginx-1.26.3.tar.gz</span><br><span class="line">tar -xf nginx-1.26.3.tar.gz</span><br></pre></td></tr></table></figure>
-
-<h2 id="步骤-2：获取模块源码"><a href="#步骤-2：获取模块源码" class="headerlink" title="步骤 2：获取模块源码"></a>步骤 2：获取模块源码</h2><p> 从github下载 <a href="https://github.com/vozlt/nginx-module-vts">nginx-module-vts</a> 模块的源码：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v0.2.6.tar.gz -O nginx-module-vts-0.2.6.tar.gz</span><br><span class="line">tar -zxvf nginx-module-vts-0.2.6.tar.gz</span><br></pre></td></tr></table></figure>
-
-<h2 id="步骤-3：编译模块"><a href="#步骤-3：编译模块" class="headerlink" title="步骤 3：编译模块"></a>步骤 3：编译模块</h2><p><strong>核心点</strong>：<code>./configure</code> 必须包含原 Nginx 的全部参数。</p>
-<h3 id="3-1-取出原-Nginx-的-configure-参数"><a href="#3-1-取出原-Nginx-的-configure-参数" class="headerlink" title="3.1 取出原 Nginx 的 configure 参数"></a>3.1 取出原 Nginx 的 configure 参数</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -V</span><br><span class="line">nginx version: nginx/1.26.3</span><br><span class="line">built with OpenSSL 3.5.6 7 Apr 2026</span><br><span class="line">TLS SNI support enabled</span><br><span class="line">configure arguments: --with-cc-opt=&#x27;-g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/build/reproducible-path/nginx-1.26.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fPIC -Wdate-time -D_FORTIFY_SOURCE=2&#x27; --with-ld-opt=&#x27;-Wl,-z,relro -Wl,-z,now -fPIC&#x27; --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --http-log-path=/var/log/nginx/access.log --error-log-path=stderr --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-compat --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_v3_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_secure_link_module --with-http_sub_module --with-mail_ssl_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-stream_realip_module --with-http_geoip_module=dynamic --with-http_image_filter_module=dynamic --with-http_perl_module=dynamic --with-http_xslt_module=dynamic --with-mail=dynamic --with-stream=dynamic --with-stream_geoip_module=dynamic</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-2-配置并编译模块"><a href="#3-2-配置并编译模块" class="headerlink" title="3.2 配置并编译模块"></a>3.2 配置并编译模块</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install -y build-essential</span><br><span class="line">cd nginx-1.26.3/</span><br><span class="line"></span><br><span class="line">编译方法一（目前所有nginx版本通用）：</span><br><span class="line"></span><br><span class="line">./configure --with-cc-opt=&#x27;-g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/build/reproducible-path/nginx-1.26.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fPIC -Wdate-time -D_FORTIFY_SOURCE=2&#x27; --with-ld-opt=&#x27;-Wl,-z,relro -Wl,-z,now -fPIC&#x27; --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --http-log-path=/var/log/nginx/access.log --error-log-path=stderr --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-compat --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_v3_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_secure_link_module --with-http_sub_module --with-mail_ssl_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-stream_realip_module --with-http_geoip_module=dynamic --with-http_image_filter_module=dynamic --with-http_perl_module=dynamic --with-http_xslt_module=dynamic --with-mail=dynamic --with-stream=dynamic --with-stream_geoip_module=dynamic --add-dynamic-module=/home/ops/nginx-module-vts-0.2.6</span><br><span class="line">make modules</span><br><span class="line"></span><br><span class="line">其中最后的--add-dynamic-module=注意改成自己vts的目录</span><br><span class="line"></span><br><span class="line">编译方法二（nginx 1.23及以后得版本可以用）：</span><br><span class="line">cd nginx-1.26.3</span><br><span class="line">./configure --with-compat --add-dynamic-module=/home/ops/nginx-module-vts-0.2.6</span><br><span class="line">make modules</span><br></pre></td></tr></table></figure>
-
-<p>编译成功后，模块文件出现在：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">nginx-1.26.3/objs/ngx_http_vhost_traffic_status_module.so</span><br></pre></td></tr></table></figure>
-
-<h3 id="3-3-常见编译报错"><a href="#3-3-常见编译报错" class="headerlink" title="3.3 常见编译报错"></a>3.3 常见编译报错</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">报错1：</span><br><span class="line">./configure: error: the HTTP rewrite module requires the PCRE library.</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y libpcre2-dev</span><br><span class="line"></span><br><span class="line">如果要是用编译方法一，可以将相关依赖都安装上</span><br><span class="line">sudo apt install -y build-essential libpcre2-dev zlib1g-dev libssl-dev libxslt1-dev libgd-dev libgeoip-dev</span><br><span class="line"></span><br><span class="line">报错2：</span><br><span class="line">./configure: error: C compiler cc is not found</span><br><span class="line"></span><br><span class="line">sudo apt install -y build-essential</span><br><span class="line">安装编译相关依赖，并检查磁盘空间是否耗尽</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="3-4-复制到模块目录"><a href="#3-4-复制到模块目录" class="headerlink" title="3.4 复制到模块目录"></a>3.4 复制到模块目录</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看原 Nginx 的 modules 路径（来自上面的 configure 输出，通常是 /etc/nginx/modules 或 /usr/lib/nginx/modules）</span></span><br><span class="line">sudo nginx -V 2&gt;&amp;1 | grep -o &#x27;\-\-modules-path=[^ ]*&#x27; | cut -d= -f2</span><br><span class="line">/usr/lib/nginx/modules</span><br><span class="line"></span><br><span class="line">sudo cp ~/nginx-1.26.3/objs/ngx_http_vhost_traffic_status_module.so /usr/lib/nginx/modules</span><br></pre></td></tr></table></figure>
-
-<h2 id="步骤-4：加载模块（-so-文件）"><a href="#步骤-4：加载模块（-so-文件）" class="headerlink" title="步骤 4：加载模块（.so 文件）"></a>步骤 4：加载模块（.so 文件）</h2><p>编辑主配置文件 <code>nginx.conf</code>，在**最顶部（events&#x2F;http 块之外）**加入 <code>load_module</code>：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/nginx.conf</span><br><span class="line"></span><br><span class="line">load_module modules/ngx_http_vhost_traffic_status_module.so;</span><br></pre></td></tr></table></figure>
-
-<p>⚠️ <code>load_module</code> 必须出现在 <code>events {}</code> 和 <code>http {}</code> <strong>之前</strong>，否则配置检查会失败。</p>
-<h2 id="步骤-5：配置vts"><a href="#步骤-5：配置vts" class="headerlink" title="步骤 5：配置vts"></a>步骤 5：配置vts</h2><p>在 <code>http {}</code> 块内启用统计区，在需要暴露的 <code>server {}</code> 块内配置展示路由：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/nginx.conf</span><br><span class="line"></span><br><span class="line">http &#123;     </span><br><span class="line"></span><br><span class="line">	# 启用流量统计共享内存区</span><br><span class="line">    vhost_traffic_status_zone;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">sudo vim /etc/nginx/sites-enabled/default</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name _;</span><br><span class="line"></span><br><span class="line">        # 状态页（建议加访问控制）</span><br><span class="line">        location /vts &#123;</span><br><span class="line">            vhost_traffic_status_display;</span><br><span class="line">            vhost_traffic_status_display_format html;</span><br><span class="line"></span><br><span class="line">            # 安全加固：仅允许内网或指定 IP 访问</span><br><span class="line">            # allow 10.0.0.0/8;</span><br><span class="line">            # deny all;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="步骤-6：校验并加载"><a href="#步骤-6：校验并加载" class="headerlink" title="步骤 6：校验并加载"></a>步骤 6：校验并加载</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 配置语法检查</span></span><br><span class="line">nginx -t</span><br><span class="line"><span class="comment"># 输出 nginx: configuration file /etc/nginx/nginx.conf test is successful</span></span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 平滑重载（不中断连接）</span></span><br><span class="line">nginx -s reload</span><br></pre></td></tr></table></figure>
-
-<p>打开浏览器访问 <code>http://&lt;your-server&gt;/vts</code>，应看到流量状态页。</p>
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>nginx</tag>
-        <tag>流量监控</tag>
-        <tag>linux</tag>
-        <tag>动态加载模块</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Linux初始化以及系统性能调优</title>
     <url>/posts/b4a62efd.html</url>
     <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>成功安装 Linux 系统后，需要针对系统进行初始化设置，以确保安全性、稳定性和个性化。本文将详细介绍安装后应立即执行的几个关键步骤，助您快速上手并优化 Linux 环境。</p>
@@ -1271,84 +829,6 @@
         <tag>初始化</tag>
         <tag>GRUB</tag>
         <tag>性能调优</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>ssl证书自动续期工具——acme</title>
-    <url>/posts/e691384c.html</url>
-    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
-<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
-<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
-
-
-</li>
-<li><p>注意换成自己的邮箱号</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
-
-<ol start="3">
-<li>设置自动升级</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
-
-<ol start="4">
-<li>选择服务商</li>
-</ol>
-<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
-
-<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
-<ol>
-<li>创建API秘钥</li>
-</ol>
-<p>会得到SecretId和SecretKey</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>将秘钥格式化导入环境变量</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="3">
-<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
-</ol>
-<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
-
-<p>命令执行完毕后，证书颁发成功</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
-<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
-<p>将证书文件复制到nginx配置的ssl证书目录</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-]]></content>
-      <categories>
-        <category>运维</category>
-      </categories>
-      <tags>
-        <tag>acme</tag>
-        <tag>免费证书</tag>
-        <tag>自动化申请证书</tag>
       </tags>
   </entry>
   <entry>
@@ -1651,6 +1131,84 @@
       </tags>
   </entry>
   <entry>
+    <title>ssl证书自动续期工具——acme</title>
+    <url>/posts/e691384c.html</url>
+    <content><![CDATA[<h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>新申请的网站想找一个https的免费证书，现在的免费证书有效期只有90天，于是想找到一个自动更新证书的工具acme.sh。由于我的域名解析在腾讯云上，我这里结合了腾讯云相关操作，来进行acme.sh服务部署。</p>
+<h2 id="下载acme-sh"><a href="#下载acme-sh" class="headerlink" title="下载acme.sh"></a>下载acme.sh</h2><p>将acme.sh下载到你的 <strong>home</strong> 目录下</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">git clone https://github.com/acmesh-official/acme.sh.git</span><br><span class="line"></span><br><span class="line">或直接到github进行下载 https://github.com/acmesh-official/acme.sh/releases</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="安装acme-sh"><a href="#安装acme-sh" class="headerlink" title="安装acme.sh"></a>安装acme.sh</h2><ol>
+<li><p>创建一个<strong>shell</strong>的<strong>alias</strong>方便使用</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd ~</span><br><span class="line">vim .bashrc</span><br><span class="line">alias acme.sh=~/.acme.sh/acme.sh</span><br><span class="line"></span><br><span class="line">保存退出后 重新加载环境变量</span><br><span class="line">source ~/.bashrc</span><br><span class="line"></span><br><span class="line">安装完成后会自动创建crontab任务检测证书有效期</span><br><span class="line">crontab -e 可看到定时任务</span><br><span class="line">13 5 * * * &quot;/home/ops/.acme.sh&quot;/acme.sh --cron --home &quot;/home/ops/.acme.sh&quot; &gt; /dev/null</span><br></pre></td></tr></table></figure>
+
+
+</li>
+<li><p>注意换成自己的邮箱号</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --install -m xxx@qq.com </span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>设置自动升级</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --upgrade --auto-upgrade</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>选择服务商</li>
+</ol>
+<p>因为ZeroSSL支持泛域名并且兼容性更好，所以选择了ZeroSSL。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server zerossl</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server zerossl</span><br></pre></td></tr></table></figure>
+
+<p>如果需要Let’s Encrypt服务商也可改为Let’s Encrypt</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --set-default-ca --server letsencrypt</span><br><span class="line"></span><br><span class="line">关联一下自己的邮箱</span><br><span class="line">acme.sh --register-account -m xxx@qq.com --server letsencrypt</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="腾讯云创建api秘钥账户"><a href="#腾讯云创建api秘钥账户" class="headerlink" title="腾讯云创建api秘钥账户"></a>腾讯云创建api秘钥账户</h2><p><img src="https://image.qiubite.fun/i/1/2025/03/13/w97286-1.png" alt="image-20250117003138813"></p>
+<ol>
+<li>创建API秘钥</li>
+</ol>
+<p>会得到SecretId和SecretKey</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">SecretId</span><br><span class="line"></span><br><span class="line">AKIDVr1xxxxxxxxxxxxxxx</span><br><span class="line"></span><br><span class="line">SecretKey</span><br><span class="line"></span><br><span class="line">dgeU7Whixxxxxxxxxxxxxx</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>将秘钥格式化导入环境变量</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">export Tencent_SecretId=&quot;xxxxx&quot;</span><br><span class="line">export Tencent_SecretKey=&quot;xxxxx&quot;</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="3">
+<li><code>Tencent_SecretId</code> 和 <code>Tencent_SecretKey</code> 保存至 <code>~/.acme.sh/account.conf</code> 中，并在需要时自动获取，无需手动再设置。</li>
+</ol>
+<h2 id="申请证书"><a href="#申请证书" class="headerlink" title="申请证书"></a>申请证书</h2><p>其中<code>*.aaa.com</code>是泛域名，<code>aaa.com</code>是根域名</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">acme.sh --dns dns_tencent --issue -d *.aaa.com -d aaa.com</span><br></pre></td></tr></table></figure>
+
+<p>命令执行完毕后，证书颁发成功</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/12n4241-1.png" alt="image-20250117004249981"></p>
+<h2 id="使用证书"><a href="#使用证书" class="headerlink" title="使用证书"></a>使用证书</h2><h3 id="Nginx示例"><a href="#Nginx示例" class="headerlink" title="Nginx示例"></a>Nginx示例</h3><p>Nginx 的配置项 <code>ssl_certificate</code> 需要使用 <code>/etc/nginx/ssl/fullchain.cer</code></p>
+<p>将证书文件复制到nginx配置的ssl证书目录</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.cer /etc/nginx/cert/aaa.com.crt</span><br><span class="line">sudo cp ~/.acme.sh/\*.aaa.com_ecc/\*.aaa.com.key /etc/nginx/cert/aaa.com.key</span><br></pre></td></tr></table></figure>
+
+
+
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">server &#123;</span><br><span class="line">        server_name aaa.com;</span><br><span class="line">        server_name *.aaa.com;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line">        listen [::]:80;</span><br><span class="line">        listen 443 ssl;</span><br><span class="line">        listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">        ssl_certificate /etc/nginx/cert/aaa.com.crt;</span><br><span class="line">        ssl_certificate_key /etc/nginx/cert/aaa.com.key;</span><br><span class="line"></span><br><span class="line">        location / &#123;</span><br><span class="line">                proxy_pass http://127.0.0.1;</span><br><span class="line">        &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>acme</tag>
+        <tag>免费证书</tag>
+        <tag>自动化申请证书</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>手动搭建 WordPress 个人站点(Linux)</title>
     <url>/posts/c171e9f0.html</url>
     <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>WordPress 是一款使用 PHP 语言开发的博客平台，您可使用通过 WordPress 搭建属于个人的博客平台或个人网站。本文以 debian 12.6 操作系统服务器为例，手动搭建 WordPress 个人站点。</p>
@@ -1780,6 +1338,118 @@
         <tag>MySQL</tag>
         <tag>PHP</tag>
         <tag>wordpress</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>手动搭建LNMP环境</title>
+    <url>/posts/9d5ca845.html</url>
+    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
+<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
+<ul>
+<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
+<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
+<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
+<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+</ul>
+<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
+<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
+<li>确认源文件正常，执行以下命令。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令，安装 nginx。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
+</li>
+<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
+</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
+
+<p>显示如下，则说明 Nginx 安装配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
+<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
+<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
+<ol start="4">
+<li>执行以下命令，退出 MariaDB。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
+<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>执行以下命令，验证 PHP 是否安装成功。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则成功安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
+<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
+<ol>
+<li>执行以下命令，创建测试文件。</li>
+</ol>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
+
+
+
+<ol start="2">
+<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
+</ol>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
+
+<p>显示结果如下，则说明环境配置成功。</p>
+<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>Linux</tag>
+        <tag>Nginx</tag>
+        <tag>MySQL</tag>
+        <tag>PHP</tag>
+        <tag>wordpress</tag>
+        <tag>LNMP环境</tag>
       </tags>
   </entry>
   <entry>
@@ -1985,270 +1655,601 @@
       </tags>
   </entry>
   <entry>
-    <title>手动搭建LNMP环境</title>
-    <url>/posts/9d5ca845.html</url>
-    <content><![CDATA[<h2 id="操作场景"><a href="#操作场景" class="headerlink" title="操作场景"></a>操作场景</h2><p>LNMP 环境是指在 Linux 系统下，由 Nginx + MySQL&#x2F;MariaDB + PHP 组成的网站服务器架构。本文档介绍如何在服务器上手动搭建 LNMP 环境。</p>
-<h2 id="示例软件版本"><a href="#示例软件版本" class="headerlink" title="示例软件版本"></a>示例软件版本</h2><p>本文搭建的 LNMP 环境软件组成版本及说明如下：</p>
+    <title>服务器、交换机的链路聚合和负载均衡配置详解</title>
+    <url>/posts/49d033bd.html</url>
+    <content><![CDATA[<h1 id="一-什么是-Bond-聚合链路？有什么优点？"><a href="#一-什么是-Bond-聚合链路？有什么优点？" class="headerlink" title="一. 什么是 Bond 聚合链路？有什么优点？"></a>一. 什么是 Bond 聚合链路？有什么优点？</h1><p>Bond就是把多张物理网卡捆绑成一张逻辑网卡，实现冗余和负载均衡。Bond接口对上层网络栈呈现一个虚拟网卡，多条物理网线同时参与转发。</p>
+<p>核心优点：</p>
 <ul>
-<li>Linux：Linux 操作系统，本文以 debian 12.6 为例。</li>
-<li>Nginx：Web 服务器，本文以  Nginx 1.22.1 为例。</li>
-<li>MariaDB：数据库，本文以 MariaDB 10.11.6 为例。</li>
-<li>PHP：脚本语言，本文以 PHP 8.2.20 为例。</li>
+<li><strong>冗余备份</strong>：物理链路或网卡故障时，业务流量自动切换到其他健康链路，业务无感知。</li>
+<li><strong>带宽聚合</strong>：多链路并行承载流量，提升总体吞吐（取决于模式和流量类型）。例如2条10Gbps链路可在支持负载均衡时达到近20Gbp带宽。</li>
+<li><strong>负载均衡</strong>：据哈希算法分散流量到不同链路，减轻单链路压力。</li>
 </ul>
-<h2 id="操作步骤"><a href="#操作步骤" class="headerlink" title="操作步骤"></a>操作步骤</h2><h3 id="步骤1：登录-Linux"><a href="#步骤1：登录-Linux" class="headerlink" title="步骤1：登录 Linux"></a>步骤1：登录 Linux</h3><p>根据实际操作习惯，选择其他不同的登录方式：如使用ssh登录、通过vnc登录等。</p>
-<h3 id="步骤2：安装-Nginx"><a href="#步骤2：安装-Nginx" class="headerlink" title="步骤2：安装 Nginx"></a>步骤2：安装 Nginx</h3><ol>
-<li>确认源文件正常，执行以下命令。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/apt/sources.list</span><br></pre></td></tr></table></figure>
+<h1 id="二-Bond的工作模式"><a href="#二-Bond的工作模式" class="headerlink" title="二. Bond的工作模式"></a>二. Bond的工作模式</h1><p>Linux 内核 Bonding 提供了 7 种模式（mode），数字 0~6，各模式适用不同场景。</p>
+<ul>
+<li><strong>mode&#x3D;0 (balance-rr)</strong>：轮询分发数据包，所有链路都干活，带宽叠加效果好。<strong>缺点</strong>：包可能乱序，且<strong>交换机必须做静态链路聚合</strong>。</li>
+<li><strong>mode&#x3D;1 (active-backup)</strong>：主备模式，仅有一块被称为主网卡（Primary）的物理成员接口处于 Active 状态，用于承载全部的出入站网络流量，其余物理网卡全部处于待命（Backup）状态，不收发任何业务数据。<strong>交换机无需配置</strong>，简单可靠，但不加带宽。</li>
+<li><strong>mode&#x3D;2 (balance-xor)</strong>：默认使用源 MAC 地址与目的 MAC 地址进行 XOR 计算并取模。相同的 MAC 对所产生的数据流始终落入固定的网卡中，属于流级负载均衡，完美避免了 Mode 0 的乱序报文问题。<strong>交换机需配静态聚合。</strong></li>
+<li><strong>mode&#x3D;3 (broadcast)</strong>：每个包都向所有接口发送，做到完全冗余，但是接收端需要进行大量的去重过滤极其消耗主机的 CPU 与总线带宽资源，用于极特殊场景。<strong>交换机需配静态聚合。</strong></li>
+<li><strong>mode&#x3D;4 (802.3ad &#x2F; LACP)</strong>：动态链路聚合，服务器与交换机会协商聚合，自动管理链路增减，带宽叠加且故障自愈。<strong>交换机必须启用 LACP</strong>。</li>
+<li><strong>mode&#x3D;5 (balance-tlb)</strong>：自适应发送负载均衡，出站流量根据每个成员物理网卡的实时负载大小（以及协商速率）进行动态散列分发。入站流量则固定由当前指定的 Active 主网卡来接收。<strong>交换机无需配置</strong>。</li>
+<li><strong>mode&#x3D;6 (balance-alb)</strong>：在 mode 5 基础上增加了接收负载均衡。其核心原理是通过 ARP 欺骗与拦截机制实现的。当本地服务器向外发送 ARP 响应（ARP Reply）时，Bonding 驱动会强行拦截这些报文，并用不同的物理成员网卡的硬件 MAC 地址来重写 ARP 报文中的源 MAC 地址，从而使外部不同的网络客户端（Clients）在进行 ARP 缓存时，将该服务器的 IP 地址映射到不同的物理网卡 MAC 上。在复杂的虚拟机桥接、容器网络等场景下，MAC 重写会导致严重的网络寻址混乱，建议谨慎使用。<strong>交换机无需配置</strong></li>
+</ul>
+<blockquote>
+<p><strong>生产环境主流选择</strong>：追求带宽与标准化的场景用 <code>mode=4 (LACP)</code>；设备不支持 LACP 时可以用 <code>mode=1</code> 做纯冗余；想要高吞吐和冗余且设备不支持LACP可以做<code>mode=0</code>。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>模式编号</th>
+<th>模式名称</th>
+<th>交换机配置要求</th>
+<th>负载均衡方向</th>
+<th>乱序风险</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mode 0</td>
+<td>balance-rr</td>
+<td>必须配置静态 Trunk</td>
+<td>双向包级</td>
+<td>高（易导致 TCP 性能退化）</td>
+</tr>
+<tr>
+<td>Mode 1</td>
+<td>active-backup</td>
+<td>无任何要求</td>
+<td>无（仅单网卡承载）</td>
+<td>无</td>
+</tr>
+<tr>
+<td>Mode 2</td>
+<td>balance-xor</td>
+<td>必须配置静态 Trunk</td>
+<td>出站流级</td>
+<td>无</td>
+</tr>
+<tr>
+<td>Mode 3</td>
+<td>broadcast</td>
+<td>必须配置静态 Trunk</td>
+<td>双向广播（无分流）</td>
+<td>无</td>
+</tr>
+<tr>
+<td>Mode 4</td>
+<td>802.3ad</td>
+<td>必须配置动态 LACP</td>
+<td>双向流级</td>
+<td>无</td>
+</tr>
+<tr>
+<td>Mode 5</td>
+<td>balance-tlb</td>
+<td>无任何要求</td>
+<td>仅出站流级</td>
+<td>无</td>
+</tr>
+<tr>
+<td>Mode 6</td>
+<td>balance-alb</td>
+<td>无任何要求</td>
+<td>双向流级</td>
+<td>无</td>
+</tr>
+</tbody></table>
+<h1 id="三-LACP-配置模式"><a href="#三-LACP-配置模式" class="headerlink" title="三. LACP 配置模式"></a>三. LACP 配置模式</h1><p>LACP（链路聚合控制协议）是 mode&#x3D;4 背后的标准协议，它能自动检测链路状态并协商聚合。</p>
+<ul>
+<li><strong>动态 LACP（主动&#x2F;被动）</strong>：服务器与交换机自动握手。通常我们设置服务器端为 <strong>active</strong> 模式（主动发出协商包LACPDU ），交换机侧设为 <strong>active</strong> 或 <strong>passive</strong>，<strong>只要有一端是 active 就能协商成功</strong>。</li>
+<li><strong>静态 LACP</strong>：其实是不协商的“静态聚合”（即 mode&#x3D;0&#x2F;2 需要的交换机配置）。它没有协议数据单元(PDU)交互，全靠管理配置“强制捆绑”。</li>
+</ul>
+<p>在 Linux bond 配置中，mode&#x3D;4 要求交换机接口启用 LACP，我们需要关注 <code>lacp_rate</code> 参数（慢速每30秒发一次，快速每秒发一次，通常设 fast）。</p>
+<h2 id="LACP选举机制"><a href="#LACP选举机制" class="headerlink" title="LACP选举机制"></a>LACP选举机制</h2><p>LACP的选举机制是链路聚合功能的核心，决定了聚合组中哪些成员端口成为活动端口、如何选举主动端以及如何实现链路故障时的快速切换。</p>
+<h3 id="LACP优先级"><a href="#LACP优先级" class="headerlink" title="LACP优先级"></a>LACP优先级</h3><p>LACP优先级分为<strong>系统LACP优先级</strong>和<strong>接口LACP优先级</strong>两个层面，二者分工不同：</p>
+<p><strong>系统LACP优先级</strong>是为了区分链路聚合两端设备优先级的高低而配置的参数。系统优先级高的设备将被选作主动端（Actor），由它来决定两端设备的活动接口。在两端设备中选择系统LACP优先级较小一端作为主动端，如果系统LACP优先级相同（缺省均为32768）则选择<strong>MAC地址较小</strong>的一端作为主动端。</p>
+<p><strong>接口LACP优先级</strong>可以通过配置接口LACP优先级（缺省为32768）来区分不同接口被选为活动接口的优先程度，优先级高的接口将优先被选为活动接口。当聚合组中的成员接口数量超过最大活动接口数上限（通常为8个）时，系统依据接口优先级来选择哪些接口成为活动接口。接口优先级<strong>数值越小，优先级越高</strong>。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">配置系统LACP优先级（系统视图）：</span><br><span class="line"></span><br><span class="line">system-view</span><br><span class="line">lacp priority 100</span><br><span class="line"></span><br><span class="line">配置接口LACP优先级（接口视图）</span><br><span class="line">interface gigabitethernet 0/0/1</span><br><span class="line">lacp priority 100</span><br><span class="line">配置前需保证接口已加入到LACP模式的Eth-Trunk中</span><br></pre></td></tr></table></figure>
 
-<ol start="2">
-<li>确认源文件正常,按 <strong>i</strong> 切换至编辑模式，写入以下内容,或使用确认的内部、外部源地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">deb http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian bookworm-updates main contrib non-free non-free-firmware</span></span><br><span class="line">deb http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span><br><span class="line"><span class="meta prompt_">#</span><span class="language-bash">deb-src http://mirrors.tencentyun.com/debian-security/ bookworm-security main contrib non-free-firmware</span></span><br></pre></td></tr></table></figure>
 
-<ol start="3">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令，安装 nginx。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt update</span><br><span class="line">sudo apt install nginx-full</span><br></pre></td></tr></table></figure>
 
-<ol start="5">
-<li>执行以下命令，打开 <code>default.conf</code> 文件，并填写对应申请域名的地址。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/sites-enabled/default.conf</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">server &#123;</span><br><span class="line">        server_name localhost;</span><br><span class="line"></span><br><span class="line">        listen 80;</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:80;   //ipv6监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen 443 ssl;   //https  ssl 443监听 如有需要可放开</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       listen [::]:443 ssl;</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate /etc/nginx/cert/qiubite.site.crt;   //ssl证书位置</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       ssl_certificate_key /etc/nginx/cert/qiubite.site.key;  //ssl证书位置</span></span><br><span class="line">    </span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_http_version 1.1;       //长连接以及请求头传到后端</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Connection <span class="string">&quot;&quot;</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header Host      <span class="variable">$host</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Real-IP <span class="variable">$remote_addr</span>;</span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">       proxy_set_header X-Forwarded-For <span class="variable">$proxy_add_x_forwarded_for</span>;</span></span><br><span class="line">    </span><br><span class="line">        error_page   500 502 503 504  /50x.html;</span><br><span class="line">    </span><br><span class="line">        root /usr/share/nginx/html;</span><br><span class="line">    </span><br><span class="line">        location / &#123;</span><br><span class="line">                index index.php index.html index.htm;</span><br><span class="line">        &#125;</span><br><span class="line">        location = /50x.html &#123;</span><br><span class="line">                root   /usr/share/nginx/html;</span><br><span class="line">        &#125;</span><br><span class="line">        location ~ .php$ &#123;</span><br><span class="line">                fastcgi_pass unix:/var/run/php/php-fpm.sock;</span><br><span class="line">                fastcgi_index  index.php;</span><br><span class="line">                fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;</span><br><span class="line">                include        fastcgi_params;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">&#125; </span><br></pre></td></tr></table></figure>
+<h3 id="LACP抢占"><a href="#LACP抢占" class="headerlink" title="LACP抢占"></a>LACP抢占</h3><p><strong>LACP抢占</strong>功能可以保持接口LACP优先级最高的接口为活动接口。例如：当一条高优先级的接口因故障切换为非活动状态而后又恢复时，如果配置了抢占，则高优先级的接口将重新成为活动接口；如果未配置抢占，该接口不能重新成为活动接口。</p>
+<p><strong>抢占延时</strong>即抢占等待时间，是指在LACP模式的Eth-Trunk中非活动接口切换为活动接口需要等待的时间。配置抢占延时可以避免由于某些链路状态频繁变化而导致Eth-Trunk数据传输不稳定的情况。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">interface eth-trunk 1</span><br><span class="line">lacp preempt enable   //缺省情况下，优先级抢占处于禁止状态</span><br><span class="line">lacp preempt delay 20  //配置抢占等待时间前，必须保证当前Eth-Trunk已使能优先级抢占，否则配置不生效</span><br></pre></td></tr></table></figure>
 
-<ol start="6">
-<li><p>按 <strong>Esc</strong>，输入 <strong>:wq</strong>，保存文件并返回。</p>
-</li>
-<li><p>执行以下命令检查语法并启动 Nginx，设置 Nginx 为开机自启动。</p>
-</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -t</span><br><span class="line">sudo systemctl start nginx</span><br><span class="line">sudo systemctl enable nginx </span><br></pre></td></tr></table></figure>
 
-<ol start="8">
-<li>在本地浏览器中访问nginx中配置的域名或公网IP，查看 Nginx 服务是否正常运行</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP 或配置的域名</span><br></pre></td></tr></table></figure>
 
-<p>显示如下，则说明 Nginx 安装配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118uzet-1.png" alt="image-20240906160236974"></p>
-<h3 id="步骤3：安装数据库"><a href="#步骤3：安装数据库" class="headerlink" title="步骤3：安装数据库"></a>步骤3：安装数据库</h3><ol>
-<li>执行以下命令，查看系统中是否已安装 MariaDB。 如未安装可继续安装数据库</li>
-</ol>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt search mariadb | grep mariadb   //查看系统中是否已安装 MariaDB</span><br><span class="line"></span><br><span class="line"><span class="built_in">sudo</span> apt install mariadb-server mariadb-client   //安装数据库</span><br></pre></td></tr></table></figure>
+<h3 id="LACP报文超时时间"><a href="#LACP报文超时时间" class="headerlink" title="LACP报文超时时间"></a>LACP报文超时时间</h3><p>LACP协议通过定期发送LACPDU报文来检测成员链路的通断状态。<strong>LACP报文超时时间</strong>是指本端成员接口在未收到对端LACPDU的情况下，等待多长时间后将链路标记为Down状态。</p>
+<p>LACP超时时间分为两种模式：</p>
+<table>
+<thead>
+<tr>
+<th align="left">模式</th>
+<th align="left">对端发送LACPDU周期</th>
+<th align="left">本端超时时间</th>
+<th align="left">特点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>fast</strong></td>
+<td align="left">1秒</td>
+<td align="left">3秒</td>
+<td align="left">响应快，占用系统资源较多</td>
+</tr>
+<tr>
+<td align="left"><strong>slow</strong></td>
+<td align="left">30秒</td>
+<td align="left">90秒</td>
+<td align="left">资源消耗少，响应较慢</td>
+</tr>
+</tbody></table>
+<p>缺省情况下，Eth-Trunk接口接收报文的超时时间是90秒。</p>
+<p>链路聚合组的每个成员接口每秒最多处理20个LACP协议报文，设备全局每秒最多处理100个LACP协议报文，超过的协议报文将会被丢弃。</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">配置方法：</span><br><span class="line"></span><br><span class="line">interface eth-trunk 1</span><br><span class="line">mode lacp-static</span><br><span class="line">lacp timeout fast</span><br><span class="line"></span><br><span class="line">或配置为slow模式：</span><br><span class="line">lacp timeout slow</span><br></pre></td></tr></table></figure>
 
-<ol start="2">
-<li>执行以下命令，启动 MariaDB 服务，设置 MariaDB 为开机自启动。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo systemctl start mariadb</span><br><span class="line">sudo systemctl enable mariadb</span><br></pre></td></tr></table></figure>
 
-<ol start="3">
-<li>执行以下命令，验证 MariaDB 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo mysql</span><br></pre></td></tr></table></figure>
 
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v245-1.png" alt="image-20240906161306943"></p>
-<ol start="4">
-<li>执行以下命令，退出 MariaDB。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">MariaDB [(none)]&gt; quit</span><br></pre></td></tr></table></figure>
+<h2 id="华为交换机LACP配置实例"><a href="#华为交换机LACP配置实例" class="headerlink" title="华为交换机LACP配置实例"></a>华为交换机LACP配置实例</h2><p><strong>场景1：静态聚合（配合服务器 bond mode 0）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">interface Eth-Trunk1</span><br><span class="line"> mode manual load-balance   # 手工负载分担模式，不协商LACP</span><br><span class="line"> load-balance src-dst-ip    # 负载分担算法建议选基于源目IP</span><br><span class="line"></span><br><span class="line">interface 10GE1/0/1</span><br><span class="line"> eth-trunk 1</span><br><span class="line"></span><br><span class="line">interface 10GE1/0/2</span><br><span class="line"> eth-trunk 1</span><br></pre></td></tr></table></figure>
 
-<h3 id="步骤4：安装配置-PHP"><a href="#步骤4：安装配置-PHP" class="headerlink" title="步骤4：安装配置 PHP"></a>步骤4：安装配置 PHP</h3><ol>
-<li>执行以下命令，安装 PHP 8.2 所需要的包。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt search php-fpm   \\查看软件源中php的版本</span><br><span class="line"></span><br><span class="line">sudo apt install php libapache2-mod-php php-mysql php-cli php-curl php-xml php-gd php-mbstring php-fpm php-json php-pear php-bcmath php-mcrypt</span><br></pre></td></tr></table></figure>
 
-<ol start="2">
-<li>执行以下命令，验证 PHP 是否安装成功。</li>
-</ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">php -v</span><br></pre></td></tr></table></figure>
 
-<p>显示结果如下，则成功安装。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v3fr-1.png" alt="image-20240906162008081"></p>
-<h2 id="验证环境配置"><a href="#验证环境配置" class="headerlink" title="验证环境配置"></a>验证环境配置</h2><p>当您完成环境配置后，可以通过以下验证 LNMP 环境是否搭建成功。</p>
+<p><strong>场景2：LACP 动态聚合（配合服务器 bond mode 4）</strong></p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">interface Eth-Trunk1</span><br><span class="line"> mode lacp-dynamic             # LACP动态模式</span><br><span class="line"> lacp timeout fast             # 设置快速超时（需与服务器 lacp_rate=fast 匹配）</span><br><span class="line"> load-balance src-dst-ip       # 哈希算法</span><br><span class="line"></span><br><span class="line">interface 10GE1/0/1</span><br><span class="line"> eth-trunk 1</span><br><span class="line"></span><br><span class="line">interface 10GE1/0/2</span><br><span class="line"> eth-trunk 1</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="四-服务器bond参数与配置"><a href="#四-服务器bond参数与配置" class="headerlink" title="四. 服务器bond参数与配置"></a>四. 服务器bond参数与配置</h1><h2 id="Bond-配置参数"><a href="#Bond-配置参数" class="headerlink" title="Bond 配置参数"></a>Bond 配置参数</h2><table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+<th>常用值&#x2F;建议</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>miimon</td>
+<td>链路监测周期(毫秒)</td>
+<td>100 (每100ms检查一次MII状态)</td>
+</tr>
+<tr>
+<td>arp_interval</td>
+<td>miimon的替代，使用 ARP 监控的间隔(毫秒)，需配合arp_ip_target</td>
+<td>可设 1000</td>
+</tr>
+<tr>
+<td>arp_ip_target</td>
+<td>ARP 监控的目标IP(通常为网关)</td>
+<td>网关例如192.168.0.1</td>
+</tr>
+<tr>
+<td>updelay</td>
+<td>检测到链路恢复后，延迟多少毫秒才启用接口</td>
+<td>200 (防止频繁抖动)，默认0</td>
+</tr>
+<tr>
+<td>downdelay</td>
+<td>检测到链路中断后，延迟多少毫秒才断开接口</td>
+<td>200，默认0</td>
+</tr>
+<tr>
+<td>primary</td>
+<td>指定主接口（仅 mode&#x3D;1 有效），主接口恢复后会切回</td>
+<td>例如eth1</td>
+</tr>
+<tr>
+<td>primary_reselect</td>
+<td>主接口恢复后的重新选择策略</td>
+<td>always (总是切回), better, failure(绝不切回)</td>
+</tr>
+<tr>
+<td>lacp_rate</td>
+<td>LACP 协议报文发送速率 (mode&#x3D;4)</td>
+<td>fast (每秒1个), slow (30秒1个)</td>
+</tr>
+<tr>
+<td>xmit_hash_policy</td>
+<td>发送时选择链路的哈希策略</td>
+<td>layer3+4, layer2+3, layer2 (和交换机保持一致建议 layer2+3)</td>
+</tr>
+</tbody></table>
+<p><strong>最佳实践</strong>：生产环境优先用 <code>miimon</code> 做链路监控，简单可靠。<code>mode=4</code> 时设置 <code>xmit_hash_policy=layer2+3</code>,<code> bond_updelay=200  bond_downdelay=200</code> 。</p>
+<h2 id="服务器配置bond"><a href="#服务器配置bond" class="headerlink" title="服务器配置bond"></a>服务器配置bond</h2><p>以debian配置bond4为例：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">vim /etc/network/interfaces</span><br><span class="line">    </span><br><span class="line">auto bond0</span><br><span class="line">iface bond0 inet static</span><br><span class="line">address 10.170.175.24</span><br><span class="line">netmask 255.255.255.224</span><br><span class="line">gateway 10.170.175.1</span><br><span class="line">slaves eth0 eth1</span><br><span class="line">bond_mode 802.3ad</span><br><span class="line">bond_xmit_hash_policy layer2+3</span><br><span class="line">bond_miimon 100</span><br><span class="line">bond_updelay 200</span><br><span class="line">bond_downdelay 200</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="服务器-Bond-的验证"><a href="#服务器-Bond-的验证" class="headerlink" title="服务器 Bond 的验证"></a>服务器 Bond 的验证</h2><figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># 1. 查看bond状态、成员接口、模式、哈希策略</span><br><span class="line">cat /proc/net/bonding/bond0</span><br><span class="line"></span><br><span class="line"># 2. 查看网卡统计</span><br><span class="line">ethtool -S bond0</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="五-负载算法"><a href="#五-负载算法" class="headerlink" title="五. 负载算法"></a>五. 负载算法</h1><h2 id="交换机的负载均衡方式"><a href="#交换机的负载均衡方式" class="headerlink" title="交换机的负载均衡方式"></a>交换机的负载均衡方式</h2><ul>
+<li><strong>dst-ip</strong>（目的IP地址）模式：根据目的IP地址进行负载分担。</li>
+<li><strong>dst-mac</strong>（目的MAC地址）模式：根据目的MAC地址进行负载分担。</li>
+<li><strong>src-ip</strong>（源IP地址）模式：根据源IP地址进行负载分担。</li>
+<li><strong>src-mac</strong>（源MAC地址）模式：根据源MAC地址进行负载分担。</li>
+<li><strong>src-dst-ip</strong>（源IP地址异或目的IP地址）模式：根据源IP异或目的IP地址的结果进行负载分担。</li>
+<li><strong>src-dst-mac</strong>（源MAC地址异或目的MAC地址）模式：根据源MAC异或目的MAC地址的结果进行负载分担。</li>
+</ul>
+<p>实际业务中用户需要根据业务流量特征选择配置合适的负载分担方式。业务流量中某种参数变化越频繁，选择与此参数相关的负载分担方式就越容易实现负载均衡。例如，如果报文的IP地址变化较频繁，那么选择基于<strong>dst-ip</strong>、<strong>src-ip</strong>或<strong>src-dst-ip</strong>的负载分担模式更有利于流量在各物理链路间合理的负载分担；如果报文的MAC地址变化较频繁，IP地址比较固定，那么选择基于<strong>dst-mac</strong>、<strong>src-mac</strong>或<strong>src-dst-mac</strong>的负载分担模式更有利于流量在各物理链路间合理的负载分担。</p>
+<h2 id="服务器bond的负载均衡方式"><a href="#服务器bond的负载均衡方式" class="headerlink" title="服务器bond的负载均衡方式"></a>服务器bond的负载均衡方式</h2><ul>
+<li><strong>layer2</strong>：仅以源&#x2F;目的MAC地址（XOR）加上类型字段哈希，是默认且802.3ad兼容。所有发往同一对MAC地址的流始终走同一路径。适合局域网中主要是MAC地址唯一性的场景。</li>
+<li><strong>layer3+4</strong>：使用IP地址和TCP&#x2F;UDP端口做哈希，可使针对同一目标IP的不同会话分布到不同端口，提高并行度（单连接依旧固定）。此策略不完全符合802.3ad规范（可能出现数据包乱序）但常用于服务器到多客户端的场景。</li>
+<li><strong>layer2+3</strong>：结合MAC和IP信息进行哈希。对非IP流采用layer2策略，对IP流则加入IP地址，能够在一定程度上兼顾IP路由场景的均衡性。802.3ad兼容。</li>
+<li><strong>encap2+3&#x2F;encap3+4</strong>：对隧道流量（如VXLAN）友好，哈希使用隧道内层地址（需要内核skb_flow_dissect支持）。当主机有大量隧道封装流量时，可考虑启用这些策略提高均衡性。</li>
+</ul>
+<p>通常生产环境建议交换机选择<strong>src-dst-ip</strong>，服务器选择配置<strong>layer2+3</strong>。</p>
+<p>参考链接：</p>
 <ol>
-<li>执行以下命令，创建测试文件。</li>
+<li><a href="https://support.huawei.com/enterprise/zh/doc/EDOC1000178154/49db9f05">配置指南-以太网交换</a></li>
 </ol>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">echo &quot;&lt;?php phpinfo(); ?&gt;&quot; | sudo tee /usr/share/nginx/html/index.php</span><br></pre></td></tr></table></figure>
-
-
-
-<ol start="2">
-<li>在本地浏览器中访问如下地址，查看环境配置是否成功。</li>
-</ol>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">http://云服务器实例的公网 IP/index.php  或 http://nginx配置的域名/index.php</span><br></pre></td></tr></table></figure>
-
-<p>显示结果如下，则说明环境配置成功。</p>
-<p><img src="https://image.qiubite.fun/i/1/2025/03/03/118v4v9-1.png" alt="image-20240906164852151"></p>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>Linux</tag>
-        <tag>Nginx</tag>
-        <tag>MySQL</tag>
-        <tag>PHP</tag>
-        <tag>wordpress</tag>
-        <tag>LNMP环境</tag>
+        <tag>交换机</tag>
+        <tag>bond</tag>
+        <tag>服务器</tag>
+        <tag>链路聚合</tag>
+        <tag>负载均衡</tag>
       </tags>
   </entry>
   <entry>
-    <title>Prometheus+Grafana+Alertmanager部署</title>
-    <url>/posts/c03992dd.html</url>
-    <content><![CDATA[<h2 id="软件介绍"><a href="#软件介绍" class="headerlink" title="软件介绍"></a>软件介绍</h2><h3 id="Prometheus"><a href="#Prometheus" class="headerlink" title="Prometheus"></a><strong>Prometheus</strong></h3><p>Prometheus 是一个开源的监控系统，主要用于捕捉和存储时间序列数据。它能够通过拉取（pull）模型从目标上获取数据，支持灵活的查询语言 <strong>PromQL</strong>，并提供强大的可视化和报警功能。</p>
-<h3 id="Pushgateway"><a href="#Pushgateway" class="headerlink" title="Pushgateway"></a><strong>Pushgateway</strong></h3><p><strong>Pushgateway</strong> 是 Prometheus 生态系统中的一个工具，专门用来处理短期任务或批处理作业的指标。这些短期任务通常是无法直接通过 Prometheus 的 pull 模型抓取的，因此 Pushgateway 可以接收来自这些任务的指标数据并将其保存在 Prometheus 可抓取的形式中。<br>主要功能：</p>
+    <title>篡改猴（tampermonkey）下载安装使用教程</title>
+    <url>/posts/6cc124ac.html</url>
+    <content><![CDATA[<h1 id="一、什么是-Tampermonkey（篡改猴）？"><a href="#一、什么是-Tampermonkey（篡改猴）？" class="headerlink" title="一、什么是 Tampermonkey（篡改猴）？"></a>一、什么是 Tampermonkey（篡改猴）？</h1><p><strong>Tampermonkey</strong> 是一款免费的<strong>浏览器用户脚本管理器</strong>，俗称“篡改猴”或“油猴”。<br>它就像浏览器的“外挂平台”，允许你安装各种由 JavaScript 编写的小脚本，用来修改网页的行为、外观或功能。</p>
+<p><strong>能做什么？</strong></p>
 <ul>
-<li>允许临时的、短期任务将其指标推送到 Pushgateway。</li>
-<li>支持长期运行的指标的暴露，适合批处理任务的场景。</li>
+<li>屏蔽广告、解除复制限制、自动翻页</li>
+<li>下载网页视频、网盘直链提取、搜索引擎去重</li>
+<li>增强网页功能（如知乎免登录看全文、百度网盘简易下载）</li>
+<li>只要你能想到的网页修改，基本都能通过脚本实现</li>
 </ul>
-<h3 id="Node-Exporter"><a href="#Node-Exporter" class="headerlink" title="Node Exporter"></a><strong>Node Exporter</strong></h3><p><strong>Node Exporter</strong> 是 Prometheus 生态系统中用于收集 Linux&#x2F;Unix 系统层面指标的组件。它暴露系统硬件和操作系统的运行状况，例如：</p>
+<h1 id="二、安装-Tampermonkey-扩展"><a href="#二、安装-Tampermonkey-扩展" class="headerlink" title="二、安装 Tampermonkey 扩展"></a>二、安装 Tampermonkey 扩展</h1><h2 id="1-选择你的浏览器"><a href="#1-选择你的浏览器" class="headerlink" title="1. 选择你的浏览器"></a>1. 选择你的浏览器</h2><p>Tampermonkey 支持 Chrome、Edge、Firefox、Safari、Opera 等主流浏览器。下面以 Chrome 为例，其他浏览器步骤几乎一样。</p>
+<h2 id="2-进入扩展商店"><a href="#2-进入扩展商店" class="headerlink" title="2. 进入扩展商店"></a>2. 进入扩展商店</h2><ul>
+<li><h3 id="Chrome-浏览器"><a href="#Chrome-浏览器" class="headerlink" title="Chrome 浏览器"></a><strong>Chrome 浏览器</strong></h3><p>访问 <a href="https://chrome.google.com/webstore">Chrome 网上应用店</a>，搜索 <strong>Tampermonkey</strong></p>
+</li>
+<li><h3 id="Edge-浏览器"><a href="#Edge-浏览器" class="headerlink" title="Edge 浏览器"></a><strong>Edge 浏览器</strong></h3><p>直接访问<a href="edge://extensions/">扩展页面</a>  ”edge:&#x2F;&#x2F;extensions&#x2F; “ 或从设置中进去如下图</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qmmv29.png" alt="image-20260714161011058"></p>
+</li>
+</ul>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qnv2j0.png" alt="image-20260714161221035"></p>
+<p>搜索<strong>篡改猴</strong>点击<strong>获取</strong></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qp1joq.png" alt="image-20260714161418827"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qp8320.png" alt="image-20260714161448834"></p>
+<p>安装成功后固定在<strong>工具栏</strong></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qptgsf.png" alt="image-20260714161549120"></p>
 <ul>
-<li>CPU 使用率</li>
-<li>内存使用情况</li>
-<li>磁盘 I&#x2F;O</li>
-<li>网络流量</li>
+<li><h3 id="无法访问扩展商店"><a href="#无法访问扩展商店" class="headerlink" title="无法访问扩展商店"></a>无法访问扩展商店</h3></li>
 </ul>
-<h3 id="Grafana"><a href="#Grafana" class="headerlink" title="Grafana"></a><strong>Grafana</strong></h3><p><strong>Grafana</strong> 是一个开源的数据可视化工具，能够与 Prometheus 等数据源集成。它通过直观的图表、仪表盘（dashboard）展示时间序列数据，方便用户监控系统性能和运行状态。<br>主要功能：</p>
-<ul>
-<li>支持多种数据源（包括 Prometheus、Elasticsearch、MySQL 等）</li>
-<li>自定义仪表盘和报警</li>
-<li>提供丰富的插件以扩展功能</li>
-</ul>
-<h3 id="Alertmanager"><a href="#Alertmanager" class="headerlink" title="Alertmanager"></a><strong>Alertmanager</strong></h3><p><strong>Alertmanager</strong> 是 Prometheus 的报警管理组件，用于处理来自 Prometheus 服务器的报警。它能够根据预定义的规则分组、路由、抑制和消除报警。Alertmanager 可以将报警发送到各种通知渠道，如邮件、Slack、PagerDuty 等。<br>主要功能：</p>
-<ul>
-<li>灵活的报警管理和路由规则</li>
-<li>报警抑制与分组</li>
-<li>支持多种通知方式</li>
-</ul>
-<p>这些组件结合在一起，形成一个强大的监控系统，Prometheus 负责收集和存储数据，Pushgateway 用于处理无法直接拉取的任务，Node Exporter 提供系统层面的指标，Grafana 实现数据的可视化，Alertmanager 管理报警。</p>
-<h2 id="实例环境与下载"><a href="#实例环境与下载" class="headerlink" title="实例环境与下载"></a>实例环境与下载</h2><h3 id="实例环境"><a href="#实例环境" class="headerlink" title="实例环境"></a>实例环境</h3><p>本文搭建的环境软件组成版本及说明如下：</p>
-<ul>
-<li><p>Linux：Linux 操作系统，本文以 debian 12.6 为例。</p>
-</li>
-<li><p>prometheus：本文以  prometheus 3.4.0 为例。</p>
-</li>
-<li><p>pushgateway：本文以 pushgateway 1.11.1 为例。</p>
-</li>
-<li><p>node-exporter：本文以 node-exporter 1.9.1 为例。</p>
-</li>
-<li><p>Grafana：本文以 Grafana 12.0.0 为例。</p>
-</li>
-<li><p>Alertmanager：本文以 Alertmanager 0.28.1 为例。</p>
-</li>
-</ul>
-<h3 id="下载地址"><a href="#下载地址" class="headerlink" title="下载地址"></a>下载地址</h3><p>部分软件有国内加速下载请根据需求选择下载方式，下载地址如下：</p>
-<blockquote>
-<p>prometheus以及相关套件可见官网：<a href="https://prometheus.io/download/">https://prometheus.io/download/</a></p>
-<p>下载地址：</p>
-<p>prometheus：<a href="https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz">https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</a></p>
-<p>Alertmanager：<a href="https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz">https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</a></p>
-<p>node-exporter：<a href="https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz">https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</a></p>
-<p>pushgateway：<a href="https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz">https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</a></p>
-<p>Grafana：</p>
-<p>​	华为源：<a href="https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb">https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</a></p>
-</blockquote>
-<blockquote>
-<p>注意：由于各软件会升级迭代，请根据实际情况调整下载地址</p>
-</blockquote>
-<p>进入服务器，执行如下命令下载并解压：</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt</span><br><span class="line">mkdir prometheus_env</span><br><span class="line">cd prometheus_env</span><br><span class="line">wget https://github.com/prometheus/prometheus/releases/download/v3.4.0/prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/alertmanager/releases/download/v0.28.1/alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/node_exporter/releases/download/v1.9.1/node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">wget https://github.com/prometheus/pushgateway/releases/download/v1.11.1/pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line">wget https://repo.huaweicloud.com/grafana/12.0.0/grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line">tar -zxvf prometheus-3.4.0.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf alertmanager-0.28.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf node_exporter-1.9.1.linux-amd64.tar.gz</span><br><span class="line">tar -zxvf pushgateway-1.11.1.linux-amd64.tar.gz</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y adduser libfontconfig1 musl</span><br><span class="line">sudo dpkg -i grafana-enterprise_12.0.0_amd64.deb</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">//修改文件名去掉版本号</span><br><span class="line">cd /opt/prometheus_env</span><br><span class="line">for i in `ls -l|awk &#x27;&#123;print $9&#125;&#x27;`;do new_name=$(echo &quot;$i&quot; | awk -F &#x27;-&#x27; &#x27;&#123;print $1&#125;&#x27;);mv &quot;$i&quot; &quot;$new_name&quot;;done</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="服务配置"><a href="#服务配置" class="headerlink" title="服务配置"></a>服务配置</h2><h3 id="修改prometheus-yml-配置文件"><a href="#修改prometheus-yml-配置文件" class="headerlink" title="修改prometheus.yml 配置文件"></a>修改prometheus.yml 配置文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/prometheus</span><br><span class="line">vi prometheus.yml</span><br></pre></td></tr></table></figure>
-
-<p>内容如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line"># my global config</span><br><span class="line">global:</span><br><span class="line">  scrape_interval: 15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.</span><br><span class="line">  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.</span><br><span class="line">  # scrape_timeout is set to the global default (10s).</span><br><span class="line"></span><br><span class="line"># Alertmanager configuration</span><br><span class="line">alerting:</span><br><span class="line">  alertmanagers:</span><br><span class="line">    - static_configs:</span><br><span class="line">        - targets:</span><br><span class="line">           - 127.0.0.1:9093</span><br><span class="line"></span><br><span class="line"># Load rules once and periodically evaluate them according to the global &#x27;evaluation_interval&#x27;.</span><br><span class="line">rule_files:</span><br><span class="line">   - &quot;alarm_rules.yml&quot;</span><br><span class="line"></span><br><span class="line"># A scrape configuration containing exactly one endpoint to scrape:</span><br><span class="line"># Here it&#x27;s Prometheus itself.</span><br><span class="line">scrape_configs:</span><br><span class="line">  # The job name is added as a label `job=&lt;job_name&gt;` to any timeseries scraped from this config.</span><br><span class="line">  - job_name: &quot;prometheus&quot;</span><br><span class="line"></span><br><span class="line">    # metrics_path defaults to &#x27;/metrics&#x27;</span><br><span class="line">    # scheme defaults to &#x27;http&#x27;.</span><br><span class="line"></span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&quot;localhost:9090&quot;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;prometheus&#x27;</span><br><span class="line">  - job_name: &#x27;linux&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9100&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;localhost&#x27;</span><br><span class="line">  - job_name: &#x27;pushgateway&#x27;</span><br><span class="line">    static_configs:</span><br><span class="line">      - targets: [&#x27;127.0.0.1:9091&#x27;]</span><br><span class="line">        labels:</span><br><span class="line">          instance: &#x27;pushgateway&#x27;</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="配置解析："><a href="#配置解析：" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="全局配置（global）："><a href="#全局配置（global）：" class="headerlink" title="全局配置（global）："></a><strong>全局配置（global）</strong>：</h5><ul>
-<li><code>scrape_interval</code> 和 <code>evaluation_interval</code> 设置为 15 秒，意味着每 15 秒抓取一次指标数据并评估报警规则。</li>
-</ul>
-<h5 id="报警管理（alerting）："><a href="#报警管理（alerting）：" class="headerlink" title="报警管理（alerting）："></a><strong>报警管理（alerting）</strong>：</h5><ul>
-<li>配置 Alertmanager 的地址（<code>127.0.0.1:9093</code>），确保 Alertmanager 正在该地址上运行。</li>
-</ul>
-<h5 id="规则文件（rule-files）："><a href="#规则文件（rule-files）：" class="headerlink" title="规则文件（rule_files）："></a><strong>规则文件（rule_files）</strong>：</h5><ul>
-<li>指向 alarm_rules.yml，请确保该文件存在且格式正确。</li>
-</ul>
-<h5 id="抓取配置（scrape-configs）："><a href="#抓取配置（scrape-configs）：" class="headerlink" title="抓取配置（scrape_configs）："></a><strong>抓取配置（scrape_configs）</strong>：</h5><ul>
-<li><strong>Prometheus 本身</strong>：抓取自身的指标，目标为 <code>127.0.0.1:9090</code>。</li>
-<li><strong>Linux 监控</strong>：通过 Node Exporter 抓取本地系统指标，目标为 <code>127.0.0.1:9100</code>。</li>
-<li><strong>Pushgateway</strong>：监控 Pushgateway 的指标，目标为 <code>127.0.0.1:9091</code>。</li>
-</ul>
-<p>根据需要调整 <code>scrape_interval</code> 和 <code>evaluation_interval</code>，如果你希望更频繁地抓取数据，可以将其缩短。如果有多个实例，可以考虑使用服务发现机制。</p>
-<h3 id="新增alarm-rules-yml-文件"><a href="#新增alarm-rules-yml-文件" class="headerlink" title="新增alarm_rules.yml 文件"></a>新增alarm_rules.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim alarm_rules.yml</span><br><span class="line"></span><br><span class="line">groups:</span><br><span class="line">- name: node</span><br><span class="line">  rules:</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: up&#123;&#125; == 0 </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 挂了&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: 100 - ((node_memory_MemAvailable_bytes * 100) / node_memory_MemTotal_bytes) &gt; 40     </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 内存大于50%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: (1 - avg(rate(node_cpu_seconds_total&#123;mode=&quot;idle&quot;&#125;[2m])) by (instance)) * 100 &gt; 70  </span><br><span class="line">    for: 1s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; CPU使用率大于70%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;        </span><br><span class="line">  - alert: server_status</span><br><span class="line">    expr: max((node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;) *100/(node_filesystem_avail_bytes &#123;fstype=~&quot;ext.?|xfs&quot;&#125;+(node_filesystem_size_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;-node_filesystem_free_bytes&#123;fstype=~&quot;ext.?|xfs&quot;&#125;)))by(instance) &gt; 80  </span><br><span class="line">    for: 15s</span><br><span class="line">    annotations:</span><br><span class="line">      summary: &quot;机器&#123;&#123; $labels.instance &#125;&#125; 分区使用率大于80%&quot;</span><br><span class="line">      description: &quot;请立即查看问题!&quot;</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="修改alertmanager-yml-文件"><a href="#修改alertmanager-yml-文件" class="headerlink" title="修改alertmanager.yml 文件"></a>修改alertmanager.yml 文件</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /opt/prometheus_env/alertmanager</span><br><span class="line">vim alertmanager.yml </span><br></pre></td></tr></table></figure>
-
-<p>内容如下：</p>
-<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">global:</span><br><span class="line">  resolve_timeout: 5m</span><br><span class="line">  smtp_smarthost: &#x27;smtp.163.com:25&#x27; # 定义163邮箱服务器端</span><br><span class="line">  smtp_from: &#x27;yourmail@163.com&#x27;  #来自哪个邮箱发的</span><br><span class="line">  smtp_auth_username: &#x27;yourmail@163.com&#x27; #邮箱验证</span><br><span class="line">  smtp_auth_password: &#x27;1111aaaa&#x27;   # 邮箱授权码，不是登录密码</span><br><span class="line">  smtp_require_tls: true   # 是否启用tls</span><br><span class="line">route:</span><br><span class="line">  group_by: [&#x27;alertname&#x27;]</span><br><span class="line">  group_wait: 10s</span><br><span class="line">  group_interval: 10s</span><br><span class="line">  repeat_interval: 3m</span><br><span class="line">  receiver: &#x27;email&#x27;</span><br><span class="line">receivers:</span><br><span class="line">  - name: &#x27;email&#x27;</span><br><span class="line">    email_configs:</span><br><span class="line">      - to: &#x27;yourmail@qq.com&#x27;</span><br><span class="line">#inhibit_rules:</span><br><span class="line">#  - source_match:</span><br><span class="line">#      severity: &#x27;critical&#x27;</span><br><span class="line">#    target_match:</span><br><span class="line">#      severity: &#x27;warning&#x27;</span><br><span class="line">#    equal: [&#x27;alertname&#x27;, &#x27;dev&#x27;, &#x27;instance&#x27;]</span><br></pre></td></tr></table></figure>
-
-<h4 id="配置解析：-1"><a href="#配置解析：-1" class="headerlink" title="配置解析："></a>配置解析：</h4><h5 id="global"><a href="#global" class="headerlink" title="global"></a>global</h5><ul>
-<li><strong>resolve_timeout</strong>: 设置告警的解决时间，5分钟内未解决则会被视为已解决。</li>
-<li><strong>smtp_smarthost</strong>: 定义 SMTP 服务器的地址和端口。</li>
-<li><strong>smtp_from</strong>: 指定发送邮件时显示的发件人邮箱地址。</li>
-<li><strong>smtp_auth_username</strong>: SMTP 认证的用户名，一般是完整的邮箱地址。</li>
-<li><strong>smtp_auth_password</strong>: 邮箱的授权码，而不是登录密码，需要在邮箱设置中生成。</li>
-<li><strong>smtp_require_tls</strong>: 是否要求使用 TLS 进行加密传输。</li>
-</ul>
-<h5 id="route"><a href="#route" class="headerlink" title="route"></a>route</h5><ul>
-<li><strong>group_by</strong>: 定义在同一组内如何聚合告警，这里按 <code>alertname</code> 聚合。</li>
-<li><strong>group_wait</strong>: 在发送组告警前的等待时间，10秒。</li>
-<li><strong>group_interval</strong>: 组内告警发送的最小间隔，10秒。</li>
-<li><strong>repeat_interval</strong>: 如果告警没有解决，重复发送告警的最小时间间隔，这里设置为 3 分钟。</li>
-<li><strong>receiver</strong>: 指定告警的接收者，这里是 <code>mail</code>。</li>
-</ul>
-<h5 id="receivers"><a href="#receivers" class="headerlink" title="receivers"></a>receivers</h5><ul>
-<li><strong>name</strong>: 定义接收者的名称，这里为 <code>mail</code>，与 <code>route</code> 中的接收者一致。</li>
-<li>email_configs:邮件发送的配置。<ul>
-<li><strong>to</strong>: 接收邮件的地址，可以列出多个邮箱地址，使用换行分隔。</li>
-</ul>
-</li>
-</ul>
-<h3 id="修改defaults-ini文件"><a href="#修改defaults-ini文件" class="headerlink" title="修改defaults.ini文件"></a>修改defaults.ini文件</h3><p>修改grafana的defaults.ini文件将界面可以匿名访问</p>
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">vim /etc/grafana/grafana.ini</span><br></pre></td></tr></table></figure>
-
-
-
-<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_">#</span><span class="language-bash"><span class="comment">################################### Anonymous Auth ######################</span></span></span><br><span class="line">[auth.anonymous]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash"><span class="built_in">enable</span> anonymous access</span></span><br><span class="line">enabled = true</span><br></pre></td></tr></table></figure>
-
-
-
-<h3 id="新增systemd的service"><a href="#新增systemd的service" class="headerlink" title="新增systemd的service"></a>新增systemd的service</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cd /usr/lib/systemd/system</span><br></pre></td></tr></table></figure>
-
-<h4 id="pushgateway-service文件"><a href="#pushgateway-service文件" class="headerlink" title="pushgateway.service文件"></a>pushgateway.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Push Gateway</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/pushgateway/pushgateway</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="node-exporter-service文件"><a href="#node-exporter-service文件" class="headerlink" title="node_exporter.service文件"></a>node_exporter.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus Node Exporter</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/node_exporter/node_exporter</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h4 id="prometheus-service文件"><a href="#prometheus-service文件" class="headerlink" title="prometheus.service文件"></a>prometheus.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus</span><br><span class="line">Documentation=https://prometheus.io/</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">Type设置为notify时，服务会不断重启</span></span><br><span class="line">Type=simple</span><br><span class="line">User=root</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/home/ops/prometheus/prometheus \</span><br><span class="line">--config.file=/home/ops/prometheus/prometheus.yml \</span><br><span class="line">--web.read-timeout=5m  \</span><br><span class="line">--web.max-connections=10 \</span><br><span class="line">--query.max-concurrency=20 \</span><br><span class="line">--storage.tsdb.path=/home/ops/prometheus/data \</span><br><span class="line">--storage.tsdb.retention.time=30d \</span><br><span class="line">--query.timeout=2m</span><br><span class="line">Restart=on-failure</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-<h4 id="alertmanager-service文件"><a href="#alertmanager-service文件" class="headerlink" title="alertmanager.service文件"></a>alertmanager.service文件</h4><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Prometheus alertmanager</span><br><span class="line">After=network.target</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">ExecStart=/opt/prometheus_env/alertmanager/alertmanager \</span><br><span class="line">--storage.path=/opt/prometheus_env/alertmanager/data \</span><br><span class="line">--config.file=/opt/prometheus_env/alertmanager/alertmanager.yml</span><br><span class="line"></span><br><span class="line">User=root</span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
-
-
-
-<h2 id="启动"><a href="#启动" class="headerlink" title="启动"></a>启动</h2><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">重载配置：</span><br><span class="line">systemctl daemon-reload</span><br><span class="line"></span><br><span class="line">开启服务：</span><br><span class="line">systemctl start pushgateway</span><br><span class="line">systemctl start node_exporter</span><br><span class="line">systemctl start prometheus</span><br><span class="line">systemctl start grafana</span><br><span class="line">systemctl start alertmanager</span><br><span class="line"></span><br><span class="line">设置开机启动：</span><br><span class="line">systemctl enable pushgateway</span><br><span class="line">systemctl enable node_exporter</span><br><span class="line">systemctl enable prometheus</span><br><span class="line">systemctl enable grafana</span><br><span class="line">systemctl enable alertmanager</span><br><span class="line"></span><br><span class="line">查看服务状态:</span><br><span class="line">systemctl status pushgateway</span><br></pre></td></tr></table></figure>
-
+<p>可以访问篡改猴<a href="https://www.tampermonkey.net/index.php?browser=chrome&locale=zh_CN">官方网站</a>直接下载 .crx 文件，然后开启浏览器开发者模式，拖入安装。</p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/quylh3.png" alt="image-20260714162412876"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qw4mho.png" alt="image-20260714162608688"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qvpdh2.png" alt="image-20260714162537273"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qwb2f1.png" alt="image-20260714162638660"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/qwq0jd.png" alt="image-20260714162709253"></p>
+<h1 id="三、启用“允许用户脚本”扩展设置"><a href="#三、启用“允许用户脚本”扩展设置" class="headerlink" title="三、启用“允许用户脚本”扩展设置"></a>三、启用“允许用户脚本”扩展设置</h1><p>以<strong>Edge 浏览器</strong>为例，勾选<strong>允许用户脚本</strong>：</p>
+<h3 id=""><a href="#" class="headerlink" title=""></a><img src="https://image.qiubite.fun/i/1/2026/07/14/r1igom.png" alt="image-20260714163512660"></h3><p><img src="https://image.qiubite.fun/i/1/2026/07/14/r25n1d.png" alt="image-20260714163620743"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r2ccm7.png" alt="image-20260714163653182"></p>
+<h1 id="四、如何安装-JS-脚本？"><a href="#四、如何安装-JS-脚本？" class="headerlink" title="四、如何安装 JS 脚本？"></a>四、如何安装 JS 脚本？</h1><h3 id="方法一：从脚本网站一键安装"><a href="#方法一：从脚本网站一键安装" class="headerlink" title="方法一：从脚本网站一键安装"></a>方法一：从脚本网站一键安装</h3><p>最知名的用户脚本分享站是 <strong>Greasy Fork</strong>：<a href="https://greasyfork.org/zh-CN">https://greasyfork.org/zh-CN</a><br>里面所有脚本都适用于 Tampermonkey。</p>
+<p><strong>步骤：</strong></p>
+<ol>
+<li>打开 Greasy Fork，搜索你需要的功能，比如“百度网盘”、“知乎免登录”。</li>
+<li>进入脚本详情页，点击绿色的 <strong>“安装此脚本”</strong> 按钮。</li>
+<li>油猴会自动弹出安装界面，显示脚本名称、版本、包含的网址等信息。</li>
+<li>点击 <strong>“安装”</strong> 按钮，脚本即添加完成。</li>
+<li>去对应的网页刷新，脚本就会自动运行。</li>
+</ol>
+<h3 id="方法二：手动添加脚本"><a href="#方法二：手动添加脚本" class="headerlink" title="方法二：手动添加脚本"></a>方法二：手动添加脚本</h3><p>如果别人直接给了你一段 <code>.user.js</code> 代码，或者你想自己写一个小脚本，可以手动添加。</p>
+<p><strong>步骤：</strong></p>
+<ol>
+<li>单击油猴图标 → <strong>“管理面板”</strong>（或右键图标 → 选项，再进入“已安装脚本”）。</li>
+<li>把脚本拖入安装。</li>
+</ol>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r3ikio.png" alt="image-20260714163849861"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r5p6fg.png" alt="image-20260714164215924"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r5vseq.png" alt="image-20260714164246760"></p>
+<p><img src="https://image.qiubite.fun/i/1/2026/07/14/r6sqpv.png" alt="image-20260714164400048"></p>
 ]]></content>
       <categories>
         <category>运维</category>
       </categories>
       <tags>
-        <tag>Prometheus</tag>
-        <tag>Grafana</tag>
-        <tag>Alertmanager</tag>
-        <tag>监控部署</tag>
-        <tag>Prometheus部署</tag>
+        <tag>tampermonkey</tag>
+        <tag>油猴</tag>
+        <tag>篡改猴</tag>
+        <tag>chrome</tag>
+        <tag>js脚本</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Nginx编译nginx-module-vts并动态加载</title>
+    <url>/posts/f0115bb7.html</url>
+    <content><![CDATA[<p>最近想要监控 nginx 的流量状态，尤其是状态码的监控，发现了一个功能强大的模块<strong>nginx-module-vts</strong>。他并不是官方的模块，需要手动编译后加载。Nginx安装时自动打开了动态模块加载功能，可以在添加第三方模块时不用重新编译nginx。</p>
+<h1 id="一、背景"><a href="#一、背景" class="headerlink" title="一、背景"></a>一、背景</h1><ol>
+<li><h2 id="模块加载"><a href="#模块加载" class="headerlink" title="模块加载"></a>模块加载</h2></li>
+</ol>
+<p>Nginx 官方模块分为两类：</p>
+<ul>
+<li><strong>静态模块</strong>：在编译 Nginx 时直接链接进二进制，无法在不重新编译整个 Nginx 的情况下增删。</li>
+<li><strong>动态模块</strong>：编译为独立的 <code>.so</code> 文件，运行时通过 <code>load_module</code> 指令加载，<strong>无需重装或重启整个 Nginx</strong>。</li>
+</ul>
+<p>生产环境中，我们通常使用发行版（apt&#x2F;yum）或官方预编译包安装的 Nginx。如果只想加一个 <code>nginx-module-vts</code> 监控模块，重编译整个 Nginx 风险高、代价大。动态模块让我们可以在<strong>不改动原有 Nginx 二进制</strong>的前提下，单独编译这个模块并热加载。</p>
+<ol start="2">
+<li><h2 id="安装环境"><a href="#安装环境" class="headerlink" title="安装环境"></a>安装环境</h2></li>
+</ol>
+<ul>
+<li>Linux：debian13.6</li>
+<li>Nginx：1.26.3</li>
+<li>nginx-module-vts：0.2.6</li>
+</ul>
+<h1 id="二、动态编译与加载步骤"><a href="#二、动态编译与加载步骤" class="headerlink" title="二、动态编译与加载步骤"></a>二、动态编译与加载步骤</h1><p>整体流程：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">获取 Nginx 源码 → 获取模块源码 → 编译模块(.so) → 加载模块 → 配置并验证</span><br></pre></td></tr></table></figure>
+
+<h2 id="步骤-1：获取-Nginx-源码"><a href="#步骤-1：获取-Nginx-源码" class="headerlink" title="步骤 1：获取 Nginx 源码"></a>步骤 1：获取 Nginx 源码</h2><p>先确认当前运行的 Nginx 版本，再到<a href="https://nginx.org/download/">官网</a>下载<strong>完全相同版本</strong>的源码。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">确认运行版本</span></span><br><span class="line">sudo nginx -v</span><br><span class="line">nginx version: nginx/1.26.3</span><br><span class="line"><span class="meta prompt_"></span></span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">下载并解压同版本源码</span></span><br><span class="line">wget https://nginx.org/download/nginx-1.26.3.tar.gz</span><br><span class="line">tar -xf nginx-1.26.3.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h2 id="步骤-2：获取模块源码"><a href="#步骤-2：获取模块源码" class="headerlink" title="步骤 2：获取模块源码"></a>步骤 2：获取模块源码</h2><p> 从github下载 <a href="https://github.com/vozlt/nginx-module-vts">nginx-module-vts</a> 模块的源码：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">wget https://github.com/vozlt/nginx-module-vts/archive/refs/tags/v0.2.6.tar.gz -O nginx-module-vts-0.2.6.tar.gz</span><br><span class="line">tar -zxvf nginx-module-vts-0.2.6.tar.gz</span><br></pre></td></tr></table></figure>
+
+<h2 id="步骤-3：编译模块"><a href="#步骤-3：编译模块" class="headerlink" title="步骤 3：编译模块"></a>步骤 3：编译模块</h2><p><strong>核心点</strong>：<code>./configure</code> 必须包含原 Nginx 的全部参数。</p>
+<h3 id="3-1-取出原-Nginx-的-configure-参数"><a href="#3-1-取出原-Nginx-的-configure-参数" class="headerlink" title="3.1 取出原 Nginx 的 configure 参数"></a>3.1 取出原 Nginx 的 configure 参数</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo nginx -V</span><br><span class="line">nginx version: nginx/1.26.3</span><br><span class="line">built with OpenSSL 3.5.6 7 Apr 2026</span><br><span class="line">TLS SNI support enabled</span><br><span class="line">configure arguments: --with-cc-opt=&#x27;-g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/build/reproducible-path/nginx-1.26.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fPIC -Wdate-time -D_FORTIFY_SOURCE=2&#x27; --with-ld-opt=&#x27;-Wl,-z,relro -Wl,-z,now -fPIC&#x27; --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --http-log-path=/var/log/nginx/access.log --error-log-path=stderr --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-compat --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_v3_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_secure_link_module --with-http_sub_module --with-mail_ssl_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-stream_realip_module --with-http_geoip_module=dynamic --with-http_image_filter_module=dynamic --with-http_perl_module=dynamic --with-http_xslt_module=dynamic --with-mail=dynamic --with-stream=dynamic --with-stream_geoip_module=dynamic</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-2-配置并编译模块"><a href="#3-2-配置并编译模块" class="headerlink" title="3.2 配置并编译模块"></a>3.2 配置并编译模块</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo apt install -y build-essential</span><br><span class="line">cd nginx-1.26.3/</span><br><span class="line"></span><br><span class="line">编译方法一（目前所有nginx版本通用）：</span><br><span class="line"></span><br><span class="line">./configure --with-cc-opt=&#x27;-g -O2 -Werror=implicit-function-declaration -ffile-prefix-map=/build/reproducible-path/nginx-1.26.3=. -fstack-protector-strong -fstack-clash-protection -Wformat -Werror=format-security -fcf-protection -fPIC -Wdate-time -D_FORTIFY_SOURCE=2&#x27; --with-ld-opt=&#x27;-Wl,-z,relro -Wl,-z,now -fPIC&#x27; --prefix=/usr/share/nginx --conf-path=/etc/nginx/nginx.conf --http-log-path=/var/log/nginx/access.log --error-log-path=stderr --lock-path=/var/lock/nginx.lock --pid-path=/run/nginx.pid --modules-path=/usr/lib/nginx/modules --http-client-body-temp-path=/var/lib/nginx/body --http-fastcgi-temp-path=/var/lib/nginx/fastcgi --http-proxy-temp-path=/var/lib/nginx/proxy --http-scgi-temp-path=/var/lib/nginx/scgi --http-uwsgi-temp-path=/var/lib/nginx/uwsgi --with-compat --with-debug --with-pcre-jit --with-http_ssl_module --with-http_stub_status_module --with-http_realip_module --with-http_auth_request_module --with-http_v2_module --with-http_v3_module --with-http_dav_module --with-http_slice_module --with-threads --with-http_addition_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_secure_link_module --with-http_sub_module --with-mail_ssl_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-stream_realip_module --with-http_geoip_module=dynamic --with-http_image_filter_module=dynamic --with-http_perl_module=dynamic --with-http_xslt_module=dynamic --with-mail=dynamic --with-stream=dynamic --with-stream_geoip_module=dynamic --add-dynamic-module=/home/ops/nginx-module-vts-0.2.6</span><br><span class="line">make modules</span><br><span class="line"></span><br><span class="line">其中最后的--add-dynamic-module=注意改成自己vts的目录</span><br><span class="line"></span><br><span class="line">编译方法二（nginx 1.23及以后得版本可以用）：</span><br><span class="line">cd nginx-1.26.3</span><br><span class="line">./configure --with-compat --add-dynamic-module=/home/ops/nginx-module-vts-0.2.6</span><br><span class="line">make modules</span><br></pre></td></tr></table></figure>
+
+<p>编译成功后，模块文件出现在：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">nginx-1.26.3/objs/ngx_http_vhost_traffic_status_module.so</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-3-常见编译报错"><a href="#3-3-常见编译报错" class="headerlink" title="3.3 常见编译报错"></a>3.3 常见编译报错</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">报错1：</span><br><span class="line">./configure: error: the HTTP rewrite module requires the PCRE library.</span><br><span class="line"></span><br><span class="line">sudo apt-get install -y libpcre2-dev</span><br><span class="line"></span><br><span class="line">如果要是用编译方法一，可以将相关依赖都安装上</span><br><span class="line">sudo apt install -y build-essential libpcre2-dev zlib1g-dev libssl-dev libxslt1-dev libgd-dev libgeoip-dev</span><br><span class="line"></span><br><span class="line">报错2：</span><br><span class="line">./configure: error: C compiler cc is not found</span><br><span class="line"></span><br><span class="line">sudo apt install -y build-essential</span><br><span class="line">安装编译相关依赖，并检查磁盘空间是否耗尽</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="3-4-复制到模块目录"><a href="#3-4-复制到模块目录" class="headerlink" title="3.4 复制到模块目录"></a>3.4 复制到模块目录</h3><figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">查看原 Nginx 的 modules 路径（来自上面的 configure 输出，通常是 /etc/nginx/modules 或 /usr/lib/nginx/modules）</span></span><br><span class="line">sudo nginx -V 2&gt;&amp;1 | grep -o &#x27;\-\-modules-path=[^ ]*&#x27; | cut -d= -f2</span><br><span class="line">/usr/lib/nginx/modules</span><br><span class="line"></span><br><span class="line">sudo cp ~/nginx-1.26.3/objs/ngx_http_vhost_traffic_status_module.so /usr/lib/nginx/modules</span><br></pre></td></tr></table></figure>
+
+<h2 id="步骤-4：加载模块（-so-文件）"><a href="#步骤-4：加载模块（-so-文件）" class="headerlink" title="步骤 4：加载模块（.so 文件）"></a>步骤 4：加载模块（.so 文件）</h2><p>编辑主配置文件 <code>nginx.conf</code>，在**最顶部（events&#x2F;http 块之外）**加入 <code>load_module</code>：</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/nginx.conf</span><br><span class="line"></span><br><span class="line">load_module modules/ngx_http_vhost_traffic_status_module.so;</span><br></pre></td></tr></table></figure>
+
+<p>⚠️ <code>load_module</code> 必须出现在 <code>events {}</code> 和 <code>http {}</code> <strong>之前</strong>，否则配置检查会失败。</p>
+<h2 id="步骤-5：配置vts"><a href="#步骤-5：配置vts" class="headerlink" title="步骤 5：配置vts"></a>步骤 5：配置vts</h2><p>在 <code>http {}</code> 块内启用统计区，在需要暴露的 <code>server {}</code> 块内配置展示路由：</p>
+<figure class="highlight plaintext"><table><tr><td class="code"><pre><span class="line">sudo vim /etc/nginx/nginx.conf</span><br><span class="line"></span><br><span class="line">http &#123;     </span><br><span class="line"></span><br><span class="line">	# 启用流量统计共享内存区</span><br><span class="line">    vhost_traffic_status_zone;</span><br><span class="line">    ...</span><br><span class="line">    ...</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">sudo vim /etc/nginx/sites-enabled/default</span><br><span class="line"></span><br><span class="line">    server &#123;</span><br><span class="line">        listen 80;</span><br><span class="line">        server_name _;</span><br><span class="line"></span><br><span class="line">        # 状态页（建议加访问控制）</span><br><span class="line">        location /vts &#123;</span><br><span class="line">            vhost_traffic_status_display;</span><br><span class="line">            vhost_traffic_status_display_format html;</span><br><span class="line"></span><br><span class="line">            # 安全加固：仅允许内网或指定 IP 访问</span><br><span class="line">            # allow 10.0.0.0/8;</span><br><span class="line">            # deny all;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="步骤-6：校验并加载"><a href="#步骤-6：校验并加载" class="headerlink" title="步骤 6：校验并加载"></a>步骤 6：校验并加载</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 配置语法检查</span></span><br><span class="line">nginx -t</span><br><span class="line"><span class="comment"># 输出 nginx: configuration file /etc/nginx/nginx.conf test is successful</span></span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 平滑重载（不中断连接）</span></span><br><span class="line">nginx -s reload</span><br></pre></td></tr></table></figure>
+
+<p>打开浏览器访问 <code>http://&lt;your-server&gt;/vts</code>，应看到流量状态页。</p>
+]]></content>
+      <categories>
+        <category>运维</category>
+      </categories>
+      <tags>
+        <tag>nginx</tag>
+        <tag>流量监控</tag>
+        <tag>linux</tag>
+        <tag>动态加载模块</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>AOC AG275UXM2 vs HKC 领航M8 4K QD-MiniLED显示器参数对比推荐</title>
+    <url>/posts/9bb8c48e.html</url>
+    <content><![CDATA[<h1 id="双旗舰对决：AOC-AG275UXM2-vs-HKC-领航-M8（MG27K33US）"><a href="#双旗舰对决：AOC-AG275UXM2-vs-HKC-领航-M8（MG27K33US）" class="headerlink" title="双旗舰对决：AOC AG275UXM2 vs HKC 领航 M8（MG27K33US）"></a>双旗舰对决：AOC AG275UXM2 vs HKC 领航 M8（MG27K33US）</h1><blockquote>
+<p>对比时间：2026-08-07｜数据来源：AOC 官网参数页、HKC 官方&#x2F;百科、京东商品页、中关村在线及评测机构实测<br>两款均为 27 英寸、原生 4K（3840×2160）、<strong>QD-MiniLED（2304 分区）</strong> 旗舰显示器，画质层级相同，真正拉开差距的是色准、接口与价格。本文先给结论，再逐维度拆解。</p>
+</blockquote>
+<hr>
+<h2 id="一、一句话定位"><a href="#一、一句话定位" class="headerlink" title="一、一句话定位"></a>一、一句话定位</h2><table>
+<thead>
+<tr>
+<th>机型</th>
+<th>一句话定位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AOC AG275UXM2</strong></td>
+<td>AOC 爱攻（AGON）<strong>QD-MiniLED 全能旗舰</strong>，2304 分区 + <strong>出厂 ΔE&lt;1</strong>，电竞与创作通吃。</td>
+</tr>
+<tr>
+<td><strong>HKC 领航 M8（MG27K33US）</strong></td>
+<td>HKC 高端 <strong>QD-MiniLED 旗舰</strong>，2304 分区 + <strong>玄墨低反屏 + 满血 DP2.1 + 90W 一线连</strong>，接口与做工最豪华。</td>
+</tr>
+</tbody></table>
+<p><strong>最关键的差异</strong>：两款画质硬件几乎一致（同 2304 分区、同 HDR1400、同 98% DCI-P3），核心分野在三点——</p>
+<p><strong>①色准：AG275UXM2 出厂 ΔE&lt;1，领航 M8 仅 ΔE&lt;2；</strong></p>
+<p><strong>②Type-C 功率：AG275UXM2 65W，领航 M8 90W；</strong></p>
+<p><strong>③DP 带宽：AG275UXM2 是 DP1.4，领航 M8 是满血 DP2.1</strong>。</p>
+<hr>
+<h2 id="二、核心参数总表"><a href="#二、核心参数总表" class="headerlink" title="二、核心参数总表"></a>二、核心参数总表</h2><table>
+<thead>
+<tr>
+<th>参数维度</th>
+<th>AOC AG275UXM2</th>
+<th>HKC 领航 M8（MG27K33US）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>屏幕尺寸</strong></td>
+<td>27″（16:9）</td>
+<td>27″（16:9）</td>
+</tr>
+<tr>
+<td><strong>分辨率</strong></td>
+<td>3840×2160（原生 4K）</td>
+<td>3840×2160（原生 4K）</td>
+</tr>
+<tr>
+<td><strong>面板类型</strong></td>
+<td>Fast IPS + <strong>QD-MiniLED（2304 分区）</strong></td>
+<td>Fast IPS 玄墨屏 + <strong>QD-MiniLED（2304 分区）</strong></td>
+</tr>
+<tr>
+<td><strong>刷新率</strong></td>
+<td>4K@160Hz &#x2F; FHD@320Hz 双模</td>
+<td>4K@160Hz &#x2F; FHD@320Hz 双模</td>
+</tr>
+<tr>
+<td><strong>响应时间</strong></td>
+<td>1ms GTG（0.5ms MPRT）</td>
+<td>1ms GTG</td>
+</tr>
+<tr>
+<td><strong>亮度</strong></td>
+<td>HDR 峰值 1400 尼特（HDR1400）</td>
+<td>1400 cd&#x2F;m²（峰值，HDR1400）</td>
+</tr>
+<tr>
+<td><strong>对比度</strong></td>
+<td>动态 8000 万:1（MiniLED 控光）</td>
+<td>静态 1300:1 &#x2F; 动态 100 万:1</td>
+</tr>
+<tr>
+<td><strong>色域覆盖</strong></td>
+<td>98% DCI-P3 &#x2F; 96.9% Adobe RGB</td>
+<td>100% sRGB &#x2F; 98% DCI-P3 &#x2F; 99% Adobe RGB</td>
+</tr>
+<tr>
+<td><strong>色深</strong></td>
+<td>10bit</td>
+<td>10bit（8bit+FRC）</td>
+</tr>
+<tr>
+<td><strong>色准 ΔE</strong></td>
+<td><strong>出厂 &lt;1</strong>（评测实测）</td>
+<td><strong>&lt;2</strong>（官方&#x2F;评测一致）</td>
+</tr>
+<tr>
+<td><strong>HDR 支持</strong></td>
+<td><strong>HDR1400</strong></td>
+<td><strong>HDR1400</strong></td>
+</tr>
+<tr>
+<td><strong>视频接口</strong></td>
+<td>HDMI2.1×2、DP1.4×1</td>
+<td><strong>满血 DP2.1×1</strong>、HDMI2.1×2</td>
+</tr>
+<tr>
+<td><strong>Type-C</strong></td>
+<td>USB-C 65W</td>
+<td><strong>USB-C 90W</strong>（DP Alt）</td>
+</tr>
+<tr>
+<td><strong>USB 扩展</strong></td>
+<td>USB 集线器</td>
+<td>USB 3.2×2</td>
+</tr>
+<tr>
+<td><strong>特色功能</strong></td>
+<td>六轴校色、RGB 灯效、耳机挂钩、DC 调光、莱茵低蓝光、出厂校色报告</td>
+<td>玄墨低反屏（反射率 1.8%）、KVM、PIP&#x2F;PBP、六轴校色、DIC SYNC、AI 抗闪、满血 DP2.1 无 DSC</td>
+</tr>
+<tr>
+<td><strong>支架调节</strong></td>
+<td>150mm 升降 &#x2F; ±20° 旋转 &#x2F; ±90° 竖屏</td>
+<td>130mm 升降 &#x2F; ±30° 旋转 &#x2F; ±90° 竖屏</td>
+</tr>
+<tr>
+<td><strong>参考到手价</strong></td>
+<td><strong>¥2799</strong>（京东自营 30 天低，历史低 ¥2639）</td>
+<td><strong>¥2899–3199</strong>（历史低 ¥2899）</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="三、分维度深度对比"><a href="#三、分维度深度对比" class="headerlink" title="三、分维度深度对比"></a>三、分维度深度对比</h2><h3 id="1-面板与画质：起点相同，细节有别"><a href="#1-面板与画质：起点相同，细节有别" class="headerlink" title="1. 面板与画质：起点相同，细节有别"></a>1. 面板与画质：起点相同，细节有别</h3><p>两款都是 <strong>2304 分区 QD-MiniLED</strong>，能独立控光上千个区域，配合量子点广色域，峰值亮度冲到 <strong>1400 尼特（HDR1400）</strong>，明暗对比与 HDR 光影是同代旗舰水准，远超普通 IPS。</p>
+<p>细微差别在于<strong>领航 M8 多了「玄墨低反屏」</strong>（纳米抗反射涂层，反射率仅 1.8%），在窗边 &#x2F; 亮厅环境抗眩光更强、暗场更「黑」；AG275UXM2 则是爱攻电竞风（RGB 灯效、耳机挂钩），视觉氛围更游戏化。</p>
+<blockquote>
+<p>结论：纯画质硬件两款打平；常年在明亮环境使用、介意眩光，领航 M8 的玄墨屏是加分项。</p>
+</blockquote>
+<h3 id="2-刷新率与响应：完全同档"><a href="#2-刷新率与响应：完全同档" class="headerlink" title="2. 刷新率与响应：完全同档"></a>2. 刷新率与响应：完全同档</h3><ul>
+<li>两款均为 4K@<strong>160Hz</strong>、双模切 FHD@<strong>320Hz</strong>，响应均为 <strong>1ms GTG</strong>。</li>
+<li>这一维度两者完全一致，电竞体感无差别；320Hz 双模对 FPS 玩家友好，1ms 拖影控制到位。</li>
+</ul>
+<h3 id="3-色彩与色准：专业级只此一家"><a href="#3-色彩与色准：专业级只此一家" class="headerlink" title="3. 色彩与色准：专业级只此一家"></a>3. 色彩与色准：专业级只此一家</h3><ul>
+<li><strong>AG275UXM2 是唯一标称「出厂 ΔE&lt;1」</strong> 的机型（中关村在线评测实测确认），达到专业修图 &#x2F; 调色门槛；96.9% Adobe RGB 覆盖对印刷 &#x2F; 摄影后期也很友好。</li>
+<li><strong>领航 M8 为 ΔE&lt;2</strong>：日常设计与观影完全够用，但严格专业校色场景差半档。</li>
+<li>两款色域都在 98% DCI-P3 上下，观感鲜艳度接近；领航 M8 的 99% Adobe RGB 略胜一筹，但色准精度上 AG275UXM2 更稳。</li>
+</ul>
+<h3 id="4-接口与扩展：领航-M8-全面占优"><a href="#4-接口与扩展：领航-M8-全面占优" class="headerlink" title="4. 接口与扩展：领航 M8 全面占优"></a>4. 接口与扩展：领航 M8 全面占优</h3><ul>
+<li><strong>Type-C 供电</strong>：领航 M8 是 <strong>90W</strong>，一根线给笔记本供电 + 显示绰绰有余；AG275UXM2 只有 <strong>65W</strong>，给轻薄本够用、给游戏本略勉强。</li>
+<li><strong>DP 带宽</strong>：领航 M8 是 <strong>满血 DP2.1</strong>（13.5G×4，无需 DSC 压缩即可无损传输 4K 160Hz）；AG275UXM2 是 DP1.4（需 DSC）。接次世代主机 &#x2F; 高端显卡，领航 M8 前瞻性最好。</li>
+<li><strong>KVM &#x2F; PIP-PBP</strong>：两款都支持，多设备（台式 + 笔记本 &#x2F; Mac）用户友好。</li>
+</ul>
+<h3 id="5-HDR：并列旗舰"><a href="#5-HDR：并列旗舰" class="headerlink" title="5. HDR：并列旗舰"></a>5. HDR：并列旗舰</h3><p>两款均为 <strong>HDR1400</strong>（峰值 1400 尼特 + 千级分区），HDR 电影 &#x2F; 游戏光影表现同属天花板级别，无差距。</p>
+<hr>
+<h2 id="四、各自优势与适用场景"><a href="#四、各自优势与适用场景" class="headerlink" title="四、各自优势与适用场景"></a>四、各自优势与适用场景</h2><h3 id="✅-AOC-AG275UXM2-——-电竞-创作的「性价比全能旗舰」"><a href="#✅-AOC-AG275UXM2-——-电竞-创作的「性价比全能旗舰」" class="headerlink" title="✅ AOC AG275UXM2 —— 电竞 + 创作的「性价比全能旗舰」"></a>✅ AOC AG275UXM2 —— 电竞 + 创作的「性价比全能旗舰」</h3><ul>
+<li><strong>优势</strong>：两款里<strong>唯一 ΔE&lt;1 出厂校色</strong>（专业色准）、2304 分区 QD-MiniLED、HDR1400、160Hz&#x2F;320Hz 双模，AOC售后更好。</li>
+<li><strong>适用</strong>：既要打游戏又要剪片 &#x2F; 修图的「双修」用户、内容创作者、对色准有硬要求的设计师、预算卡在 3000 内想买旗舰画质者。</li>
+<li><strong>不适合</strong>：需要 90W 以上 Type-C 供电的笔电重度用户（仅 65W）。</li>
+</ul>
+<h3 id="✅-HKC-领航-M8（MG27K33US）——-高端电竞-抗反光旗舰"><a href="#✅-HKC-领航-M8（MG27K33US）——-高端电竞-抗反光旗舰" class="headerlink" title="✅ HKC 领航 M8（MG27K33US）—— 高端电竞 + 抗反光旗舰"></a>✅ HKC 领航 M8（MG27K33US）—— 高端电竞 + 抗反光旗舰</h3><ul>
+<li><strong>优势</strong>：<strong>满血 DP2.1 + 90W Type-C</strong>、玄墨低反屏（亮厅不晃眼）、2304 分区 QD-MiniLED + HDR1400、DIC SYNC 动态模糊消除、AI 抗闪；接口与做工最豪华。</li>
+<li><strong>适用</strong>：预算充裕、明亮环境使用、追求接口前瞻性与抗反光、兼顾电竞与创作的用户。</li>
+<li><strong>不适合</strong>：对 ΔE&lt;1 有执念者（它仅 ΔE&lt;2）。</li>
+</ul>
+<hr>
+<h2 id="五、选购速查表"><a href="#五、选购速查表" class="headerlink" title="五、选购速查表"></a>五、选购速查表</h2><table>
+<thead>
+<tr>
+<th>你的核心诉求</th>
+<th>首选</th>
+<th>理由</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>要专业色准（ΔE&lt;1）+ MiniLED 旗舰画质</td>
+<td><strong>AG275UXM2</strong></td>
+<td>唯一 ΔE&lt;1，¥2799 性价比最高</td>
+</tr>
+<tr>
+<td>要满血 DP2.1 + 90W 一线连 + 抗反光</td>
+<td><strong>领航 M8</strong></td>
+<td>DP2.1 + 玄墨屏 + 90W，旗舰做工</td>
+</tr>
+<tr>
+<td>预算敏感但要旗舰画质</td>
+<td><strong>AG275UXM2</strong></td>
+<td>比领航 M8 便宜约 ¥100–400</td>
+</tr>
+<tr>
+<td>明亮环境 &#x2F; 窗户旁使用</td>
+<td><strong>领航 M8</strong></td>
+<td>玄墨低反屏抗眩光</td>
+</tr>
+<tr>
+<td>纯打 FPS 高刷</td>
+<td>两者均可</td>
+<td>同 320Hz 双模 + 1ms</td>
+</tr>
+</tbody></table>
+<hr>
+<h2 id="六、价格参考（截至-2026-08-07）"><a href="#六、价格参考（截至-2026-08-07）" class="headerlink" title="六、价格参考（截至 2026-08-07）"></a>六、价格参考（截至 2026-08-07）</h2><table>
+<thead>
+<tr>
+<th>机型</th>
+<th>最低到手</th>
+<th>常卖价</th>
+<th>主要渠道</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://item.jd.com/100171732889.html">AOC AG275UXM2</a></td>
+<td>¥2799（30 天低）</td>
+<td>¥3299</td>
+<td>京东自营（历史低 ¥2639）</td>
+</tr>
+<tr>
+<td><a href="https://item.jd.com/100301825002.html">HKC 领航 M8（MG27K33US）</a></td>
+<td>¥2899（历史低）</td>
+<td>¥3199</td>
+<td>京东&#x2F;天猫（部分渠道到手 ¥2679）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>提示：显示器促销波动大，部分型号原价与到手价差超 1000 元；下单前确认是否可叠国补&#x2F;以旧换新，MiniLED 机型建议优先官方自营渠道以保障售后换新。</p>
+</blockquote>
+]]></content>
+      <categories>
+        <category>科技</category>
+      </categories>
+      <tags>
+        <tag>显示器</tag>
+        <tag>AG275UXM2</tag>
+        <tag>MG27K33US</tag>
+        <tag>AOC</tag>
+        <tag>HKC</tag>
+        <tag>领航M8</tag>
       </tags>
   </entry>
 </search>
